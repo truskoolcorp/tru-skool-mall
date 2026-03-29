@@ -27,7 +27,7 @@ const ProductCatalog = {
     'bijadi': {
       name: 'BiJaDi',
       tagline: 'Beyond Enough.',
-      url: 'https://bijadi.com',
+      url: 'https://bijadi.net',
       color: '#d4c0a8',
       hero: 'assets/products/bj-hero.jpg',
       products: [
@@ -57,7 +57,7 @@ const ProductCatalog = {
     'hoe': {
       name: 'H.O.E.',
       tagline: 'Wear your crown.',
-      url: 'https://hoe.truskool.net',
+      url: 'https://truskoolcorp.wixstudio.com/h-o-e',
       color: '#e8c060',
       hero: 'assets/products/ho-hero.jpg',
       products: [
@@ -72,7 +72,7 @@ const ProductCatalog = {
     'wanderlust': {
       name: 'Wanderlust',
       tagline: 'Explore everything.',
-      url: 'https://wanderlust.truskool.net',
+      url: 'https://wanderlustfashionstore.com',
       color: '#60c890',
       hero: 'assets/products/wl-hero.jpg',
       products: [
@@ -87,7 +87,7 @@ const ProductCatalog = {
     'cafe-sativa': {
       name: 'Cafe Sativa',
       tagline: 'Sip. Smoke. Vibe.',
-      url: 'https://cafesativa.truskool.net',
+      url: 'https://cafe-sativa.com',
       color: '#c09060',
       hero: 'assets/products/cs-hero.jpg',
       products: [
@@ -102,7 +102,7 @@ const ProductCatalog = {
     'verse-alkemist': {
       name: 'The Verse Alkemist',
       tagline: 'Words into weapons. Beats into anthems.',
-      url: 'https://theversealkemist.com',
+      url: 'https://versealkemist.net',
       color: '#a060e0',
       hero: 'assets/products/va-hero.jpg',
       products: [
