@@ -1,24 +1,16 @@
 /* ═══════════════════════════════════════════════════════════
    TRU SKOOL MALL — Voice Narration
-   MiniMAX TTS integration for AI persona voice guide
+   MiniMAX TTS via server-side proxy (/api/tts)
    ═══════════════════════════════════════════════════════════ */
 
 const VoiceNarration = {
 
-  // ─── Configuration ───
-  apiBase: 'https://api.minimax.io',
-  model: 'speech-2.8-turbo',  // Fast for real-time, use speech-2.8-hd for published content
-
-  // Voice IDs per persona (configure these after voice design/clone)
+  // Voice IDs per persona
   voiceIds: {
-    laviche: 'Calm_Woman',           // MiniMAX system voice (replace with cloned ID)
-    ginger:  'Energetic_Woman',      // Replace with Ginger's cloned/designed voice ID
-    ahnika:  'Sweet_Girl_2',         // Replace with Ahnika's designed voice ID
+    laviche: 'moss_audio_15d1d287-2b81-11f1-9471-ba789c2c93f8',
+    ginger:  'moss_audio_2d1fd811-2819-11f1-8a04-b60a20904c95',
+    ahnika:  'moss_audio_9ea095c1-2b81-11f1-bc09-de09dc3c9ac4',
   },
-
-  // Laviche Hume voice IDs (for reference — not used in MiniMAX)
-  // Primary: cb46ab2d-1606-45e5-b7db-633636e53c84
-  // Secondary: 9ab35d50-0ca1-461f-af4a-2a1978f7db26
 
   // Voice tuning per persona
   voiceSettings: {
@@ -28,33 +20,37 @@ const VoiceNarration = {
   },
 
   // State
-  _audioContext: null,
   _currentAudio: null,
   _queue: [],
   _speaking: false,
+  _enabled: true,
+  _userInteracted: false,
 
-  // ─── Speak ───
+  // ─── Init: unlock audio on first user interaction ───
+  init() {
+    const unlock = () => {
+      this._userInteracted = true;
+      document.removeEventListener('click', unlock);
+      document.removeEventListener('keydown', unlock);
+      console.log('[Voice] Audio unlocked by user interaction');
+    };
+    document.addEventListener('click', unlock);
+    document.addEventListener('keydown', unlock);
+  },
+
+  // ─── Speak via /api/tts proxy ───
   async speak(text, persona = 'laviche') {
-    if (!window.MallState.voiceEnabled) return;
+    if (!window.MallState || !window.MallState.voiceEnabled) return;
+    if (!this._enabled) return;
 
-    // Clean text for speech (remove emojis and special chars)
+    // Clean text for speech (remove emojis)
     const cleanText = text
-      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')  // Remove emojis
-      .replace(/[💎🌹🦋👑🌍☕🎤]/g, '')
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+      .replace(/[💎🌹🦋👑🌍☕🎤🏛]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
 
-    if (!cleanText) return;
-
-    // Check if API key is available
-    const apiKey = this.getAPIKey();
-    if (!apiKey || apiKey === 'YOUR_MINIMAX_KEY_HERE') {
-      console.log(`[Voice] Would speak (${persona}): "${cleanText.substring(0, 60)}..."`);
-      this.showVoiceUI(persona);
-      // Simulate speaking duration
-      setTimeout(() => this.hideVoiceUI(), Math.min(cleanText.length * 60, 5000));
-      return;
-    }
+    if (!cleanText || cleanText.length < 3) return;
 
     // Queue if already speaking
     if (this._speaking) {
@@ -69,46 +65,46 @@ const VoiceNarration = {
       const voice = this.voiceIds[persona] || this.voiceIds.laviche;
       const settings = this.voiceSettings[persona] || this.voiceSettings.laviche;
 
-      const response = await fetch(`${this.apiBase}/v1/t2a_v2`, {
+      console.log(`[Voice] Requesting TTS for ${persona}: "${cleanText.substring(0, 50)}..."`);
+
+      const response = await fetch('/api/tts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: this.model,
           text: cleanText,
-          voice_setting: {
-            voice_id: voice,
-            speed: settings.speed,
-            pitch: settings.pitch,
-            emotion: settings.emotion,
-            vol: 1.0,
-          },
-          audio_setting: {
-            format: 'mp3',
-            sample_rate: 24000,
-          },
+          voice_id: voice,
+          speed: settings.speed,
+          pitch: settings.pitch,
+          emotion: settings.emotion,
         }),
       });
 
-      if (!response.ok) throw new Error(`TTS ${response.status}`);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.warn('[Voice] TTS proxy error:', response.status, errData);
+        throw new Error('TTS proxy error ' + response.status);
+      }
 
       const data = await response.json();
 
-      if (data.data?.audio) {
+      if (data.audio) {
         // Decode hex audio to binary
-        const audioHex = data.data.audio;
-        const audioBytes = new Uint8Array(audioHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+        const audioHex = data.audio;
+        const audioBytes = new Uint8Array(
+          audioHex.match(/.{1,2}/g).map(function(b) { return parseInt(b, 16); })
+        );
         const audioBlob = new Blob([audioBytes], { type: 'audio/mp3' });
         const audioUrl = URL.createObjectURL(audioBlob);
 
-        // Play
+        // Play audio
         await this.playAudio(audioUrl);
+        console.log('[Voice] Playback complete');
+      } else {
+        console.warn('[Voice] No audio data in response');
       }
 
     } catch (err) {
-      console.error('[Voice] TTS error:', err);
+      console.error('[Voice] TTS error:', err.message);
     } finally {
       this._speaking = false;
       this.hideVoiceUI();
@@ -116,35 +112,41 @@ const VoiceNarration = {
       // Process queue
       if (this._queue.length > 0) {
         const next = this._queue.shift();
-        this.speak(next.text, next.persona);
+        setTimeout(function() {
+          VoiceNarration.speak(next.text, next.persona);
+        }, 300);
       }
     }
   },
 
   // ─── Audio Playback ───
-  async playAudio(url) {
-    return new Promise((resolve) => {
+  playAudio(url) {
+    var self = this;
+    return new Promise(function(resolve) {
       // Stop current audio
-      if (this._currentAudio) {
-        this._currentAudio.pause();
-        this._currentAudio = null;
+      if (self._currentAudio) {
+        self._currentAudio.pause();
+        self._currentAudio = null;
       }
 
-      const audio = new Audio(url);
-      this._currentAudio = audio;
+      var audio = new Audio(url);
+      self._currentAudio = audio;
 
-      audio.onended = () => {
+      audio.onended = function() {
         URL.revokeObjectURL(url);
+        self._currentAudio = null;
         resolve();
       };
 
-      audio.onerror = () => {
-        console.error('[Voice] Audio playback error');
+      audio.onerror = function(e) {
+        console.error('[Voice] Audio playback error:', e);
+        self._currentAudio = null;
         resolve();
       };
 
-      audio.play().catch(err => {
-        console.warn('[Voice] Autoplay blocked — user interaction needed:', err);
+      audio.play().catch(function(err) {
+        console.warn('[Voice] Autoplay blocked — click anywhere first:', err.message);
+        self._currentAudio = null;
         resolve();
       });
     });
@@ -161,49 +163,40 @@ const VoiceNarration = {
     this.hideVoiceUI();
   },
 
-  // ─── Voice UI ───
+  // ─── Voice UI indicators ───
   showVoiceUI(persona) {
-    const status = document.getElementById('voice-status');
-    const textEl = document.getElementById('voice-text');
+    var status = document.getElementById('voice-status');
+    var textEl = document.getElementById('voice-text');
     if (!status || !textEl) return;
 
-    const name = GuideSystem.personas[persona]?.name || 'Guide';
-    textEl.textContent = `${name} is speaking...`;
+    var personas = {
+      laviche: 'Laviche Cárdenas',
+      ginger: 'Ginger Pelirroja',
+      ahnika: 'Ahnika Merlot',
+    };
+    textEl.textContent = (personas[persona] || 'Guide') + ' is speaking...';
     status.classList.remove('hidden');
   },
 
   hideVoiceUI() {
-    const status = document.getElementById('voice-status');
+    var status = document.getElementById('voice-status');
     if (status) status.classList.add('hidden');
   },
 
-  // ─── API Key ───
-  getAPIKey() {
-    return localStorage.getItem('MINIMAX_API_KEY') || 'YOUR_MINIMAX_KEY_HERE';
-  },
-
-  // ─── Configure (call from console to set up) ───
-  configure(options = {}) {
-    if (options.minimaxKey) {
-      localStorage.setItem('MINIMAX_API_KEY', options.minimaxKey);
-      console.log('[Voice] MiniMAX API key saved');
-    }
-    if (options.anthropicKey) {
-      localStorage.setItem('ANTHROPIC_API_KEY', options.anthropicKey);
-      console.log('[Voice] Anthropic API key saved');
-    }
-    if (options.voiceIds) {
-      Object.assign(this.voiceIds, options.voiceIds);
+  // ─── Configure custom voice IDs (call from console) ───
+  configure(options) {
+    if (options && options.voiceIds) {
+      var self = this;
+      Object.keys(options.voiceIds).forEach(function(key) {
+        self.voiceIds[key] = options.voiceIds[key];
+      });
       console.log('[Voice] Voice IDs updated:', this.voiceIds);
     }
   },
 };
 
-window.VoiceNarration = VoiceNarration;
+// Auto-init
+VoiceNarration.init();
 
-// ─── Quick setup helper ───
-// Run in browser console:
-// VoiceNarration.configure({ minimaxKey: 'your-key', anthropicKey: 'your-key' })
-console.log('%c[Tru Skool Mall] Voice Narration loaded', 'color: #c9a84c');
-console.log('%cTo enable voice: VoiceNarration.configure({ minimaxKey: "your-key" })', 'color: #888');
-console.log('%cTo enable chat AI: ChatEngine.useDirectAPI = true; localStorage.setItem("ANTHROPIC_API_KEY", "your-key")', 'color: #888');
+window.VoiceNarration = VoiceNarration;
+console.log('%c[Tru Skool Mall] Voice system loaded — uses /api/tts proxy', 'color: #c9a84c');
