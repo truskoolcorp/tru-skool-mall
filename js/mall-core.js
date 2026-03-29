@@ -415,3 +415,65 @@ window.toggleMusic = toggleMusic;
 window.addChatMessage = addChatMessage;
 window.addUserMessage = addUserMessage;
 window.TELEPORT_POSITIONS = TELEPORT_POSITIONS;
+
+// ═══════════════════════════════════════════════════
+// HELP OVERLAY
+// ═══════════════════════════════════════════════════
+
+function toggleHelp() {
+  var overlay = document.getElementById('help-overlay');
+  if (!overlay) return;
+  overlay.classList.toggle('hidden');
+  document.getElementById('btn-help').classList.toggle('active', !overlay.classList.contains('hidden'));
+}
+window.toggleHelp = toggleHelp;
+
+// ═══════════════════════════════════════════════════
+// STORE DIRECTORY
+// ═══════════════════════════════════════════════════
+
+function toggleDirectory() {
+  var panel = document.getElementById('directory-panel');
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+  document.getElementById('btn-directory').classList.toggle('active', !panel.classList.contains('hidden'));
+}
+window.toggleDirectory = toggleDirectory;
+
+function teleportToStore(storeId) {
+  // Close directory panel
+  var panel = document.getElementById('directory-panel');
+  if (panel) panel.classList.add('hidden');
+  document.getElementById('btn-directory').classList.remove('active');
+
+  // Use existing teleport system
+  if (typeof teleportTo === 'function') {
+    teleportTo(storeId);
+  }
+}
+window.teleportToStore = teleportToStore;
+
+// ═══════════════════════════════════════════════════
+// WELCOME TOOLTIP
+// ═══════════════════════════════════════════════════
+
+function showWelcome() {
+  var tooltip = document.getElementById('welcome-tooltip');
+  if (!tooltip) return;
+  tooltip.classList.remove('hidden');
+  // Auto-dismiss after 8 seconds
+  setTimeout(function() { dismissWelcome(); }, 8000);
+}
+
+function dismissWelcome() {
+  var tooltip = document.getElementById('welcome-tooltip');
+  if (tooltip) tooltip.classList.add('hidden');
+}
+window.dismissWelcome = dismissWelcome;
+
+// Show welcome 2 seconds after entering mall
+var _origEnterMall = window.enterMall;
+window.enterMall = function(mode) {
+  _origEnterMall(mode);
+  setTimeout(showWelcome, 2000);
+};
