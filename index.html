@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tru Skool Mall — Culture. Commerce. Code.</title>
+  <meta name="description" content="The Tru Skool Entertainment virtual mall — shop brands, meet AI guides, explore in 3D, AR, or VR.">
+
+  <!-- A-Frame (1.6.0) -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <!-- A-Frame Extras (movement controls, navmesh) -->
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+
+  <!-- 8th Wall Engine — uncomment when deploying with AR mode -->
+  <!-- <script async src="./xr/xr.js" data-preload-chunks="slam"></script> -->
+
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/product-panel.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODE SELECTOR OVERLAY (shown on entry)
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="mode-selector" class="overlay">
+  <div class="mode-card">
+    <div class="mode-logo">
+      <span class="logo-mark">TSE</span>
+      <span class="logo-text">TRU SKOOL MALL</span>
+      <span class="logo-tag">Culture. Commerce. Code.</span>
+    </div>
+    <p class="mode-subtitle">Choose your experience</p>
+    <div class="mode-buttons">
+      <button class="mode-btn" data-mode="virtual" onclick="enterMall('virtual')">
+        <span class="mode-icon">🖥</span>
+        <span class="mode-label">Virtual</span>
+        <span class="mode-desc">Explore in browser</span>
+      </button>
+      <button class="mode-btn" data-mode="ar" onclick="enterMall('ar')">
+        <span class="mode-icon">📱</span>
+        <span class="mode-label">AR Mode</span>
+        <span class="mode-desc">Place in your space</span>
+      </button>
+      <button class="mode-btn" data-mode="vr" onclick="enterMall('vr')">
+        <span class="mode-icon">🥽</span>
+        <span class="mode-label">VR Headset</span>
+        <span class="mode-desc">Full immersion</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HUD — Navigation, Chat Toggle, Voice Toggle, Map
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="hud" class="hidden">
+  <!-- Top bar -->
+  <div id="hud-top">
+    <div id="location-label">Grand Entrance</div>
+    <div id="hud-controls">
+      <button id="btn-map" class="hud-btn" onclick="toggleMap()" title="Mall Map">🗺</button>
+      <button id="btn-music" class="hud-btn active" onclick="toggleMusic()" title="Background Music">🎵</button>
+      <button id="btn-voice" class="hud-btn" onclick="toggleVoice()" title="Voice Guide">🔊</button>
+      <button id="btn-chat" class="hud-btn active" onclick="toggleChat()" title="Chat with Guide">💬</button>
+      <button id="btn-mode" class="hud-btn" onclick="showModeSelector()" title="Switch Mode">⚙</button>
+    </div>
+  </div>
+
+  <!-- Mini-map -->
+  <div id="minimap" class="hidden">
+    <canvas id="minimap-canvas" width="240" height="320"></canvas>
+  </div>
+
+  <!-- Chat panel -->
+  <div id="chat-panel" class="chat-open">
+    <div id="chat-header">
+      <div class="chat-persona">
+        <div class="persona-avatar laviche"></div>
+        <div class="persona-info">
+          <span class="persona-name">Laviche Cárdenas</span>
+          <span class="persona-role">Your Mall Guide</span>
+        </div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">×</button>
+    </div>
+    <div id="chat-messages">
+      <div class="msg guide">
+        <div class="msg-avatar laviche"></div>
+        <div class="msg-body">Welcome to the Tru Skool Mall, darling. I'm Laviche — your guide through culture, commerce, and code. Where shall we start? 💎</div>
+      </div>
+    </div>
+    <div id="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Ask Laviche anything..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button id="chat-send" onclick="sendChat()">→</button>
+    </div>
+  </div>
+
+  <!-- Teleport menu -->
+  <div id="teleport-menu" class="hidden">
+    <div class="tp-title">Teleport To</div>
+    <button class="tp-btn" onclick="teleportTo('entrance')">🏛 Grand Entrance</button>
+    <button class="tp-btn" onclick="teleportTo('concrete-rose')">🌹 Concrete Rose</button>
+    <button class="tp-btn" onclick="teleportTo('bijadi')">💎 BiJaDi</button>
+    <button class="tp-btn" onclick="teleportTo('faithfully-faded')">🦋 Faithfully Faded</button>
+    <button class="tp-btn" onclick="teleportTo('hoe')">👑 H.O.E.</button>
+    <button class="tp-btn" onclick="teleportTo('wanderlust')">🌍 Wanderlust</button>
+    <button class="tp-btn" onclick="teleportTo('cafe-sativa')">☕ Café Sativa</button>
+    <button class="tp-btn" onclick="teleportTo('verse-alkemist')">🎤 The Verse Alkemist</button>
+    <button class="tp-close" onclick="toggleMap()">Close</button>
+  </div>
+
+  <!-- Voice narration status -->
+  <div id="voice-status" class="hidden">
+    <div class="voice-wave">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <span id="voice-text">Laviche is speaking...</span>
+  </div>
+
+  <!-- Movement hint -->
+  <div id="move-hint">
+    <span>WASD to move · Mouse to look · Click stores to enter · T for teleport</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     A-FRAME 3D SCENE
+     ═══════════════════════════════════════════════════════════════ -->
+<a-scene
+  id="mall-scene"
+  vr-mode-ui="enabled: true"
+  renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true"
+  fog="type: exponential; color: #0a0a0f; density: 0.012"
+  background="color: #0a0a0f"
+  loading-screen="enabled: false"
+>
+  <!-- ─── Assets ─── -->
+  <a-assets timeout="30000">
+    <!-- Textures (procedural fallbacks used inline) -->
+    <img id="marble-floor" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect fill='%23181820' width='128' height='128'/%3E%3Crect fill='%231a1a24' x='0' y='0' width='64' height='64'/%3E%3Crect fill='%231a1a24' x='64' y='64' width='64' height='64'/%3E%3C/svg%3E" crossorigin="anonymous">
+    <img id="wall-tex" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23222230' width='64' height='64'/%3E%3C/svg%3E" crossorigin="anonymous">
+  </a-assets>
+
+  <!-- ─── Lighting ─── -->
+  <a-entity light="type: ambient; color: #2a2a3a; intensity: 0.4"></a-entity>
+  <a-entity light="type: directional; color: #c8b8e8; intensity: 0.6" position="10 20 5"></a-entity>
+
+  <!-- Atrium overhead spotlights -->
+  <a-entity light="type: point; color: #e8d0ff; intensity: 1.2; distance: 30; decay: 2" position="0 10 0"></a-entity>
+  <a-entity light="type: point; color: #d4a8e8; intensity: 0.6; distance: 20; decay: 2" position="0 10 -15"></a-entity>
+  <a-entity light="type: point; color: #d4a8e8; intensity: 0.6; distance: 20; decay: 2" position="0 10 -35"></a-entity>
+  <a-entity light="type: point; color: #d4a8e8; intensity: 0.6; distance: 20; decay: 2" position="0 10 -55"></a-entity>
+
+  <!-- ─── Camera Rig (First Person) ─── -->
+  <a-entity id="camera-rig" position="0 0 5"
+    movement-controls="fly: false; speed: 0.15"
+    >
+    <a-entity id="camera"
+      camera
+      look-controls="pointerLockEnabled: true"
+      position="0 1.6 0"
+    >
+      <!-- Cursor for click interactions -->
+      <a-entity cursor="fuse: false; rayOrigin: mouse"
+        raycaster="far: 40; objects: .clickable"
+        position="0 0 -0.5"
+        geometry="primitive: ring; radiusInner: 0.003; radiusOuter: 0.006"
+        material="color: #e8d0ff; shader: flat; opacity: 0.7"
+      ></a-entity>
+    </a-entity>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MALL STRUCTURE
+       ═══════════════════════════════════════════════════════════ -->
+
+  <!-- ─── Floor ─── -->
+  <a-plane
+    position="0 0 -30"
+    rotation="-90 0 0"
+    width="30" height="80"
+    material="src: #marble-floor; repeat: 15 40; color: #1a1a24"
+  ></a-plane>
+
+  <!-- ─── Ceiling ─── -->
+  <a-plane
+    position="0 12 -30"
+    rotation="90 0 0"
+    width="30" height="80"
+    material="color: #0f0f18; metalness: 0.3; roughness: 0.8"
+  ></a-plane>
+
+  <!-- ─── Left Wall (full corridor) ─── -->
+  <a-box
+    position="-15 6 -30"
+    width="0.3" height="12" depth="80"
+    material="color: #1a1a28"
+  ></a-box>
+
+  <!-- ─── Right Wall (full corridor) ─── -->
+  <a-box
+    position="15 6 -30"
+    width="0.3" height="12" depth="80"
+    material="color: #1a1a28"
+  ></a-box>
+
+  <!-- ─── Back Wall ─── -->
+  <a-box
+    position="0 6 -70"
+    width="30" height="12" depth="0.3"
+    material="color: #1a1a28"
+  ></a-box>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       GRAND ENTRANCE ARCHWAY
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-entrance" position="0 0 3">
+    <!-- Entrance pillars -->
+    <a-cylinder position="-5 4 0" radius="0.6" height="8" material="color: #2a2a3a; metalness: 0.5"></a-cylinder>
+    <a-cylinder position="5 4 0" radius="0.6" height="8" material="color: #2a2a3a; metalness: 0.5"></a-cylinder>
+    <!-- Arch top -->
+    <a-box position="0 8.5 0" width="12" height="1" depth="1.5" material="color: #2a2a3a; metalness: 0.6"></a-box>
+    <!-- Mall name -->
+    <a-text value="TRU SKOOL MALL" position="0 9.5 0.8" align="center" color="#e8d0ff" width="12" font="mozillavr"></a-text>
+    <a-text value="Culture. Commerce. Code." position="0 8.8 0.8" align="center" color="#a088c0" width="8" font="mozillavr"></a-text>
+
+    <!-- Gold accent strips on floor -->
+    <a-box position="-3 0.01 0" width="0.1" height="0.02" depth="4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3"></a-box>
+    <a-box position="3 0.01 0" width="0.1" height="0.02" depth="4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3"></a-box>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LAVICHE CÁRDENAS — GUIDE AVATAR (Entrance)
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="laviche-avatar" position="0 0 0" class="clickable"
+    data-guide="laviche"
+    event-set__mouseenter="_event: mouseenter; _target: #laviche-label; visible: true"
+    event-set__mouseleave="_event: mouseleave; _target: #laviche-label; visible: false"
+  >
+    <!-- Body (elegant silhouette) -->
+    <a-cylinder position="0 0.9 0" radius="0.35" height="1.5"
+      material="color: #c9a84c; metalness: 0.7; roughness: 0.3"
+    >
+      <!-- Shimmer animation -->
+      <a-animation attribute="material.emissiveIntensity" from="0.1" to="0.4" dur="2000" direction="alternate" repeat="indefinite" easing="easeInOutSine"></a-animation>
+    </a-cylinder>
+    <!-- Head -->
+    <a-sphere position="0 2 0" radius="0.28"
+      material="color: #e8c080; roughness: 0.5"
+    ></a-sphere>
+    <!-- Hair -->
+    <a-sphere position="0 2.2 -0.05" radius="0.3"
+      material="color: #1a0a00; roughness: 0.9"
+    ></a-sphere>
+    <!-- Hover label -->
+    <a-text id="laviche-label" value="Laviche Cardenas\nYour Guide" position="0 2.8 0" align="center" color="#c9a84c" width="4" visible="false"></a-text>
+    <!-- Glow ring on floor -->
+    <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="0.6" radius-outer="0.9"
+      material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.5; opacity: 0.4; transparent: true"
+    >
+      <a-animation attribute="rotation" from="0 0 0" to="0 0 360" dur="8000" repeat="indefinite" easing="linear"></a-animation>
+    </a-ring>
+    <!-- Idle floating animation -->
+    <a-animation attribute="position" from="0 0 0" to="0 0.1 0" dur="3000" direction="alternate" repeat="indefinite" easing="easeInOutSine"></a-animation>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 1: CONCRETE ROSE (Left, near entrance)
+       Luxury streetwear — gritty, raw, rose accents on dark concrete
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-concrete-rose" position="-10 0 -8" class="clickable" data-store="concrete-rose">
+    <!-- Store shell -->
+    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #1a1a1a; roughness: 0.95; side: back"></a-box>
+    <!-- Storefront face -->
+    <a-box position="4.5 4 0" width="0.15" height="8" depth="8" material="color: #2a2020; metalness: 0.2"></a-box>
+    <!-- Storefront opening -->
+    <a-box position="4.5 7 0" width="0.2" height="2" depth="6" material="color: #1a1212"></a-box>
+    <!-- Brand signage -->
+    <a-text value="CONCRETE ROSE" position="4.6 7.5 0" rotation="0 90 0" align="center" color="#c94060" width="6" font="mozillavr"></a-text>
+    <!-- Rose accent light -->
+    <a-entity light="type: point; color: #c94060; intensity: 0.8; distance: 12; decay: 2" position="2 6 0"></a-entity>
+    <!-- Display items (mannequin stands) -->
+    <a-cylinder position="1 1.2 -1.5" radius="0.3" height="2.4" material="color: #2a2a2a"></a-cylinder>
+    <a-cylinder position="1 1.2 1.5" radius="0.3" height="2.4" material="color: #2a2a2a"></a-cylinder>
+    <!-- Rose on pedestal -->
+    <a-sphere position="1 2.6 0" radius="0.2" material="color: #c94060; emissive: #c94060; emissiveIntensity: 0.3"></a-sphere>
+    <!-- Concrete texture walls -->
+    <a-box position="0 2 -3.9" width="8.5" height="4" depth="0.1" material="color: #333; roughness: 1.0"></a-box>
+    <a-text value="concrete-rose.world" position="0 3.5 -3.8" align="center" color="#888" width="4"></a-text>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 2: BiJaDi (Right, near entrance)
+       Luxury family lifestyle — platinum/rose gold, "Beyond Enough."
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-bijadi" position="10 0 -8" class="clickable" data-store="bijadi">
+    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #1a1820; roughness: 0.4; side: back"></a-box>
+    <a-box position="-4.5 4 0" width="0.15" height="8" depth="8" material="color: #2a2030; metalness: 0.5"></a-box>
+    <a-box position="-4.5 7 0" width="0.2" height="2" depth="6" material="color: #1a1420"></a-box>
+    <!-- Brand signage -->
+    <a-text value="BiJaDi" position="-4.6 7.5 0" rotation="0 -90 0" align="center" color="#d4c0a8" width="5" font="mozillavr"></a-text>
+    <a-text value="Beyond Enough." position="-4.6 6.8 0" rotation="0 -90 0" align="center" color="#a09080" width="4" font="mozillavr"></a-text>
+    <!-- Platinum accent light -->
+    <a-entity light="type: point; color: #d4c0a8; intensity: 0.8; distance: 12; decay: 2" position="-2 6 0"></a-entity>
+    <!-- Display pedestals -->
+    <a-box position="-1 0.6 -1.5" width="0.8" height="1.2" depth="0.8" material="color: #e8d8c8; metalness: 0.8; roughness: 0.2"></a-box>
+    <a-box position="-1 0.6 1.5" width="0.8" height="1.2" depth="0.8" material="color: #e8d8c8; metalness: 0.8; roughness: 0.2"></a-box>
+    <!-- Rose gold accent strip -->
+    <a-box position="-1 4 -3.9" width="6" height="0.05" depth="0.05" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.4"></a-box>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 3: FAITHFULLY FADED / Ahnika Merlot (Left, mid-corridor)
+       #420420 / #FFADED palette — "Just be Blunt"
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-faithfully-faded" position="-10 0 -22" class="clickable" data-store="faithfully-faded">
+    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #200f10; roughness: 0.6; side: back"></a-box>
+    <a-box position="4.5 4 0" width="0.15" height="8" depth="8" material="color: #420420"></a-box>
+    <a-box position="4.5 7 0" width="0.2" height="2" depth="6" material="color: #2a0115"></a-box>
+    <!-- Brand signage -->
+    <a-text value="FAITHFULLY FADED" position="4.6 7.5 0" rotation="0 90 0" align="center" color="#FFADED" width="6" font="mozillavr"></a-text>
+    <a-text value="Just be Blunt." position="4.6 6.8 0" rotation="0 90 0" align="center" color="#cc8aaa" width="4" font="mozillavr"></a-text>
+    <!-- Pink/faded accent light -->
+    <a-entity light="type: point; color: #FFADED; intensity: 0.6; distance: 12; decay: 2" position="2 6 0"></a-entity>
+    <!-- Ahnika Merlot mini-avatar -->
+    <a-entity position="2 0 0">
+      <a-cylinder position="0 0.8 0" radius="0.3" height="1.3" material="color: #FFADED; metalness: 0.4"></a-cylinder>
+      <a-sphere position="0 1.7 0" radius="0.24" material="color: #d4a090"></a-sphere>
+      <a-text value="Ahnika Merlot\nStyle Curator" position="0 2.3 0" align="center" color="#FFADED" width="3" visible="true"></a-text>
+      <a-animation attribute="position" from="2 0 0" to="2 0.08 0" dur="2500" direction="alternate" repeat="indefinite" easing="easeInOutSine"></a-animation>
+    </a-entity>
+    <!-- Clothing rack silhouettes -->
+    <a-box position="0 2 -2" width="4" height="0.08" depth="0.08" material="color: #555"></a-box>
+    <a-box position="-2 2.5 -2" width="0.08" height="3" depth="0.08" material="color: #555"></a-box>
+    <a-box position="2 2.5 -2" width="0.08" height="3" depth="0.08" material="color: #555"></a-box>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 4: H.O.E. (Right, mid-corridor)
+       Fashion — bold, regal
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-hoe" position="10 0 -22" class="clickable" data-store="hoe">
+    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #1a1412; roughness: 0.5; side: back"></a-box>
+    <a-box position="-4.5 4 0" width="0.15" height="8" depth="8" material="color: #2a1a10; metalness: 0.3"></a-box>
+    <a-box position="-4.5 7 0" width="0.2" height="2" depth="6" material="color: #1a1008"></a-box>
+    <!-- Brand signage -->
+    <a-text value="H.O.E." position="-4.6 7.5 0" rotation="0 -90 0" align="center" color="#e8c060" width="5" font="mozillavr"></a-text>
+    <!-- Gold light -->
+    <a-entity light="type: point; color: #e8c060; intensity: 0.7; distance: 12; decay: 2" position="-2 6 0"></a-entity>
+    <!-- Crown display -->
+    <a-box position="-1 1 0" width="0.6" height="2" depth="0.6" material="color: #1a1412"></a-box>
+    <a-dodecahedron position="-1 2.3 0" radius="0.25" material="color: #e8c060; metalness: 0.9; roughness: 0.1"></a-dodecahedron>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 5: WANDERLUST (Left, far corridor)
+       Travel/adventure — earth tones, globe, maps
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-wanderlust" position="-10 0 -38" class="clickable" data-store="wanderlust">
+    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #141a14; roughness: 0.7; side: back"></a-box>
+    <a-box position="4.5 4 0" width="0.15" height="8" depth="8" material="color: #1a2a1a; metalness: 0.2"></a-box>
+    <a-box position="4.5 7 0" width="0.2" height="2" depth="6" material="color: #102010"></a-box>
+    <!-- Brand signage -->
+    <a-text value="WANDERLUST" position="4.6 7.5 0" rotation="0 90 0" align="center" color="#60c890" width="6" font="mozillavr"></a-text>
+    <!-- Earth tone light -->
+    <a-entity light="type: point; color: #60c890; intensity: 0.6; distance: 12; decay: 2" position="2 6 0"></a-entity>
+    <!-- Globe -->
+    <a-sphere position="1 2.5 0" radius="0.8" material="color: #2060a0; roughness: 0.6; metalness: 0.2">
+      <a-animation attribute="rotation" from="0 0 0" to="0 360 0" dur="20000" repeat="indefinite" easing="linear"></a-animation>
+    </a-sphere>
+    <!-- Ginger Pelirroja avatar (travel persona) -->
+    <a-entity position="2 0 -1.5">
+      <a-cylinder position="0 0.8 0" radius="0.3" height="1.3" material="color: #c04020; metalness: 0.4"></a-cylinder>
+      <a-sphere position="0 1.7 0" radius="0.24" material="color: #e0b090"></a-sphere>
+      <!-- Red hair -->
+      <a-sphere position="0 1.9 -0.05" radius="0.28" material="color: #c04020; roughness: 0.8"></a-sphere>
+      <a-text value="Ginger Pelirroja\nAdventure Guide" position="0 2.4 0" align="center" color="#c04020" width="3"></a-text>
+    </a-entity>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 6: CAFÉ SATIVA (Right, far corridor)
+       "Sip. Smoke. Vibe." — warm browns, retro, cozy
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-cafe-sativa" position="10 0 -38" class="clickable" data-store="cafe-sativa">
+    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #1a1410; roughness: 0.8; side: back"></a-box>
+    <a-box position="-4.5 4 0" width="0.15" height="8" depth="8" material="color: #2a2018; metalness: 0.2"></a-box>
+    <a-box position="-4.5 7 0" width="0.2" height="2" depth="6" material="color: #1a1408"></a-box>
+    <!-- Brand signage -->
+    <a-text value="CAFE SATIVA" position="-4.6 7.5 0" rotation="0 -90 0" align="center" color="#c09060" width="5" font="mozillavr"></a-text>
+    <a-text value="Sip. Smoke. Vibe." position="-4.6 6.8 0" rotation="0 -90 0" align="center" color="#907050" width="4" font="mozillavr"></a-text>
+    <!-- Warm amber light -->
+    <a-entity light="type: point; color: #c09060; intensity: 0.8; distance: 12; decay: 2" position="-2 5 0"></a-entity>
+    <!-- Coffee cup on counter -->
+    <a-box position="-1 1 0" width="3" height="1" depth="1.2" material="color: #3a2a1a; roughness: 0.9"></a-box>
+    <a-cylinder position="-1 1.7 0" radius="0.15" height="0.3" material="color: #f0e8d8"></a-cylinder>
+    <!-- Hanging lights (bulb string) -->
+    <a-sphere position="-2 5 -1" radius="0.12" material="color: #ffe0a0; emissive: #ffe0a0; emissiveIntensity: 0.8"></a-sphere>
+    <a-sphere position="-1 5.2 0" radius="0.12" material="color: #ffe0a0; emissive: #ffe0a0; emissiveIntensity: 0.8"></a-sphere>
+    <a-sphere position="0 5 1" radius="0.12" material="color: #ffe0a0; emissive: #ffe0a0; emissiveIntensity: 0.8"></a-sphere>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       STORE 7: THE VERSE ALKEMIST (End of mall, center)
+       Music / hip hop booth — neon purple, speaker stacks
+       ═══════════════════════════════════════════════════════════ -->
+  <a-entity id="zone-verse-alkemist" position="0 0 -58" class="clickable" data-store="verse-alkemist">
+    <!-- Back wall showcase -->
+    <a-box position="0 4 -5" width="14" height="8" depth="0.3" material="color: #140a20"></a-box>
+    <!-- Brand signage -->
+    <a-text value="THE VERSE ALKEMIST" position="0 7 -4.8" align="center" color="#a060e0" width="10" font="mozillavr"></a-text>
+    <!-- Purple neon light -->
+    <a-entity light="type: point; color: #a060e0; intensity: 1.0; distance: 15; decay: 2" position="0 6 -3"></a-entity>
+    <!-- Speaker stacks (left) -->
+    <a-box position="-4 1 -4" width="1.5" height="2" depth="1" material="color: #1a1a1a"></a-box>
+    <a-box position="-4 3 -4" width="1.5" height="2" depth="1" material="color: #1a1a1a"></a-box>
+    <!-- Speaker stacks (right) -->
+    <a-box position="4 1 -4" width="1.5" height="2" depth="1" material="color: #1a1a1a"></a-box>
+    <a-box position="4 3 -4" width="1.5" height="2" depth="1" material="color: #1a1a1a"></a-box>
+    <!-- Speaker cones -->
+    <a-circle position="-4 1 -3.45" radius="0.4" material="color: #333"></a-circle>
+    <a-circle position="-4 3 -3.45" radius="0.4" material="color: #333"></a-circle>
+    <a-circle position="4 1 -3.45" radius="0.4" material="color: #333"></a-circle>
+    <a-circle position="4 3 -3.45" radius="0.4" material="color: #333"></a-circle>
+    <!-- DJ booth / turntable area -->
+    <a-box position="0 1 -3" width="3" height="1" depth="1.5" material="color: #2a2a2a"></a-box>
+    <!-- Vinyl record -->
+    <a-cylinder position="0 1.55 -3" radius="0.4" height="0.02" material="color: #111; metalness: 0.8">
+      <a-animation attribute="rotation" from="0 0 0" to="0 360 0" dur="4000" repeat="indefinite" easing="linear"></a-animation>
+    </a-cylinder>
+    <!-- Microphone stand -->
+    <a-cylinder position="2 1.5 -1" radius="0.03" height="3" material="color: #888"></a-cylinder>
+    <a-sphere position="2 3 -1" radius="0.1" material="color: #444; metalness: 0.6"></a-sphere>
+    <!-- Neon glow strips on floor -->
+    <a-box position="-3 0.02 -2" width="0.1" height="0.02" depth="6" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.6"></a-box>
+    <a-box position="3 0.02 -2" width="0.1" height="0.02" depth="6" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.6"></a-box>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CORRIDOR DECOR — Benches, planters, path lights
+       ═══════════════════════════════════════════════════════════ -->
+  <!-- Center corridor dividers / benches -->
+  <a-box position="0 0.4 -15" width="3" height="0.8" depth="1.2" material="color: #2a2a30; roughness: 0.8"></a-box>
+  <a-box position="0 0.4 -30" width="3" height="0.8" depth="1.2" material="color: #2a2a30; roughness: 0.8"></a-box>
+  <a-box position="0 0.4 -45" width="3" height="0.8" depth="1.2" material="color: #2a2a30; roughness: 0.8"></a-box>
+
+  <!-- Planters with ambient green glow -->
+  <a-cylinder position="-4 0.5 -15" radius="0.5" height="1" material="color: #2a2a28"></a-cylinder>
+  <a-sphere position="-4 1.3 -15" radius="0.5" material="color: #1a3a1a; roughness: 0.9"></a-sphere>
+  <a-cylinder position="4 0.5 -15" radius="0.5" height="1" material="color: #2a2a28"></a-cylinder>
+  <a-sphere position="4 1.3 -15" radius="0.5" material="color: #1a3a1a; roughness: 0.9"></a-sphere>
+
+  <!-- Floor path lights -->
+  <a-entity class="path-light" position="-2 0.05 -5">
+    <a-box width="0.4" height="0.1" depth="0.4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3; opacity: 0.7; transparent: true"></a-box>
+  </a-entity>
+  <a-entity class="path-light" position="2 0.05 -5">
+    <a-box width="0.4" height="0.1" depth="0.4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3; opacity: 0.7; transparent: true"></a-box>
+  </a-entity>
+  <a-entity class="path-light" position="-2 0.05 -15">
+    <a-box width="0.4" height="0.1" depth="0.4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3; opacity: 0.7; transparent: true"></a-box>
+  </a-entity>
+  <a-entity class="path-light" position="2 0.05 -15">
+    <a-box width="0.4" height="0.1" depth="0.4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3; opacity: 0.7; transparent: true"></a-box>
+  </a-entity>
+  <a-entity class="path-light" position="-2 0.05 -30">
+    <a-box width="0.4" height="0.1" depth="0.4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3; opacity: 0.7; transparent: true"></a-box>
+  </a-entity>
+  <a-entity class="path-light" position="2 0.05 -30">
+    <a-box width="0.4" height="0.1" depth="0.4" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3; opacity: 0.7; transparent: true"></a-box>
+  </a-entity>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ZONE TRIGGERS (invisible proximity sensors)
+       ═══════════════════════════════════════════════════════════ -->
+  <a-box id="trigger-entrance" class="zone-trigger" position="0 1 3" width="10" height="3" depth="4" visible="false" data-zone="Grand Entrance" data-guide="laviche"></a-box>
+  <a-box id="trigger-concrete-rose" class="zone-trigger" position="-7 1 -8" width="6" height="3" depth="8" visible="false" data-zone="Concrete Rose" data-guide="laviche"></a-box>
+  <a-box id="trigger-bijadi" class="zone-trigger" position="7 1 -8" width="6" height="3" depth="8" visible="false" data-zone="BiJaDi" data-guide="laviche"></a-box>
+  <a-box id="trigger-ff" class="zone-trigger" position="-7 1 -22" width="6" height="3" depth="8" visible="false" data-zone="Faithfully Faded" data-guide="ahnika"></a-box>
+  <a-box id="trigger-hoe" class="zone-trigger" position="7 1 -22" width="6" height="3" depth="8" visible="false" data-zone="H.O.E." data-guide="laviche"></a-box>
+  <a-box id="trigger-wanderlust" class="zone-trigger" position="-7 1 -38" width="6" height="3" depth="8" visible="false" data-zone="Wanderlust" data-guide="ginger"></a-box>
+  <a-box id="trigger-cafe" class="zone-trigger" position="7 1 -38" width="6" height="3" depth="8" visible="false" data-zone="Cafe Sativa" data-guide="laviche"></a-box>
+  <a-box id="trigger-verse" class="zone-trigger" position="0 1 -58" width="12" height="3" depth="10" visible="false" data-zone="The Verse Alkemist" data-guide="laviche"></a-box>
+
+</a-scene>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════ -->
+<script src="js/loading-screen.js"></script>
+<script src="js/mall-core.js"></script>
+<script src="js/guide-system.js"></script>
+<script src="js/chat-engine.js"></script>
+<script src="js/voice-narration.js"></script>
+<script src="js/product-catalog.js"></script>
+<script src="js/ambient-audio.js"></script>
+<script src="js/wayfinding.js"></script>
+<script src="js/store-interiors.js"></script>
+
+</body>
+</html>

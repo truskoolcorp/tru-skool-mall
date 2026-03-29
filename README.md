@@ -204,4 +204,3 @@ This generates 8 ambient tracks (one per zone) for ~$0.24 total. Then update `js
 
 Built by **Tru Skool Entertainment International Corp.**
 Culture. Commerce. Code.
-# tru-skool-mall

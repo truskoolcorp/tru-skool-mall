@@ -1,0 +1,14 @@
+{
+  "name": "tru-skool-mall",
+  "version": "1.0.0",
+  "description": "Tru Skool Entertainment 3D Virtual Mall — AR/VR/Virtual experience with AI persona guides",
+  "scripts": {
+    "serve": "npx http-server . -p 8080 -c-1",
+    "serve:ssl": "npx http-server . -S -C cert.pem -p 8443 -c-1",
+    "dev": "npx http-server . -p 8080 -c-1 --cors"
+  },
+  "keywords": ["3d", "ar", "vr", "aframe", "8thwall", "virtual-mall"],
+  "author": "Tru Skool Entertainment International Corp.",
+  "license": "UNLICENSED",
+  "private": true
+}
