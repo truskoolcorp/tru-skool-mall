@@ -1,29 +1,37 @@
 /* ═══════════════════════════════════════════════════════════
    TRU SKOOL MALL — Product Catalog System
-   Clickable product displays, detail panels, IMAGE SUPPORT
+   REAL DATA from live brand websites (March 2026)
    ═══════════════════════════════════════════════════════════ */
 
 const ProductCatalog = {
 
-  // ─── Product Database (with image support) ───
-  // img: URL to product image (replace placeholders with real photos)
-  // Place product images in assets/products/ or use external URLs
   stores: {
+
+    // ═══════════════════════════════════════════════════
+    // CONCRETE ROSE — concrete-rose.world
+    // "Where Luxury Meets Strength" / "Beauty That Breaks Through"
+    // Pre-launch luxury — The Resilience Collection SS26
+    // ═══════════════════════════════════════════════════
     'concrete-rose': {
       name: 'Concrete Rose',
-      tagline: 'Where the streets meet high fashion.',
+      tagline: 'Where Luxury Meets Strength.',
       url: 'https://concrete-rose.world',
       color: '#c94060',
       hero: 'assets/products/cr-hero.jpg',
       products: [
-        { id: 'cr-001', name: 'Rose Emblem Bomber', price: 185, category: 'Outerwear', img: 'assets/products/cr-bomber.jpg', desc: 'Heavyweight satin bomber with embroidered concrete rose emblem. Oversized fit, ribbed cuffs.', featured: true },
-        { id: 'cr-002', name: 'Thorns Hoodie', price: 95, category: 'Hoodies', img: 'assets/products/cr-hoodie.jpg', desc: 'French terry pullover with thorn vine graphic across the chest. Kangaroo pocket, dropped shoulders.' },
-        { id: 'cr-003', name: 'Cracked Pavement Tee', price: 55, category: 'Tees', img: 'assets/products/cr-tee.jpg', desc: 'Premium cotton tee with cracked concrete texture print. Relaxed boxy fit.' },
-        { id: 'cr-004', name: 'Stem & Stone Joggers', price: 110, category: 'Bottoms', img: 'assets/products/cr-joggers.jpg', desc: 'Tapered fleece joggers with rose stem embroidery down the left leg. Zippered pockets.' },
-        { id: 'cr-005', name: 'Petal Cap', price: 45, category: 'Accessories', img: 'assets/products/cr-cap.jpg', desc: 'Structured six-panel cap with rose petal logo. Adjustable strap.' },
+        { id: 'cr-001', name: 'Corset Dress', price: 220, category: 'Corset Dresses', img: 'assets/products/cr-bomber.jpg', desc: 'From the Corset Dresses collection. Sculpted bodice with flowing skirt, embodying the resilience and elegance at the heart of Concrete Rose.', featured: true },
+        { id: 'cr-002', name: 'Two-Tone Trench Coat', price: 285, category: 'Outerwear', img: 'assets/products/cr-hoodie.jpg', desc: 'The Resilience Collection centerpiece. A dramatic two-tone trench coat that commands attention — strength and grace in perfect harmony.' },
+        { id: 'cr-003', name: 'Varsity Set', price: 165, category: 'Varsity Edit', img: 'assets/products/cr-tee.jpg', desc: 'From the Varsity Edit collection. 3-piece set blending athletic heritage with luxury streetwear. Cream and rose colorway.' },
+        { id: 'cr-004', name: 'Lace Hoodie Dress', price: 195, category: 'Romantic Lace', img: 'assets/products/cr-joggers.jpg', desc: 'The Romantic Lace collection. A hoodie dress reimagined with delicate lace overlays — street comfort meets runway elegance.' },
+        { id: 'cr-005', name: 'Rose Emblem Accessories', price: 75, category: 'Accessories', img: 'assets/products/cr-cap.jpg', desc: 'Signature rose emblem accessories. Because every detail matters when beauty breaks through concrete.' },
       ]
     },
 
+    // ═══════════════════════════════════════════════════
+    // BiJaDi — bijadi.net
+    // "Beyond Enough." — Family-focused luxury lifestyle
+    // B.E. Collection + Little B.E. (kids)
+    // ═══════════════════════════════════════════════════
     'bijadi': {
       name: 'BiJaDi',
       tagline: 'Beyond Enough.',
@@ -31,14 +39,19 @@ const ProductCatalog = {
       color: '#d4c0a8',
       hero: 'assets/products/bj-hero.jpg',
       products: [
-        { id: 'bj-001', name: 'The Family Series Hoodie', price: 145, category: 'The Family Series', img: 'assets/products/bj-hoodie.jpg', desc: 'Ultra-soft fleece hoodie from The Family Series. Platinum embroidered crest. Unisex sizing.', featured: true },
-        { id: 'bj-002', name: 'Little B.E. Onesie', price: 45, category: 'Little B.E.', img: 'assets/products/bj-onesie.jpg', desc: 'Organic cotton baby onesie with "Beyond Enough" in rose gold foil. 0-12 months.' },
-        { id: 'bj-003', name: 'Legacy Polo', price: 95, category: 'The Family Series', img: 'assets/products/bj-polo.jpg', desc: 'Pique cotton polo with platinum BiJaDi monogram. Tailored fit.' },
-        { id: 'bj-004', name: 'Little B.E. Kids Tee', price: 35, category: 'Little B.E.', img: 'assets/products/bj-kids-tee.jpg', desc: 'Soft cotton kids tee with playful BiJaDi characters. Sizes 2T-8.' },
-        { id: 'bj-005', name: 'Platinum Link Bracelet', price: 225, category: 'Accessories', img: 'assets/products/bj-bracelet.jpg', desc: 'Stainless steel link bracelet with platinum finish and BiJaDi clasp.' },
+        { id: 'bj-001', name: 'B.E. Hoodie', price: 145, category: 'B.E. Collection', img: 'assets/products/bj-hoodie.jpg', desc: 'Oversized fit with tone-on-tone B.E. embroidery. Gold-tip drawcord, woven hem label. Every garment carries a unique QR code unlocking a private digital family experience.', featured: true },
+        { id: 'bj-002', name: 'B.E. Jogger', price: 110, category: 'B.E. Collection', img: 'assets/products/bj-polo.jpg', desc: 'Relaxed fit tapered leg jogger with hidden message tag and gold hardware accents. Part of the B.E. first drop.' },
+        { id: 'bj-003', name: 'B.E. Tee', price: 65, category: 'B.E. Collection', img: 'assets/products/bj-kids-tee.jpg', desc: 'Breathable cotton with subtle B.E. detail. Ribbed crew neck, woven hem label. Elevated everyday essential.' },
+        { id: 'bj-004', name: 'Little B.E. Mini Hoodie', price: 85, category: 'Little B.E.', img: 'assets/products/bj-onesie.jpg', desc: 'For little souls, already enough. Oversized cozy fit with tone-on-tone B.E. embroidery. Sizes 2T-8. QR code inside unlocks digital memory journal.' },
+        { id: 'bj-005', name: 'Little B.E. Jogger', price: 70, category: 'Little B.E.', img: 'assets/products/bj-bracelet.jpg', desc: 'Soft tapered leg with hidden "You are enough" message tag. Sizes 2T-8. Every piece builds a visual timeline of your child growing up in Little B.E.' },
       ]
     },
 
+    // ═══════════════════════════════════════════════════
+    // FAITHFULLY FADED — faithfully-faded.com
+    // "Just be Blunt." — Distinctive Apparel
+    // REAL PRICES from live Vercel site
+    // ═══════════════════════════════════════════════════
     'faithfully-faded': {
       name: 'Faithfully Faded',
       tagline: 'Just be Blunt.',
@@ -46,44 +59,64 @@ const ProductCatalog = {
       color: '#FFADED',
       hero: 'assets/products/ff-hero.jpg',
       products: [
-        { id: 'ff-001', name: 'Hooded Baseball Jersey Dress', price: 120, category: 'Dresses', img: 'assets/products/ff-dress.jpg', desc: 'Oversized hooded baseball jersey dress. Mesh panels, snap front. Statement piece.', featured: true },
-        { id: 'ff-002', name: 'Blunt Crop Hoodie', price: 75, category: 'Hoodies', img: 'assets/products/ff-crop-hoodie.jpg', desc: 'Boxy cropped hoodie with "Just be Blunt" back print. French terry, raw hem.' },
-        { id: 'ff-003', name: 'Faded Script Tee', price: 45, category: 'Tees', img: 'assets/products/ff-tee.jpg', desc: 'Vintage wash tee with faded script graphic. Relaxed fit, ring-spun cotton.' },
-        { id: 'ff-004', name: '420 Joggers', price: 85, category: 'Bottoms', img: 'assets/products/ff-joggers.jpg', desc: 'Fleece joggers in #420420 colorway. Side stripe detail, elastic cuffs.' },
-        { id: 'ff-005', name: 'Butterfly Beanie', price: 30, category: 'Accessories', img: 'assets/products/ff-beanie.jpg', desc: 'Ribbed knit beanie with embroidered butterfly motif. One size.' },
+        { id: 'ff-001', name: 'Hooded Baseball Jersey Dress', price: 69, category: 'Signature', img: 'assets/products/ff-dress.jpg', desc: 'Bestseller. Longline pinstripe jersey dress with relaxed oversized fit, classic raglan sleeves, matte gold button closures, and bold Faithfully Faded chest lettering. Matching hood with brand print.', featured: true },
+        { id: 'ff-002', name: 'Signature Crop Hoodie', price: 54, category: 'Streetwear', img: 'assets/products/ff-crop-hoodie.jpg', desc: 'Boxy cropped silhouette with the FF butterfly mark. French terry, raw hem. The streetwear essential.' },
+        { id: 'ff-003', name: 'Butterfly Varsity Tee', price: 38, category: 'Essentials', img: 'assets/products/ff-tee.jpg', desc: 'New arrival. Premium cotton tee featuring the signature butterfly-pineapple mark — wings of the cannabis leaf, body of the pineapple. Born from culture.' },
+        { id: 'ff-004', name: 'FF Butterfly Dad Cap', price: 32, category: 'Accessories', img: 'assets/products/ff-beanie.jpg', desc: 'Unstructured dad cap with embroidered butterfly logo in #420420 on #FFADED colorway. Adjustable back strap.' },
+        { id: 'ff-005', name: 'Culture Joggers', price: 62, category: 'Streetwear', img: 'assets/products/ff-joggers.jpg', desc: 'Fleece joggers in the FF colorway. Tapered leg, elastic cuffs, side pocket detail. Free shipping over $75.' },
+        { id: 'ff-006', name: 'Verde Edition Pullover', price: 78, category: 'Limited Edition', img: 'assets/products/ff-beanie.jpg', desc: 'Limited edition. The Verde colorway pullover — same butterfly DNA, fresh green perspective. Once gone, gone.' },
       ]
     },
 
+    // ═══════════════════════════════════════════════════
+    // H.O.E. — truskoolcorp.wixstudio.com/h-o-e
+    // "Happiness Over Everything"
+    // REAL PRICES from live Wix store (10 products)
+    // ═══════════════════════════════════════════════════
     'hoe': {
       name: 'H.O.E.',
-      tagline: 'Wear your crown.',
+      tagline: 'Happiness Over Everything.',
       url: 'https://truskoolcorp.wixstudio.com/h-o-e',
       color: '#e8c060',
       hero: 'assets/products/ho-hero.jpg',
       products: [
-        { id: 'ho-001', name: 'Crown Royal Jacket', price: 210, category: 'Outerwear', img: 'assets/products/ho-jacket.jpg', desc: 'Structured oversized jacket with crown embroidery on the back. Gold hardware, quilted lining.', featured: true },
-        { id: 'ho-002', name: 'Sovereign Hoodie', price: 105, category: 'Hoodies', img: 'assets/products/ho-hoodie.jpg', desc: 'Heavyweight hoodie with metallic gold H.O.E. logo. Brushed interior.' },
-        { id: 'ho-003', name: 'Throne Tee', price: 50, category: 'Tees', img: 'assets/products/ho-tee.jpg', desc: 'Premium tee with regal crest graphic. Oversized drop shoulder.' },
-        { id: 'ho-004', name: 'Scepter Chain', price: 165, category: 'Accessories', img: 'assets/products/ho-chain.jpg', desc: 'Gold-plated chain with scepter pendant. 24-inch length.' },
-        { id: 'ho-005', name: 'Dynasty Shorts', price: 70, category: 'Bottoms', img: 'assets/products/ho-shorts.jpg', desc: 'Mesh basketball shorts with crown side panel. Elastic waist.' },
+        { id: 'ho-001', name: 'Signature Hoodie', price: 56.85, category: 'Hoodies', img: 'assets/products/ho-hoodie.jpg', desc: 'The H.O.E. Signature Hoodie — Happiness Over Everything. Heavyweight fleece with the full H.O.E. logo. Bold, comfortable, and unapologetically joyful.', featured: true },
+        { id: 'ho-002', name: 'Basketball Shorts — Peace Issue', price: 46, category: 'Shorts', img: 'assets/products/ho-shorts.jpg', desc: 'The Peace Issue basketball shorts. Mesh athletic fabric with H.O.E. branding. Part of the jersey collection.' },
+        { id: 'ho-003', name: 'Basketball Jersey — Peace Issue', price: 37.50, category: 'Jerseys', img: 'assets/products/ho-jacket.jpg', desc: 'The Peace Issue basketball jersey. Pair with matching shorts for the full H.O.E. set.' },
+        { id: 'ho-004', name: 'Basketball Jersey — Purpose Issue', price: 37.50, category: 'Jerseys', img: 'assets/products/ho-tee.jpg', desc: 'The Purpose Issue basketball jersey. Different design, same energy — happiness over everything.' },
+        { id: 'ho-005', name: 'Signature T-Shirt', price: 29.40, category: 'Tees', img: 'assets/products/ho-tee.jpg', desc: 'The H.O.E. Signature T-Shirt. Clean logo, soft hand feel. Available in multiple colorways.' },
+        { id: 'ho-006', name: 'Bandeau Bikini', price: 36.58, category: 'Swim', img: 'assets/products/ho-chain.jpg', desc: 'H.O.E. Happiness Over Everything bandeau bikini. Bold tropical print with H.O.E. branding. Summer-ready.' },
       ]
     },
 
+    // ═══════════════════════════════════════════════════
+    // WANDERLUST — wanderlustfashionstore.com
+    // "Roam Free. Stay Rooted."
+    // Travel-Ready Fashion for the Global Citizen
+    // Collections: Airport Chic, Resort Ready, City Explorer, Night & Day
+    // ═══════════════════════════════════════════════════
     'wanderlust': {
       name: 'Wanderlust',
-      tagline: 'Explore everything.',
+      tagline: 'Roam Free. Stay Rooted.',
       url: 'https://wanderlustfashionstore.com',
       color: '#60c890',
       hero: 'assets/products/wl-hero.jpg',
       products: [
-        { id: 'wl-001', name: 'Globe Trotter Pack', price: 155, category: 'Bags', img: 'assets/products/wl-pack.jpg', desc: 'Weather-resistant backpack with padded laptop sleeve. Passport pocket, luggage strap.', featured: true },
-        { id: 'wl-002', name: 'Passport Stamp Hoodie', price: 95, category: 'Hoodies', img: 'assets/products/wl-hoodie.jpg', desc: 'Hoodie with custom passport stamp print from global destinations. Warm fleece lining.' },
-        { id: 'wl-003', name: 'Coordinates Tee', price: 50, category: 'Tees', img: 'assets/products/wl-tee.jpg', desc: 'Tee printed with GPS coordinates of iconic travel destinations. Soft tri-blend.' },
-        { id: 'wl-004', name: 'Trail Joggers', price: 90, category: 'Bottoms', img: 'assets/products/wl-joggers.jpg', desc: 'Lightweight joggers with zip pockets. Moisture-wicking fabric for travel.' },
-        { id: 'wl-005', name: 'Explorer Hat', price: 40, category: 'Accessories', img: 'assets/products/wl-hat.jpg', desc: 'Wide-brim adventure hat with Wanderlust compass logo. UPF 50+ protection.' },
+        { id: 'wl-001', name: 'Airport Chic Collection', price: 89, category: 'Airport Chic', img: 'assets/products/wl-pack.jpg', desc: '24 curated pieces designed for effortless airport-to-destination transitions. Light, practical, chic. Curated by Ginger Pelirroja — European Elegance.', featured: true },
+        { id: 'wl-002', name: 'Resort Ready Set', price: 120, category: 'Resort Ready', img: 'assets/products/wl-hoodie.jpg', desc: 'From the Resort Ready collection — 32 pieces for tropical escapes. Flowing fabrics, bold colors. Curated by Laviche Cardenas — Latin Soul.' },
+        { id: 'wl-003', name: 'City Explorer Essentials', price: 75, category: 'City Explorer', img: 'assets/products/wl-tee.jpg', desc: '28 pieces for urban adventures. From Parisian cafes to Santorini sunsets. Mix-and-match versatility for the global citizen.' },
+        { id: 'wl-004', name: 'Night & Day Transition', price: 95, category: 'Night & Day', img: 'assets/products/wl-joggers.jpg', desc: '18 pieces that transform from day touring to evening dining. Curated by Ahnika Merlot — Cosmopolitan Chic. City-to-resort in one piece.' },
+        { id: 'wl-005', name: 'Travel Accessories Bundle', price: 55, category: 'Accessories', img: 'assets/products/wl-hat.jpg', desc: 'Wide-brim sun hat, convertible scarf, passport pouch. The travel essentials. DoT members get 15% off everything.' },
       ]
     },
 
+    // ═══════════════════════════════════════════════════
+    // CAFE SATIVA — cafe-sativa.com
+    // "Sip. Smoke. Vibe."
+    // VIRTUAL VENUE — not a product store
+    // Spaces + Membership + Events + Merch
+    // Physical venue coming Tenerife 2026
+    // ═══════════════════════════════════════════════════
     'cafe-sativa': {
       name: 'Cafe Sativa',
       tagline: 'Sip. Smoke. Vibe.',
@@ -91,26 +124,33 @@ const ProductCatalog = {
       color: '#c09060',
       hero: 'assets/products/cs-hero.jpg',
       products: [
-        { id: 'cs-001', name: 'Cloud Nine Blend', price: 22, category: 'Coffee', img: 'assets/products/cs-coffee.jpg', desc: 'Medium roast single-origin from Ethiopian highlands. Notes of dark chocolate and citrus.', featured: true },
-        { id: 'cs-002', name: 'Ceramic Mug - "Sip"', price: 28, category: 'Merch', img: 'assets/products/cs-mug.jpg', desc: 'Hand-thrown ceramic mug with Cafe Sativa logo. 12oz capacity, microwave safe.' },
-        { id: 'cs-003', name: 'Vibe Sessions Tee', price: 45, category: 'Merch', img: 'assets/products/cs-tee.jpg', desc: 'Vintage wash tee with Cafe Sativa retro logo. Inspired by ITC Benguiat typography.' },
-        { id: 'cs-004', name: 'Artisan Rolling Tray', price: 35, category: 'Accessories', img: 'assets/products/cs-tray.jpg', desc: 'Handcrafted wooden rolling tray with carved Cafe Sativa motif. Sustainably sourced.' },
-        { id: 'cs-005', name: 'Candle - "Smoke Ring"', price: 38, category: 'Lifestyle', img: 'assets/products/cs-candle.jpg', desc: 'Soy wax candle with notes of tobacco flower, cedar, and vanilla. 60hr burn time.' },
+        { id: 'cs-001', name: 'VIP Membership', price: 24.99, category: 'Membership', img: 'assets/products/cs-coffee.jpg', desc: 'Monthly VIP access. All live events, exclusive VIP-only experiences, priority guest Q&A, 20% merch discount, and priority seating when Tenerife opens 2026.', featured: true },
+        { id: 'cs-002', name: 'Regular Membership', price: 9.99, category: 'Membership', img: 'assets/products/cs-mug.jpg', desc: 'Monthly access to all live events, buy/sell in The Gallery art marketplace, event recordings library, and member badge with perks.' },
+        { id: 'cs-003', name: 'Cooking Class Pass', price: 25, category: 'Events', img: 'assets/products/cs-tee.jpg', desc: 'The Kitchen — live cooking classes with international chefs. Nordic-Spanish Fusion, molecular gastronomy, and more. Recipes and techniques included.' },
+        { id: 'cs-004', name: 'The Stage — Live Events', price: 0, category: 'Experiences', img: 'assets/products/cs-tray.jpg', desc: '"At The Table" interview series + live music performances. Free with Regular membership. Current: Chef Maria Santos interview & cooking demo.' },
+        { id: 'cs-005', name: 'The Gallery — Art Marketplace', price: 0, category: 'Experiences', img: 'assets/products/cs-candle.jpg', desc: 'Art exhibitions, buy/sell original work, artist spotlights. Current exhibition: "Digital Dreams" — 23 pieces available. 156 artworks sold to date.' },
       ]
     },
 
+    // ═══════════════════════════════════════════════════
+    // THE VERSE ALKEMIST — versealkemist.net
+    // "Craft Your Sonic Journey" — Shopify store
+    // Music + Merch (also sells H.O.E. + Rusu Collection)
+    // REAL PRICES from live Shopify
+    // ═══════════════════════════════════════════════════
     'verse-alkemist': {
       name: 'The Verse Alkemist',
-      tagline: 'Words into weapons. Beats into anthems.',
+      tagline: 'Craft Your Sonic Journey.',
       url: 'https://versealkemist.net',
       color: '#a060e0',
       hero: 'assets/products/va-hero.jpg',
       products: [
-        { id: 'va-001', name: 'Walls of the World EP', price: 12, category: 'Music', img: 'assets/products/va-ep.jpg', desc: 'Digital download of the Walls of the World EP. Five tracks of lyrical alchemy.', featured: true },
-        { id: 'va-002', name: 'Alkemist Logo Hoodie', price: 85, category: 'Merch', img: 'assets/products/va-hoodie.jpg', desc: 'Heavyweight hoodie with The Verse Alkemist logo in metallic purple ink.' },
-        { id: 'va-003', name: 'Cipher Tee', price: 45, category: 'Merch', img: 'assets/products/va-tee.jpg', desc: 'Black tee with lyric fragments from the EP. Screen printed, limited run.' },
-        { id: 'va-004', name: 'Beat Lab Snapback', price: 40, category: 'Accessories', img: 'assets/products/va-snapback.jpg', desc: 'Flat-brim snapback with embroidered turntable icon.' },
-        { id: 'va-005', name: 'Vinyl Sticker Pack', price: 10, category: 'Accessories', img: 'assets/products/va-stickers.jpg', desc: 'Set of 6 die-cut stickers featuring album art and lyric snippets.' },
+        { id: 'va-001', name: 'H.O.E. Crop Hoodie', price: 54.99, category: 'Merch', img: 'assets/products/va-hoodie.jpg', desc: 'H.O.E. Crop Hoodie — available through The Verse Alkemist Shopify store. Bold Happiness Over Everything branding on premium cropped fit.', featured: true },
+        { id: 'va-002', name: 'H.O.E. Leggings with Pockets', price: 41.53, category: 'Merch', img: 'assets/products/va-tee.jpg', desc: 'Recycled all-over-print leggings with functional pockets. H.O.E. pattern throughout. Starting from $41.53.' },
+        { id: 'va-003', name: 'H.O.E. Dad Hat', price: 27, category: 'Accessories', img: 'assets/products/va-snapback.jpg', desc: 'Classic dad hat with H.O.E. embroidered logo. Adjustable strap, unstructured fit.' },
+        { id: 'va-004', name: 'H.O.E. Shorts', price: 27.06, category: 'Merch', img: 'assets/products/va-ep.jpg', desc: 'All-over-print shorts with H.O.E. pattern. Lightweight, breathable. From $27.06.' },
+        { id: 'va-005', name: 'Nah Imma Stay — Rusu Collection', price: 45, category: 'Collections', img: 'assets/products/va-stickers.jpg', desc: 'The Rusu Collection exclusive. Collaboration pieces available only at versealkemist.net. Limited availability.' },
+        { id: 'va-006', name: 'Sound Kits & Beats', price: 29.99, category: 'Music', img: 'assets/products/va-ep.jpg', desc: 'Exclusive sound kits to elevate your production game. Sonic alchemy — where beats become anthems and words become weapons.' },
       ]
     },
   },
@@ -124,7 +164,7 @@ const ProductCatalog = {
   init() {
     this.createPanelDOM();
     this.createProductDisplays();
-    console.log('[Catalog] Product system initialized with image support');
+    console.log('[Catalog] Product system initialized — real data from live sites');
   },
 
   // ─── Create Product Detail Panel DOM ───
@@ -195,13 +235,15 @@ const ProductCatalog = {
 
       var rotY = config.facing === 'right' ? 90 : config.facing === 'left' ? -90 : 0;
 
-      // If product has an image, show it as a textured plane in 3D
       var imageHtml = '';
       if (featured.img) {
         imageHtml = '<a-plane width="1.8" height="1.2" position="0 -0.3 0.02" rotation="0 ' + rotY + ' 0" ' +
           'material="src: url(' + featured.img + '); transparent: true; opacity: 0.9; side: double" ' +
           'class="clickable"></a-plane>';
       }
+
+      // Price display: handle free items and decimals
+      var priceText = featured.price > 0 ? '$' + featured.price : 'FREE';
 
       sign.innerHTML =
         '<a-plane width="2.5" height="2" rotation="0 ' + rotY + ' 0" ' +
@@ -211,7 +253,7 @@ const ProductCatalog = {
           'align="center" color="' + store.color + '" width="2.5" opacity="0.8"></a-text>' +
         '<a-text value="' + featured.name + '" position="0 -0.7 0" rotation="0 ' + rotY + ' 0" ' +
           'align="center" color="#fff" width="2"></a-text>' +
-        '<a-text value="$' + featured.price + '" position="0 -0.95 0" rotation="0 ' + rotY + ' 0" ' +
+        '<a-text value="' + priceText + '" position="0 -0.95 0" rotation="0 ' + rotY + ' 0" ' +
           'align="center" color="' + store.color + '" width="2.5" font="mozillavr"></a-text>';
 
       scene.appendChild(sign);
@@ -244,7 +286,7 @@ const ProductCatalog = {
 
     if (typeof addChatMessage === 'function') {
       var guide = (window.MallState && window.MallState.currentGuide) || 'laviche';
-      addChatMessage(guide, 'Browsing ' + store.name + ' \u2014 ' + store.tagline + ' Take your time, darling.');
+      addChatMessage(guide, 'Browsing ' + store.name + ' \u2014 ' + store.tagline);
     }
   },
 
@@ -267,13 +309,15 @@ const ProductCatalog = {
         visualContent = '<div class="pp-item-icon">' + self.getCategoryIcon(p.category) + '</div>';
       }
 
+      var priceLabel = p.price > 0 ? '$' + p.price : 'FREE';
+
       return '<div class="pp-grid-item" onclick="ProductCatalog.showProduct(\'' + p.id + '\')" style="--accent: ' + store.color + '">' +
         '<div class="pp-item-visual" style="background: linear-gradient(135deg, ' + store.color + '22, ' + store.color + '08);">' +
           visualContent +
         '</div>' +
         '<div class="pp-item-info">' +
           '<span class="pp-item-name">' + p.name + '</span>' +
-          '<span class="pp-item-price">$' + p.price + '</span>' +
+          '<span class="pp-item-price">' + priceLabel + '</span>' +
         '</div>' +
         (p.featured ? '<span class="pp-featured-badge">FEATURED</span>' : '') +
       '</div>';
@@ -300,14 +344,16 @@ const ProductCatalog = {
     document.getElementById('pp-detail-cat').style.background = store.color + '22';
     document.getElementById('pp-detail-cat').style.color = store.color;
     document.getElementById('pp-detail-desc').textContent = product.desc;
-    document.getElementById('pp-detail-price').textContent = '$' + product.price;
+
+    var priceLabel = product.price > 0 ? '$' + product.price : 'FREE';
+    if (product.price > 0 && product.price < 1) priceLabel = '$' + product.price.toFixed(2);
+    document.getElementById('pp-detail-price').textContent = priceLabel;
     document.getElementById('pp-detail-price').style.color = store.color;
 
     var link = document.getElementById('pp-detail-link');
     link.href = store.url;
     link.style.background = store.color;
 
-    // Visual — show product image or fallback
     var visual = document.getElementById('pp-detail-visual');
     if (product.img) {
       visual.innerHTML = '<img src="' + product.img + '" alt="' + product.name + '" class="pp-detail-img" ' +
@@ -319,26 +365,29 @@ const ProductCatalog = {
     }
   },
 
-  // ─── Close Panel ───
   closePanel() {
     this._panelOpen = false;
     document.getElementById('product-panel').classList.add('hidden');
   },
 
-  // ─── Category Icons ───
   getCategoryIcon(category) {
     var icons = {
-      'Outerwear': '\uD83E\uDDE5', 'Hoodies': '\uD83D\uDC55', 'Tees': '\uD83D\uDC5A',
-      'Bottoms': '\uD83D\uDC56', 'Accessories': '\uD83D\uDC8D', 'Dresses': '\uD83D\uDC57',
-      'Bags': '\uD83C\uDF92', 'Music': '\uD83C\uDFB5', 'Merch': '\uD83C\uDFF7',
-      'Coffee': '\u2615', 'Lifestyle': '\uD83D\uDD6F', 'The Family Series': '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66',
-      'Little B.E.': '\uD83D\uDC76',
+      'Corset Dresses': '\uD83D\uDC57', 'Outerwear': '\uD83E\uDDE5', 'Varsity Edit': '\uD83C\uDFC6',
+      'Romantic Lace': '\uD83C\uDF39', 'Accessories': '\uD83D\uDC8D',
+      'B.E. Collection': '\u2728', 'Little B.E.': '\uD83D\uDC76',
+      'Signature': '\uD83C\uDFF7', 'Streetwear': '\uD83D\uDC55', 'Essentials': '\uD83D\uDC5A',
+      'Limited Edition': '\u2B50',
+      'Hoodies': '\uD83E\uDDE5', 'Shorts': '\uD83E\uDE73', 'Jerseys': '\uD83C\uDFC0',
+      'Tees': '\uD83D\uDC55', 'Swim': '\uD83D\uDC59',
+      'Airport Chic': '\u2708', 'Resort Ready': '\uD83C\uDF34', 'City Explorer': '\uD83C\uDFDB',
+      'Night & Day': '\u2728',
+      'Membership': '\u2615', 'Events': '\uD83C\uDFAD', 'Experiences': '\uD83C\uDFA8',
+      'Merch': '\uD83C\uDFF7', 'Collections': '\uD83D\uDCE6', 'Music': '\uD83C\uDFB5',
     };
     return icons[category] || '\uD83C\uDFF7';
   },
 };
 
-// Auto-init when DOM ready
 document.addEventListener('DOMContentLoaded', function() {
   var scene = document.querySelector('a-scene');
   if (scene) {
