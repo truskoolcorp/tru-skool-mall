@@ -10,6 +10,9 @@ const StoreInteriors = {
     const scene = document.querySelector('a-scene');
     if (!scene) return;
 
+    // Add textured store floors
+    this.addStoreFloors(scene);
+
     this.enhanceConcreteRose(scene);
     this.enhanceBiJaDi(scene);
     this.enhanceFaithfullyFaded(scene);
@@ -18,8 +21,47 @@ const StoreInteriors = {
     this.enhanceCafeSativa(scene);
     this.enhanceVerseAlkemist(scene);
     this.addCeilingDetails(scene);
+    this.addAvatars(scene);
 
-    console.log('[Interiors] Enhanced store interiors loaded');
+    // Apply textures after TextureGen has created them
+    setTimeout(() => this.applyTextures(scene), 1200);
+
+    console.log('[Interiors] Enhanced store interiors with textures loaded');
+  },
+
+  // ─── Store Floor Planes (separate from corridor) ───
+  addStoreFloors(scene) {
+    const stores = [
+      { pos: '-10 0.01 -8', size: '8 8', tex: 'carpet-dark', color: '#1a0a10' },   // Concrete Rose
+      { pos: '10 0.01 -8', size: '8 8', tex: 'carpet-dark', color: '#1a1510' },     // BiJaDi
+      { pos: '-10 0.01 -22', size: '8 8', tex: 'carpet-dark', color: '#1a0510' },   // Faithfully Faded
+      { pos: '10 0.01 -22', size: '8 8', tex: 'carpet-dark', color: '#1a1508' },    // H.O.E.
+      { pos: '-10 0.01 -38', size: '8 8', tex: 'wood-dark', color: '#3a2a18' },     // Wanderlust
+      { pos: '10 0.01 -38', size: '8 8', tex: 'wood-dark', color: '#2a1a10' },      // Cafe Sativa
+      { pos: '0 0.01 -58', size: '14 12', tex: 'carpet-dark', color: '#0a0515' },   // Verse Alkemist
+    ];
+    stores.forEach(s => {
+      const sizes = s.size.split(' ');
+      this.addEntity(scene, s.pos, `
+        <a-plane rotation="-90 0 0" width="${sizes[0]}" height="${sizes[1]}"
+          material="src: #tex-${s.tex}; repeat: 4 4; roughness: 0.85; color: ${s.color}"></a-plane>
+      `);
+    });
+  },
+
+  // ─── Apply textures to furniture after TextureGen loads ───
+  applyTextures(scene) {
+    // Apply wood textures to counters
+    scene.querySelectorAll('[data-tex="wood-dark"]').forEach(el => {
+      el.setAttribute('material', 'src: #tex-wood-dark; repeat: 2 2; roughness: 0.5; metalness: 0.1');
+    });
+    scene.querySelectorAll('[data-tex="leather"]').forEach(el => {
+      el.setAttribute('material', 'src: #tex-leather-brown; repeat: 2 2; roughness: 0.7');
+    });
+    scene.querySelectorAll('[data-tex="metal"]').forEach(el => {
+      el.setAttribute('material', 'src: #tex-metal-brushed; repeat: 1 1; metalness: 0.8; roughness: 0.3');
+    });
+    console.log('[Interiors] Textures applied to furniture');
   },
 
   // ─── Helper: Create entity with children ───
@@ -46,9 +88,9 @@ const StoreInteriors = {
       </a-entity>
 
       <!-- Wall-mounted shelving unit (metal brackets + wood shelves) -->
-      <a-box position="-3 1.5 -3.5" width="3" height="0.05" depth="0.45" material="color: #2a1a1a; roughness: 0.6"></a-box>
-      <a-box position="-3 2.5 -3.5" width="3" height="0.05" depth="0.45" material="color: #2a1a1a; roughness: 0.6"></a-box>
-      <a-box position="-3 3.5 -3.5" width="3" height="0.05" depth="0.45" material="color: #2a1a1a; roughness: 0.6"></a-box>
+      <a-box position="-3 1.5 -3.5" width="3" height="0.05" depth="0.45" material="src: #tex-wood-light; repeat: 3 1; roughness: 0.5"></a-box>
+      <a-box position="-3 2.5 -3.5" width="3" height="0.05" depth="0.45" material="src: #tex-wood-light; repeat: 3 1; roughness: 0.5"></a-box>
+      <a-box position="-3 3.5 -3.5" width="3" height="0.05" depth="0.45" material="src: #tex-wood-light; repeat: 3 1; roughness: 0.5"></a-box>
       <!-- Folded items on shelves -->
       <a-box position="-3.5 1.7 -3.4" width="0.35" height="0.2" depth="0.3" material="color: #2a1520"></a-box>
       <a-box position="-3 1.7 -3.4" width="0.35" height="0.2" depth="0.3" material="color: #1a1a1a"></a-box>
@@ -68,9 +110,9 @@ const StoreInteriors = {
       <a-plane position="3 2.5 -3.5" width="1.2" height="2.8" material="color: #bbc; metalness: 0.95; roughness: 0.05"></a-plane>
       <a-box position="3 2.5 -3.55" width="1.35" height="3" depth="0.04" material="color: #c9a84c; metalness: 0.7"></a-box>
 
-      <!-- Checkout counter (wood + glass) -->
-      <a-box position="3 0.5 2" width="1.8" height="1" depth="0.7" material="color: #1a1a1a; roughness: 0.5"></a-box>
-      <a-box position="3 1.05 2" width="1.85" height="0.04" depth="0.75" material="color: #2a2a2a; metalness: 0.3"></a-box>
+      <!-- Checkout counter (textured wood + glass) -->
+      <a-box position="3 0.5 2" width="1.8" height="1" depth="0.7" material="src: #tex-wood-dark; repeat: 2 1; roughness: 0.5; metalness: 0.1"></a-box>
+      <a-box position="3 1.05 2" width="1.85" height="0.04" depth="0.75" material="src: #tex-metal-brushed; metalness: 0.6; roughness: 0.3"></a-box>
       <!-- Register -->
       <a-box position="3.2 1.2 2" width="0.3" height="0.15" depth="0.25" material="color: #111; metalness: 0.4"></a-box>
 
@@ -238,8 +280,8 @@ const StoreInteriors = {
     const base = '10 0 -38';
     this.addEntity(scene, base, `
       <!-- Bar counter with bottles -->
-      <a-box position="-2 0.55 0" width="3" height="1.1" depth="0.7" material="color: #2a1a10; roughness: 0.4; metalness: 0.2"></a-box>
-      <a-box position="-2 1.15 0" width="3.1" height="0.06" depth="0.75" material="color: #3a2a1a; roughness: 0.3; metalness: 0.3"></a-box>
+      <a-box position="-2 0.55 0" width="3" height="1.1" depth="0.7" material="src: #tex-wood-dark; repeat: 3 1; roughness: 0.4; metalness: 0.15"></a-box>
+      <a-box position="-2 1.15 0" width="3.1" height="0.06" depth="0.75" material="src: #tex-metal-brushed; metalness: 0.5; roughness: 0.3"></a-box>
       <!-- Bottles on bar -->
       <a-cylinder position="-2.5 1.5 0.1" radius="0.05" height="0.6" material="color: #4a6a3a; metalness: 0.3"></a-cylinder>
       <a-cylinder position="-2.2 1.45 0.1" radius="0.05" height="0.5" material="color: #8a6020; metalness: 0.4"></a-cylinder>
@@ -263,27 +305,27 @@ const StoreInteriors = {
       <a-text value="SIP . SMOKE . VIBE" position="0 4.4 -3.82" align="center" color="#e8d8c8" width="3" opacity="0.6"></a-text>
       <a-text value="THE STAGE | THE GALLERY | THE KITCHEN\\nTHE CIGAR LOUNGE | THE BAR | THE LOUNGE" position="0 3.8 -3.82" align="center" color="#a08060" width="2.8" wrap-count="40" opacity="0.5"></a-text>
 
-      <!-- Lounge seating (low sofa shape) -->
+      <!-- Lounge seating (leather sofa) -->
       <a-entity position="2 0 -2">
-        <a-box position="0 0.25 0" width="1.8" height="0.5" depth="0.8" material="color: #3a2520; roughness: 0.8"></a-box>
-        <a-box position="0 0.55 -0.35" width="1.8" height="0.4" depth="0.1" material="color: #3a2520; roughness: 0.8"></a-box>
+        <a-box position="0 0.25 0" width="1.8" height="0.5" depth="0.8" material="src: #tex-leather-brown; repeat: 2 1; roughness: 0.7"></a-box>
+        <a-box position="0 0.55 -0.35" width="1.8" height="0.4" depth="0.1" material="src: #tex-leather-brown; repeat: 2 1; roughness: 0.7"></a-box>
         <!-- Throw pillows -->
         <a-box position="-0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 10" material="color: #c09060; opacity: 0.8"></a-box>
         <a-box position="0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 -10" material="color: #8a6040; opacity: 0.8"></a-box>
       </a-entity>
 
-      <!-- Low table in front of sofa -->
+      <!-- Low table (textured wood top + metal legs) -->
       <a-entity position="2 0 -0.8">
-        <a-box position="0 0.35 0" width="1" height="0.04" depth="0.5" material="color: #4a3a2a; roughness: 0.5"></a-box>
+        <a-box position="0 0.35 0" width="1" height="0.04" depth="0.5" material="src: #tex-wood-light; repeat: 2 1; roughness: 0.4"></a-box>
         <a-box position="-0.4 0.17 -0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
         <a-box position="0.4 0.17 -0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
         <a-box position="-0.4 0.17 0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
         <a-box position="0.4 0.17 0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
       </a-entity>
 
-      <!-- Cigar humidor display -->
-      <a-box position="-3 1 -3.3" width="0.8" height="0.5" depth="0.5" material="color: #5a3a1a; roughness: 0.3; metalness: 0.2"></a-box>
-      <a-box position="-3 1.3 -3.3" width="0.82" height="0.05" depth="0.52" material="color: #6a4a2a; roughness: 0.3"></a-box>
+      <!-- Cigar humidor display (textured wood) -->
+      <a-box position="-3 1 -3.3" width="0.8" height="0.5" depth="0.5" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3; metalness: 0.15"></a-box>
+      <a-box position="-3 1.3 -3.3" width="0.82" height="0.05" depth="0.52" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3"></a-box>
 
       <!-- Gallery frames on wall (art marketplace) -->
       <a-plane position="-1.5 3.5 -3.85" width="1.2" height="0.9" material="color: #2a2030; opacity: 0.8"></a-plane>
@@ -358,6 +400,74 @@ const StoreInteriors = {
     this.addEntity(scene, '0 11.8 0', `
       <a-text value="TSE" rotation="90 0 0" align="center" color="#c9a84c" width="8" opacity="0.15"></a-text>
     `);
+  },
+
+  // ─── AI Persona Avatar Figures ───
+  // These are stylized placeholder figures until Ready Player Me GLBs are added
+  addAvatars(scene) {
+    // Laviche — Grand Entrance hostess (gold/platinum accent)
+    this.addAvatar(scene, {
+      pos: '2 0 2', rot: '0 200 0', id: 'avatar-laviche',
+      skin: '#c49470', hair: '#1a0a05', hairStyle: 'long',
+      top: '#1a1a1a', bottom: '#1a1a1a', shoes: '#c9a84c',
+      accent: '#c9a84c', label: 'LAVICHE', labelColor: '#c9a84c'
+    });
+    // Ginger — Wanderlust store (red hair, green accent)
+    this.addAvatar(scene, {
+      pos: '-7 0 -36', rot: '0 60 0', id: 'avatar-ginger',
+      skin: '#f0d0b8', hair: '#a03020', hairStyle: 'long',
+      top: '#e8e0d8', bottom: '#60c890', shoes: '#3a3a3a',
+      accent: '#60c890', label: 'GINGER', labelColor: '#60c890'
+    });
+    // Ahnika — Faithfully Faded store (dark hair, pink accent)
+    this.addAvatar(scene, {
+      pos: '-7 0 -20', rot: '0 60 0', id: 'avatar-ahnika',
+      skin: '#d4a880', hair: '#0a0508', hairStyle: 'medium',
+      top: '#FFADED', bottom: '#420420', shoes: '#1a1a1a',
+      accent: '#FFADED', label: 'AHNIKA', labelColor: '#FFADED'
+    });
+  },
+
+  addAvatar(scene, cfg) {
+    const w = document.createElement('a-entity');
+    w.setAttribute('id', cfg.id);
+    w.setAttribute('position', cfg.pos);
+    w.setAttribute('rotation', cfg.rot);
+
+    // Stylized human figure (approximately 1.7m tall)
+    w.innerHTML = `
+      <!-- Shoes -->
+      <a-box position="-0.08 0.04 0" width="0.12" height="0.08" depth="0.22" material="color: ${cfg.shoes}; roughness: 0.4"></a-box>
+      <a-box position="0.08 0.04 0" width="0.12" height="0.08" depth="0.22" material="color: ${cfg.shoes}; roughness: 0.4"></a-box>
+      <!-- Legs -->
+      <a-cylinder position="-0.08 0.5 0" radius="0.06" height="0.8" material="color: ${cfg.bottom}; roughness: 0.7"></a-cylinder>
+      <a-cylinder position="0.08 0.5 0" radius="0.06" height="0.8" material="color: ${cfg.bottom}; roughness: 0.7"></a-cylinder>
+      <!-- Torso -->
+      <a-box position="0 1.15 0" width="0.32" height="0.5" depth="0.18" material="color: ${cfg.top}; roughness: 0.6"></a-box>
+      <!-- Arms -->
+      <a-cylinder position="-0.22 1.05 0" radius="0.04" height="0.55" rotation="0 0 10" material="color: ${cfg.top}; roughness: 0.6"></a-cylinder>
+      <a-cylinder position="0.22 1.05 0" radius="0.04" height="0.55" rotation="0 0 -10" material="color: ${cfg.top}; roughness: 0.6"></a-cylinder>
+      <!-- Hands -->
+      <a-sphere position="-0.24 0.75 0" radius="0.04" material="color: ${cfg.skin}; roughness: 0.6"></a-sphere>
+      <a-sphere position="0.24 0.75 0" radius="0.04" material="color: ${cfg.skin}; roughness: 0.6"></a-sphere>
+      <!-- Neck -->
+      <a-cylinder position="0 1.45 0" radius="0.04" height="0.1" material="color: ${cfg.skin}; roughness: 0.5"></a-cylinder>
+      <!-- Head -->
+      <a-sphere position="0 1.6 0" radius="0.12" material="color: ${cfg.skin}; roughness: 0.5"></a-sphere>
+      <!-- Hair -->
+      <a-sphere position="0 1.68 -0.02" radius="0.13" material="color: ${cfg.hair}; roughness: 0.9"
+        scale="${cfg.hairStyle === 'long' ? '1 1.1 1.1' : '1 1 1'}"></a-sphere>
+      ${cfg.hairStyle === 'long' ? `
+        <a-cylinder position="0 1.45 -0.08" radius="0.1" height="0.35" material="color: ${cfg.hair}; roughness: 0.9"></a-cylinder>
+      ` : ''}
+      <!-- Name label -->
+      <a-text value="${cfg.label}" position="0 2 0" align="center" color="${cfg.labelColor}" width="2" opacity="0.7"></a-text>
+      <!-- Accent glow ring at feet -->
+      <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="0.3" radius-outer="0.5"
+        material="color: ${cfg.accent}; emissive: ${cfg.accent}; emissiveIntensity: 0.3; opacity: 0.2; transparent: true"></a-ring>
+    `;
+
+    scene.appendChild(w);
   },
 };
 
