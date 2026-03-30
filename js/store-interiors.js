@@ -30,41 +30,58 @@ const StoreInteriors = {
     scene.appendChild(wrapper);
   },
 
-  // ─── CONCRETE ROSE Interior ───
+  // ─── CONCRETE ROSE Interior (Luxury Boutique) ───
   enhanceConcreteRose(scene) {
     const base = '-10 0 -8';
     this.addEntity(scene, base, `
-      <!-- Wall-mounted shelving unit -->
-      <a-box position="-3 2.5 -3.5" width="3" height="0.08" depth="0.6" material="color: #333; metalness: 0.4"></a-box>
-      <a-box position="-3 3.5 -3.5" width="3" height="0.08" depth="0.6" material="color: #333; metalness: 0.4"></a-box>
-      <a-box position="-3 1.5 -3.5" width="3" height="0.08" depth="0.6" material="color: #333; metalness: 0.4"></a-box>
+      <!-- Realistic clothing rack (metal rail on legs) -->
+      <a-entity position="-2 0 -1">
+        <a-cylinder position="-1.2 1 0" radius="0.025" height="2" material="color: #c9a84c; metalness: 0.9; roughness: 0.1"></a-cylinder>
+        <a-cylinder position="1.2 1 0" radius="0.025" height="2" material="color: #c9a84c; metalness: 0.9; roughness: 0.1"></a-cylinder>
+        <a-cylinder position="0 2 0" radius="0.02" height="2.5" rotation="0 0 90" material="color: #c9a84c; metalness: 0.9; roughness: 0.1"></a-cylinder>
+        <!-- Hanging garments -->
+        <a-box position="-0.6 1.5 0" width="0.4" height="0.9" depth="0.06" material="color: #1a0a10; opacity: 0.9"></a-box>
+        <a-box position="0 1.5 0" width="0.4" height="0.85" depth="0.06" material="color: #c94060; opacity: 0.7"></a-box>
+        <a-box position="0.6 1.5 0" width="0.4" height="0.95" depth="0.06" material="color: #2a1520"></a-box>
+      </a-entity>
 
+      <!-- Wall-mounted shelving unit (metal brackets + wood shelves) -->
+      <a-box position="-3 1.5 -3.5" width="3" height="0.05" depth="0.45" material="color: #2a1a1a; roughness: 0.6"></a-box>
+      <a-box position="-3 2.5 -3.5" width="3" height="0.05" depth="0.45" material="color: #2a1a1a; roughness: 0.6"></a-box>
+      <a-box position="-3 3.5 -3.5" width="3" height="0.05" depth="0.45" material="color: #2a1a1a; roughness: 0.6"></a-box>
       <!-- Folded items on shelves -->
-      <a-box position="-3.5 2.7 -3.4" width="0.4" height="0.25" depth="0.35" material="color: #2a1520"></a-box>
-      <a-box position="-2.8 2.7 -3.4" width="0.4" height="0.25" depth="0.35" material="color: #1a1a1a"></a-box>
-      <a-box position="-3.5 3.7 -3.4" width="0.4" height="0.25" depth="0.35" material="color: #c94060; opacity: 0.8"></a-box>
+      <a-box position="-3.5 1.7 -3.4" width="0.35" height="0.2" depth="0.3" material="color: #2a1520"></a-box>
+      <a-box position="-3 1.7 -3.4" width="0.35" height="0.2" depth="0.3" material="color: #1a1a1a"></a-box>
+      <a-box position="-3.5 2.7 -3.4" width="0.35" height="0.2" depth="0.3" material="color: #c94060; opacity: 0.8"></a-box>
+      <a-box position="-2.5 2.7 -3.4" width="0.35" height="0.2" depth="0.3" material="color: #f0e0d0"></a-box>
 
-      <!-- Mirror (reflective panel) -->
-      <a-plane position="3 3 -3.5" width="1.5" height="3" material="color: #aab; metalness: 0.95; roughness: 0.05"></a-plane>
-      <a-box position="3 3 -3.55" width="1.7" height="3.2" depth="0.05" material="color: #1a1a1a"></a-box>
+      <!-- Mannequin (torso form on stand) -->
+      <a-entity position="-1 0 1">
+        <a-cylinder position="0 0.3 0" radius="0.12" height="0.6" material="color: #1a1a1a; metalness: 0.4"></a-cylinder>
+        <a-cylinder position="0 0.6 0" radius="0.03" height="0.3" material="color: #888; metalness: 0.8"></a-cylinder>
+        <a-cylinder position="0 1 0" radius="0.22" height="0.6" material="color: #2a2a2a; roughness: 0.8"></a-cylinder>
+        <a-cylinder position="0 1.5 0" radius="0.18" height="0.5" material="color: #2a2a2a; roughness: 0.8"></a-cylinder>
+        <a-sphere position="0 2 0" radius="0.14" material="color: #2a2a2a; roughness: 0.8"></a-sphere>
+      </a-entity>
 
-      <!-- Additional mannequin -->
-      <a-cylinder position="-1 1.2 1" radius="0.25" height="2.4" material="color: #2a2a2a"></a-cylinder>
-      <a-sphere position="-1 2.7 1" radius="0.18" material="color: #2a2a2a"></a-sphere>
+      <!-- Full-length mirror (framed) -->
+      <a-plane position="3 2.5 -3.5" width="1.2" height="2.8" material="color: #bbc; metalness: 0.95; roughness: 0.05"></a-plane>
+      <a-box position="3 2.5 -3.55" width="1.35" height="3" depth="0.04" material="color: #c9a84c; metalness: 0.7"></a-box>
 
-      <!-- Shoe display (low shelf) -->
-      <a-box position="-2 0.3 1.5" width="2" height="0.6" depth="0.8" material="color: #222"></a-box>
-      <a-box position="-2.3 0.65 1.5" width="0.3" height="0.1" depth="0.15" material="color: #c94060"></a-box>
-      <a-box position="-1.7 0.65 1.5" width="0.3" height="0.1" depth="0.15" material="color: #1a1a1a"></a-box>
+      <!-- Checkout counter (wood + glass) -->
+      <a-box position="3 0.5 2" width="1.8" height="1" depth="0.7" material="color: #1a1a1a; roughness: 0.5"></a-box>
+      <a-box position="3 1.05 2" width="1.85" height="0.04" depth="0.75" material="color: #2a2a2a; metalness: 0.3"></a-box>
+      <!-- Register -->
+      <a-box position="3.2 1.2 2" width="0.3" height="0.15" depth="0.25" material="color: #111; metalness: 0.4"></a-box>
 
-      <!-- Track lighting -->
-      <a-cylinder position="0 7.5 0" radius="0.05" height="8" rotation="0 0 90" material="color: #333"></a-cylinder>
-      <a-cone position="-2 7.2 -1" radius-bottom="0.15" radius-top="0" height="0.3" rotation="180 0 0" material="color: #333; emissive: #c94060; emissiveIntensity: 0.3"></a-cone>
-      <a-cone position="0 7.2 1" radius-bottom="0.15" radius-top="0" height="0.3" rotation="180 0 0" material="color: #333; emissive: #c94060; emissiveIntensity: 0.3"></a-cone>
+      <!-- Track lighting rail -->
+      <a-cylinder position="0 7.5 0" radius="0.03" height="8" rotation="0 0 90" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
+      <a-cone position="-2 7.2 -1" radius-bottom="0.12" radius-top="0" height="0.25" rotation="180 0 0" material="color: #2a2a2a; emissive: #c94060; emissiveIntensity: 0.3"></a-cone>
+      <a-cone position="1 7.2 1" radius-bottom="0.12" radius-top="0" height="0.25" rotation="180 0 0" material="color: #2a2a2a; emissive: #c94060; emissiveIntensity: 0.3"></a-cone>
 
-      <!-- Graffiti art frame on back wall -->
-      <a-plane position="0 4.5 -3.85" width="2.5" height="1.8" material="color: #c94060; opacity: 0.15; transparent: true"></a-plane>
-      <a-text value="C R" position="0 4.5 -3.82" align="center" color="#c94060" width="5" font="mozillavr" opacity="0.3"></a-text>
+      <!-- CR logo art on back wall -->
+      <a-plane position="0 4.5 -3.85" width="2" height="1.5" material="color: #c94060; opacity: 0.1; transparent: true"></a-plane>
+      <a-text value="CONCRETE ROSE" position="0 4.5 -3.82" align="center" color="#c94060" width="4" opacity="0.2"></a-text>
     `);
   },
 
@@ -104,38 +121,55 @@ const StoreInteriors = {
     `);
   },
 
-  // ─── Faithfully Faded Interior ───
+  // ─── Faithfully Faded Interior (Edgy Streetwear) ───
   enhanceFaithfullyFaded(scene) {
     const base = '-10 0 -22';
     this.addEntity(scene, base, `
-      <!-- Clothing racks (multiple) -->
+      <!-- Realistic clothing rack #1 (metal pipe rack) -->
       <a-entity position="-2 0 -1">
-        <a-box position="0 2 0" width="3" height="0.06" depth="0.06" material="color: #555"></a-box>
-        <a-box position="-1.5 1 0" width="0.06" height="2" depth="0.06" material="color: #555"></a-box>
-        <a-box position="1.5 1 0" width="0.06" height="2" depth="0.06" material="color: #555"></a-box>
-        <!-- Hanging items -->
-        <a-box position="-0.8 1.6 0" width="0.4" height="0.8" depth="0.05" material="color: #420420; opacity: 0.8"></a-box>
-        <a-box position="0 1.6 0" width="0.4" height="0.8" depth="0.05" material="color: #FFADED; opacity: 0.6"></a-box>
-        <a-box position="0.8 1.6 0" width="0.4" height="0.8" depth="0.05" material="color: #1a0a10"></a-box>
+        <a-cylinder position="-1.2 1 0" radius="0.02" height="2" material="color: #420420; metalness: 0.7"></a-cylinder>
+        <a-cylinder position="1.2 1 0" radius="0.02" height="2" material="color: #420420; metalness: 0.7"></a-cylinder>
+        <a-cylinder position="0 2 0" radius="0.015" height="2.5" rotation="0 0 90" material="color: #420420; metalness: 0.7"></a-cylinder>
+        <!-- Hanging garments (thin fabric shapes) -->
+        <a-box position="-0.7 1.5 0" width="0.38" height="0.85" depth="0.04" material="color: #420420; opacity: 0.85"></a-box>
+        <a-box position="-0.2 1.5 0" width="0.38" height="0.8" depth="0.04" material="color: #FFADED; opacity: 0.7"></a-box>
+        <a-box position="0.3 1.5 0" width="0.38" height="0.9" depth="0.04" material="color: #1a0a10"></a-box>
+        <a-box position="0.8 1.5 0" width="0.38" height="0.75" depth="0.04" material="color: #FFADED; opacity: 0.5"></a-box>
       </a-entity>
 
-      <!-- Butterfly wall art -->
-      <a-text value="🦋" position="0 5 -3.8" align="center" color="#FFADED" width="6" opacity="0.3"></a-text>
+      <!-- Clothing rack #2 (along wall) -->
+      <a-entity position="1 0 -3">
+        <a-cylinder position="-1 1 0" radius="0.02" height="2" material="color: #420420; metalness: 0.7"></a-cylinder>
+        <a-cylinder position="1 1 0" radius="0.02" height="2" material="color: #420420; metalness: 0.7"></a-cylinder>
+        <a-cylinder position="0 2 0" radius="0.015" height="2.1" rotation="0 0 90" material="color: #420420; metalness: 0.7"></a-cylinder>
+        <a-box position="-0.5 1.5 0" width="0.38" height="0.9" depth="0.04" material="color: #2a0f15"></a-box>
+        <a-box position="0 1.5 0" width="0.38" height="0.7" depth="0.04" material="color: #FFADED; opacity: 0.6"></a-box>
+        <a-box position="0.5 1.5 0" width="0.38" height="0.85" depth="0.04" material="color: #420420"></a-box>
+      </a-entity>
 
-      <!-- Neon sign glow -->
-      <a-box position="0 5.5 -3.85" width="4" height="0.6" depth="0.05" material="color: #FFADED; emissive: #FFADED; emissiveIntensity: 0.2; opacity: 0.3; transparent: true"></a-box>
+      <!-- Butterfly neon sign on wall -->
+      <a-text value="JUST BE BLUNT" position="0 5.5 -3.82" align="center" color="#FFADED" width="4" opacity="0.5"></a-text>
+      <a-box position="0 5.5 -3.85" width="4.5" height="0.7" depth="0.03" material="color: #FFADED; emissive: #FFADED; emissiveIntensity: 0.15; opacity: 0.2; transparent: true"></a-box>
 
-      <!-- Counter/checkout -->
-      <a-box position="3 0.5 2" width="1.5" height="1" depth="2" material="color: #2a1520; roughness: 0.7"></a-box>
-      <a-box position="3 1.1 2" width="0.4" height="0.08" depth="0.3" material="color: #333; metalness: 0.5"></a-box>
+      <!-- Checkout counter -->
+      <a-box position="3 0.5 2" width="1.5" height="1" depth="0.6" material="color: #2a1520; roughness: 0.6"></a-box>
+      <a-box position="3 1.05 2" width="1.55" height="0.04" depth="0.65" material="color: #3a2530; roughness: 0.4"></a-box>
+      <a-box position="3.2 1.2 2" width="0.25" height="0.12" depth="0.2" material="color: #111; metalness: 0.4"></a-box>
 
       <!-- Full-length mirror -->
-      <a-plane position="-4 3 -1" width="1" height="3.5" rotation="0 90 0" material="color: #aab; metalness: 0.95; roughness: 0.05"></a-plane>
-      <a-box position="-4.05 3 -1" width="0.05" height="3.7" depth="1.2" material="color: #420420"></a-box>
+      <a-plane position="-4 2.5 -1" width="1" height="3" rotation="0 90 0" material="color: #bbc; metalness: 0.95; roughness: 0.05"></a-plane>
+      <a-box position="-4.04 2.5 -1" width="0.04" height="3.15" depth="1.15" material="color: #420420"></a-box>
 
-      <!-- Hat display -->
-      <a-cylinder position="2 1 -2" radius="0.4" height="1.2" material="color: #2a1520"></a-cylinder>
-      <a-cylinder position="2 1.7 -2" radius="0.2" height="0.3" material="color: #FFADED; opacity: 0.7"></a-cylinder>
+      <!-- Hat display stand -->
+      <a-entity position="2 0 -2">
+        <a-cylinder position="0 0.7 0" radius="0.06" height="1.4" material="color: #420420; metalness: 0.5"></a-cylinder>
+        <a-cylinder position="0 1.4 0" radius="0.15" height="0.04" material="color: #420420; metalness: 0.5"></a-cylinder>
+        <a-cylinder position="0 1.5 0" radius="0.18" height="0.12" material="color: #FFADED; opacity: 0.7"></a-cylinder>
+      </a-entity>
+
+      <!-- Shoe shelf -->
+      <a-box position="-2 0.2 2.5" width="1.5" height="0.04" depth="0.4" material="color: #2a1520; roughness: 0.5"></a-box>
+      <a-box position="-2 0.6 2.5" width="1.5" height="0.04" depth="0.4" material="color: #2a1520; roughness: 0.5"></a-box>
     `);
   },
 
@@ -199,46 +233,70 @@ const StoreInteriors = {
     `);
   },
 
-  // ─── Café Sativa Interior ───
+  // ─── Café Sativa Interior (LOUNGE — no coffee) ───
   enhanceCafeSativa(scene) {
     const base = '10 0 -38';
     this.addEntity(scene, base, `
-      <!-- Espresso machine on counter -->
-      <a-box position="-2 1.3 0.3" width="0.5" height="0.5" depth="0.4" material="color: #444; metalness: 0.6"></a-box>
-      <a-cylinder position="-2 1.7 0.3" radius="0.05" height="0.3" material="color: #666; metalness: 0.8"></a-cylinder>
+      <!-- Bar counter with bottles -->
+      <a-box position="-2 0.55 0" width="3" height="1.1" depth="0.7" material="color: #2a1a10; roughness: 0.4; metalness: 0.2"></a-box>
+      <a-box position="-2 1.15 0" width="3.1" height="0.06" depth="0.75" material="color: #3a2a1a; roughness: 0.3; metalness: 0.3"></a-box>
+      <!-- Bottles on bar -->
+      <a-cylinder position="-2.5 1.5 0.1" radius="0.05" height="0.6" material="color: #4a6a3a; metalness: 0.3"></a-cylinder>
+      <a-cylinder position="-2.2 1.45 0.1" radius="0.05" height="0.5" material="color: #8a6020; metalness: 0.4"></a-cylinder>
+      <a-cylinder position="-1.8 1.5 0.1" radius="0.05" height="0.6" material="color: #3a2a2a; metalness: 0.3"></a-cylinder>
 
-      <!-- Bar stools -->
-      <a-entity position="-1 0 1.5">
-        <a-cylinder position="0 0.4 0" radius="0.15" height="0.8" material="color: #3a2a1a"></a-cylinder>
-        <a-cylinder position="0 0.85 0" radius="0.2" height="0.08" material="color: #5a4a3a; metalness: 0.3"></a-cylinder>
+      <!-- Bar stools (realistic: thin leg + seat + footrest) -->
+      <a-entity position="-2.5 0 1">
+        <a-cylinder position="0 0.45 0" radius="0.03" height="0.9" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
+        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="color: #5a3a1a; roughness: 0.5"></a-cylinder>
+        <a-cylinder position="0 0.3 0" radius="0.15" height="0.02" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
       </a-entity>
-      <a-entity position="0 0 1.5">
-        <a-cylinder position="0 0.4 0" radius="0.15" height="0.8" material="color: #3a2a1a"></a-cylinder>
-        <a-cylinder position="0 0.85 0" radius="0.2" height="0.08" material="color: #5a4a3a; metalness: 0.3"></a-cylinder>
+      <a-entity position="-1.5 0 1">
+        <a-cylinder position="0 0.45 0" radius="0.03" height="0.9" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
+        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="color: #5a3a1a; roughness: 0.5"></a-cylinder>
+        <a-cylinder position="0 0.3 0" radius="0.15" height="0.02" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
       </a-entity>
 
-      <!-- Menu board -->
-      <a-plane position="0 4 -3.85" width="3" height="2" material="color: #1a1410; roughness: 0.9"></a-plane>
-      <a-text value="MENU" position="0 4.7 -3.82" align="center" color="#c09060" width="3" font="mozillavr"></a-text>
-      <a-text value="Cloud Nine Blend . . . $5\\nGolden Hour Latte . . . $6\\nSativa Sunset Cold Brew . . $7\\nTenerife Espresso . . . . $4" position="0 3.8 -3.82" align="center" color="#e8d8c8" width="2.5" wrap-count="35"></a-text>
+      <!-- Lounge sign (replaces coffee menu) -->
+      <a-plane position="0 4.5 -3.85" width="3.5" height="1.8" material="color: #1a1410; roughness: 0.9"></a-plane>
+      <a-text value="CAFE SATIVA" position="0 5 -3.82" align="center" color="#c09060" width="4" font="mozillavr"></a-text>
+      <a-text value="SIP . SMOKE . VIBE" position="0 4.4 -3.82" align="center" color="#e8d8c8" width="3" opacity="0.6"></a-text>
+      <a-text value="THE STAGE | THE GALLERY | THE KITCHEN\\nTHE CIGAR LOUNGE | THE BAR | THE LOUNGE" position="0 3.8 -3.82" align="center" color="#a08060" width="2.8" wrap-count="40" opacity="0.5"></a-text>
 
-      <!-- Shelving with coffee bags -->
-      <a-box position="-3 3 -3.5" width="2" height="0.08" depth="0.5" material="color: #4a3a2a"></a-box>
-      <a-box position="-3 4 -3.5" width="2" height="0.08" depth="0.5" material="color: #4a3a2a"></a-box>
-      <a-box position="-3.3 3.3 -3.4" width="0.3" height="0.4" depth="0.2" material="color: #6a4a2a"></a-box>
-      <a-box position="-2.8 3.3 -3.4" width="0.3" height="0.4" depth="0.2" material="color: #8a6a4a"></a-box>
-      <a-box position="-3.3 4.3 -3.4" width="0.3" height="0.4" depth="0.2" material="color: #c09060"></a-box>
-
-      <!-- Small cafe table -->
+      <!-- Lounge seating (low sofa shape) -->
       <a-entity position="2 0 -2">
-        <a-cylinder position="0 0.4 0" radius="0.06" height="0.8" material="color: #3a2a1a"></a-cylinder>
-        <a-cylinder position="0 0.82 0" radius="0.4" height="0.04" material="color: #5a4a3a; roughness: 0.7"></a-cylinder>
-        <a-cylinder position="0.1 0.88 0.05" radius="0.08" height="0.12" material="color: #f0e8d8"></a-cylinder>
+        <a-box position="0 0.25 0" width="1.8" height="0.5" depth="0.8" material="color: #3a2520; roughness: 0.8"></a-box>
+        <a-box position="0 0.55 -0.35" width="1.8" height="0.4" depth="0.1" material="color: #3a2520; roughness: 0.8"></a-box>
+        <!-- Throw pillows -->
+        <a-box position="-0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 10" material="color: #c09060; opacity: 0.8"></a-box>
+        <a-box position="0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 -10" material="color: #8a6040; opacity: 0.8"></a-box>
       </a-entity>
 
-      <!-- Vinyl record art on wall -->
-      <a-cylinder position="3 4 -3.8" radius="0.4" height="0.02" rotation="0 0 0" material="color: #111; metalness: 0.5"></a-cylinder>
+      <!-- Low table in front of sofa -->
+      <a-entity position="2 0 -0.8">
+        <a-box position="0 0.35 0" width="1" height="0.04" depth="0.5" material="color: #4a3a2a; roughness: 0.5"></a-box>
+        <a-box position="-0.4 0.17 -0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+        <a-box position="0.4 0.17 -0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+        <a-box position="-0.4 0.17 0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+        <a-box position="0.4 0.17 0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+      </a-entity>
+
+      <!-- Cigar humidor display -->
+      <a-box position="-3 1 -3.3" width="0.8" height="0.5" depth="0.5" material="color: #5a3a1a; roughness: 0.3; metalness: 0.2"></a-box>
+      <a-box position="-3 1.3 -3.3" width="0.82" height="0.05" depth="0.52" material="color: #6a4a2a; roughness: 0.3"></a-box>
+
+      <!-- Gallery frames on wall (art marketplace) -->
+      <a-plane position="-1.5 3.5 -3.85" width="1.2" height="0.9" material="color: #2a2030; opacity: 0.8"></a-plane>
+      <a-box position="-1.5 3.5 -3.87" width="1.3" height="1" depth="0.03" material="color: #c09060; metalness: 0.5"></a-box>
+      <a-plane position="1.5 3.5 -3.85" width="1" height="1.2" material="color: #201a2a; opacity: 0.8"></a-plane>
+      <a-box position="1.5 3.5 -3.87" width="1.1" height="1.3" depth="0.03" material="color: #c09060; metalness: 0.5"></a-box>
+
+      <!-- Vinyl on wall (music venue element) -->
+      <a-cylinder position="3 4 -3.8" radius="0.4" height="0.02" material="color: #111; metalness: 0.5"></a-cylinder>
       <a-circle position="3 4 -3.78" radius="0.12" material="color: #c09060"></a-circle>
+
+      <!-- Warm ambient light -->
+      <a-entity light="type: point; color: #e8a060; intensity: 0.4; distance: 8; decay: 1.5" position="0 3 0"></a-entity>
     `);
   },
 

@@ -93,8 +93,8 @@ const ProductCatalog = {
 
     // ═══════════════════════════════════════════════════
     // WANDERLUST — wanderlustfashionstore.com
-    // Collection-based site, no individual SKU photos
-    // Using MiniMAX mockups as placeholders
+    // "Roam Free. Stay Rooted."
+    // REAL PRODUCTS from live collection pages (32 total across 4 collections)
     // ═══════════════════════════════════════════════════
     'wanderlust': {
       name: 'Wanderlust',
@@ -102,18 +102,25 @@ const ProductCatalog = {
       url: 'https://wanderlustfashionstore.com',
       color: '#60c890',
       products: [
-        { id: 'wl-001', name: 'Airport Chic Collection', price: 89, category: 'Airport Chic', img: 'assets/products/wl-pack.jpg', desc: '24 curated pieces for effortless airport-to-destination transitions. Light, practical, chic. Curated by Ginger Pelirroja — European Elegance.', featured: true },
-        { id: 'wl-002', name: 'Resort Ready Set', price: 120, category: 'Resort Ready', img: 'assets/products/wl-hoodie.jpg', desc: 'From the Resort Ready collection — 32 pieces for tropical escapes. Flowing fabrics, bold colors. Curated by Laviche Cardenas — Latin Soul.' },
-        { id: 'wl-003', name: 'City Explorer Essentials', price: 75, category: 'City Explorer', img: 'assets/products/wl-tee.jpg', desc: '28 pieces for urban adventures. Mix-and-match versatility for the global citizen.' },
-        { id: 'wl-004', name: 'Night & Day Transition', price: 95, category: 'Night & Day', img: 'assets/products/wl-joggers.jpg', desc: '18 pieces that transform from day touring to evening dining. Curated by Ahnika Merlot — Cosmopolitan Chic.' },
-        { id: 'wl-005', name: 'Travel Accessories Bundle', price: 55, category: 'Accessories', img: 'assets/products/wl-hat.jpg', desc: 'Wide-brim sun hat, convertible scarf, passport pouch. DoT members get 15% off everything.' },
+        { id: 'wl-001', name: 'Elevated Lounge Set', price: 185, category: 'Airport Chic', img: 'assets/products/wl-pack.jpg', desc: 'Best seller. Wrinkle-resistant set that blends comfort with sophistication. From check-in to touchdown, you look polished. Airport Chic: 8 pieces from $98.', featured: true },
+        { id: 'wl-002', name: 'Cashmere Travel Wrap', price: 225, category: 'Airport Chic', img: 'assets/products/wl-hoodie.jpg', desc: 'Luxurious cashmere wrap that doubles as a blanket on long-haul flights. Curated by Ginger Pelirroja — European Elegance.' },
+        { id: 'wl-003', name: 'Structured Tote Bag', price: 275, category: 'Airport Chic', img: 'assets/products/wl-hat.jpg', desc: 'Designed to slip under your airline seat while holding everything you need. Structured silhouette, premium materials.' },
+        { id: 'wl-004', name: 'Linen Maxi Dress', price: 175, category: 'Resort Ready', img: 'assets/products/wl-tee.jpg', desc: 'Best seller. From sandy shores to sunset cocktails without missing a beat. Lightweight, breathable linen. Resort Ready: 8 pieces from $68.' },
+        { id: 'wl-005', name: 'Crochet Cover-Up', price: 95, category: 'Resort Ready', img: 'assets/products/wl-joggers.jpg', desc: 'Beach-to-bar transition piece in natural crochet. Curated by Laviche Cardenas — Latin Soul.' },
+        { id: 'wl-006', name: 'Raffia Beach Tote', price: 145, category: 'Resort Ready', img: 'assets/products/wl-hat.jpg', desc: 'Handwoven raffia tote. Oversized for towels, sunscreen, and a good book. Part of the Resort Ready collection.' },
+        { id: 'wl-007', name: 'Tailored Blazer', price: 285, category: 'City Explorer', img: 'assets/products/wl-pack.jpg', desc: 'Best seller. Navigate cobblestone streets and museum halls without sacrificing style. Stretch fabric, hidden comfort features. City Explorer: 8 pieces from $85.' },
+        { id: 'wl-008', name: 'Wool Coat', price: 395, category: 'City Explorer', img: 'assets/products/wl-hoodie.jpg', desc: 'Premium wool coat for European winters. Tailored fit, warm without bulk. Cushioned insoles and pockets where you need them.' },
+        { id: 'wl-009', name: 'Leather Crossbody', price: 295, category: 'City Explorer', img: 'assets/products/wl-tee.jpg', desc: 'Hands-free exploring. Premium leather crossbody sized for wallet, phone, and passport. Part of the City Explorer collection.' },
+        { id: 'wl-010', name: 'Reversible Slip Dress', price: 195, category: 'Night & Day', img: 'assets/products/wl-joggers.jpg', desc: 'Best seller. Two looks in one — day touring to evening dining. Night & Day: 8 pieces from $78. Curated by Ahnika Merlot — Cosmopolitan Chic.' },
+        { id: 'wl-011', name: 'Day-to-Night Jumpsuit', price: 235, category: 'Night & Day', img: 'assets/products/wl-hat.jpg', desc: 'One piece, endless possibilities. Dress it up with heels or down with flats. DoT members get 15% off all Wanderlust collections.' },
       ]
     },
 
     // ═══════════════════════════════════════════════════
     // CAFE SATIVA — cafe-sativa.com
-    // Virtual venue — no product imagery on site
-    // Using MiniMAX mockups as placeholders
+    // "Sip. Smoke. Vibe." — VIRTUAL LOUNGE VENUE
+    // NOT a coffee shop. Six spaces + membership tiers.
+    // Physical Tenerife venue 2026.
     // ═══════════════════════════════════════════════════
     'cafe-sativa': {
       name: 'Cafe Sativa',
@@ -121,11 +128,13 @@ const ProductCatalog = {
       url: 'https://cafe-sativa.com',
       color: '#c09060',
       products: [
-        { id: 'cs-001', name: 'VIP Membership', price: 24.99, category: 'Membership', img: 'assets/products/cs-coffee.jpg', desc: 'Monthly VIP access. All live events, exclusive VIP-only experiences, priority guest Q&A, 20% merch discount, and priority seating when Tenerife opens 2026.', featured: true },
-        { id: 'cs-002', name: 'Regular Membership', price: 9.99, category: 'Membership', img: 'assets/products/cs-mug.jpg', desc: 'Monthly access to all live events, buy/sell in The Gallery art marketplace, event recordings library, and member badge.' },
-        { id: 'cs-003', name: 'Cooking Class Pass', price: 25, category: 'Events', img: 'assets/products/cs-tee.jpg', desc: 'The Kitchen — live cooking classes with international chefs. Nordic-Spanish Fusion and more. Recipes and techniques included.' },
-        { id: 'cs-004', name: 'The Stage — Live Events', price: 0, category: 'Experiences', img: 'assets/products/cs-tray.jpg', desc: '"At The Table" interview series + live music. Free with Regular membership. Live performances by Ahnika Merlot and guests.' },
-        { id: 'cs-005', name: 'The Gallery — Art Marketplace', price: 0, category: 'Experiences', img: 'assets/products/cs-candle.jpg', desc: 'Art exhibitions, buy/sell original work. Current: "Digital Dreams" — 23 pieces. 156 artworks sold to date.' },
+        { id: 'cs-001', name: 'VIP Membership', price: 24.99, category: 'Membership', img: 'assets/products/cs-candle.jpg', desc: 'Monthly VIP. All live events, exclusive VIP-only experiences, priority guest Q&A, 20% merch discount, priority seating when Tenerife opens 2026. 2.1K+ community members.', featured: true },
+        { id: 'cs-002', name: 'Regular Membership', price: 9.99, category: 'Membership', img: 'assets/products/cs-tray.jpg', desc: 'Monthly access to all live events on The Stage, buy/sell in The Gallery art marketplace, event recordings library, and member badge with perks.' },
+        { id: 'cs-003', name: 'The Stage — Live Events', price: 0, category: 'The Stage', img: 'assets/products/cs-tee.jpg', desc: '"At The Table" interview series + live music performances. Next: Chef Maria Santos cooking demo. Ahnika Merlot live set Fridays. Free with membership.' },
+        { id: 'cs-004', name: 'The Kitchen — Cooking Class', price: 25, category: 'The Kitchen', img: 'assets/products/cs-tray.jpg', desc: 'Live cooking classes with international chefs. Next: Nordic-Spanish Fusion, Mon 7PM EST. Recipes, techniques, and community. 47 events hosted to date.' },
+        { id: 'cs-005', name: 'The Gallery — Art Marketplace', price: 0, category: 'The Gallery', img: 'assets/products/cs-candle.jpg', desc: 'Art exhibitions, buy/sell original work, artist spotlights. Current exhibition: "Digital Dreams" — 23 pieces available. 156 artworks sold.' },
+        { id: 'cs-006', name: 'The Cigar Lounge', price: 0, category: 'Cigar Lounge', img: 'assets/products/cs-tee.jpg', desc: 'Tastings, ratings, ASMR sessions, expert recommendations. This week: Cuban vs. Dominican Showdown. Cigar & Whiskey Pairing Experience Tuesdays.' },
+        { id: 'cs-007', name: 'The Bar — Cocktails', price: 0, category: 'The Bar', img: 'assets/products/cs-tray.jpg', desc: 'Signature cocktails, mixology classes, spirit education. Cocktail of the Week: Canary Island Old Fashioned. Part of the virtual lounge experience.' },
       ]
     },
 
@@ -349,7 +358,9 @@ const ProductCatalog = {
       'Tees': '\uD83D\uDC55', 'Swim': '\uD83D\uDC59', 'Women': '\uD83D\uDC57',
       'Airport Chic': '\u2708', 'Resort Ready': '\uD83C\uDF34', 'City Explorer': '\uD83C\uDFDB',
       'Night & Day': '\u2728',
-      'Membership': '\u2615', 'Events': '\uD83C\uDFAD', 'Experiences': '\uD83C\uDFA8',
+      'Membership': '\u2B50', 'Events': '\uD83C\uDFAD', 'Experiences': '\uD83C\uDFA8',
+      'The Stage': '\uD83C\uDFAD', 'The Kitchen': '\uD83D\uDC68\u200D\uD83C\uDF73', 'The Gallery': '\uD83C\uDFA8',
+      'Cigar Lounge': '\uD83D\uDCA8', 'The Bar': '\uD83C\uDF78',
       'Merch': '\uD83C\uDFF7', 'Collections': '\uD83D\uDCE6', 'Music': '\uD83C\uDFB5',
     };
     return icons[category] || '\uD83C\uDFF7';
