@@ -315,7 +315,7 @@
        ═══════════════════════════════════════════════════════════ -->
 
   <!-- ─── Floor ─── -->
-  <a-plane
+  <a-plane id="corridor-floor"
     position="0 0 -30"
     rotation="-90 0 0"
     width="30" height="80"
@@ -323,7 +323,7 @@
   ></a-plane>
 
   <!-- ─── Ceiling ─── -->
-  <a-plane
+  <a-plane id="corridor-ceiling"
     position="0 12 -30"
     rotation="90 0 0"
     width="30" height="80"
@@ -331,21 +331,21 @@
   ></a-plane>
 
   <!-- ─── Left Wall (full corridor) ─── -->
-  <a-box
+  <a-box class="corridor-wall"
     position="-15 6 -30"
     width="0.3" height="12" depth="80"
     material="color: #24243a"
   ></a-box>
 
   <!-- ─── Right Wall (full corridor) ─── -->
-  <a-box
+  <a-box class="corridor-wall"
     position="15 6 -30"
     width="0.3" height="12" depth="80"
     material="color: #24243a"
   ></a-box>
 
   <!-- ─── Back Wall ─── -->
-  <a-box
+  <a-box class="corridor-wall"
     position="0 6 -70"
     width="30" height="12" depth="0.3"
     material="color: #24243a"
@@ -635,6 +635,7 @@
 <script src="js/product-catalog.js"></script>
 <script src="js/ambient-audio.js"></script>
 <script src="js/wayfinding.js"></script>
+<script src="js/texture-generator.js"></script>
 <script src="js/store-interiors.js"></script>
 <script src="js/environment-upgrade.js"></script>
 <script src="js/model-placer.js"></script>
