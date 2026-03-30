@@ -16,12 +16,6 @@
 
   <link rel="stylesheet" href="css/ui.css">
   <link rel="stylesheet" href="css/product-panel.css">
-
-  <!-- Vercel Web Analytics -->
-  <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-  </script>
-  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </head>
 <body>
 
@@ -65,9 +59,11 @@
     <div id="location-label">Grand Entrance</div>
     <div id="hud-controls">
       <button id="btn-map" class="hud-btn" onclick="toggleMap()" title="Mall Map">🗺</button>
+      <button id="btn-directory" class="hud-btn" onclick="toggleDirectory()" title="Store Directory">🏪</button>
       <button id="btn-music" class="hud-btn active" onclick="toggleMusic()" title="Background Music">🎵</button>
       <button id="btn-voice" class="hud-btn" onclick="toggleVoice()" title="Voice Guide">🔊</button>
       <button id="btn-chat" class="hud-btn active" onclick="toggleChat()" title="Chat with Guide">💬</button>
+      <button id="btn-help" class="hud-btn" onclick="toggleHelp()" title="Controls Help">❓</button>
       <button id="btn-mode" class="hud-btn" onclick="showModeSelector()" title="Switch Mode">⚙</button>
     </div>
   </div>
@@ -75,6 +71,134 @@
   <!-- Mini-map -->
   <div id="minimap" class="hidden">
     <canvas id="minimap-canvas" width="240" height="320"></canvas>
+  </div>
+
+  <!-- Welcome Tooltip (shows on entry, auto-hides) -->
+  <div id="welcome-tooltip">
+    <div class="wt-inner">
+      <span class="wt-icon">👋</span>
+      <div class="wt-text">
+        <strong>Welcome to Tru Skool Mall</strong>
+        <span>Use <b>W A S D</b> or <b>Arrow Keys</b> to walk. Click &amp; drag to look around. Tap <b>❓</b> for full controls.</span>
+      </div>
+      <button class="wt-close" onclick="dismissWelcome()">&times;</button>
+    </div>
+  </div>
+
+  <!-- Controls Help Overlay -->
+  <div id="help-overlay" class="hidden">
+    <div class="help-backdrop" onclick="toggleHelp()"></div>
+    <div class="help-card">
+      <button class="help-close" onclick="toggleHelp()">&times;</button>
+      <h2 class="help-title">Controls</h2>
+
+      <div class="help-section">
+        <h3>🖥 Desktop</h3>
+        <div class="help-grid">
+          <div class="help-key"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div>
+          <div class="help-desc">Walk forward, left, back, right</div>
+          <div class="help-key"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></div>
+          <div class="help-desc">Walk (arrow keys)</div>
+          <div class="help-key">🖱 Click + Drag</div>
+          <div class="help-desc">Look around</div>
+          <div class="help-key">🖱 Click on store</div>
+          <div class="help-desc">Browse products</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>📱 Mobile / Touch</h3>
+        <div class="help-grid">
+          <div class="help-key">👆 Swipe</div>
+          <div class="help-desc">Look around</div>
+          <div class="help-key">🕹 Virtual Joystick</div>
+          <div class="help-desc">Walk (bottom-left of screen)</div>
+          <div class="help-key">👆 Tap on store sign</div>
+          <div class="help-desc">Browse products</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>🎮 HUD Buttons</h3>
+        <div class="help-grid">
+          <div class="help-key">🗺</div>
+          <div class="help-desc">Toggle minimap</div>
+          <div class="help-key">🏪</div>
+          <div class="help-desc">Store directory (teleport to any store)</div>
+          <div class="help-key">🎵</div>
+          <div class="help-desc">Toggle background music</div>
+          <div class="help-key">🔊</div>
+          <div class="help-desc">Toggle AI voice guide</div>
+          <div class="help-key">💬</div>
+          <div class="help-desc">Chat with your AI guide</div>
+          <div class="help-key">⚙</div>
+          <div class="help-desc">Switch mode (Virtual / AR / VR)</div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>🕶 VR Headset</h3>
+        <div class="help-grid">
+          <div class="help-key">Left Thumbstick</div>
+          <div class="help-desc">Walk / strafe</div>
+          <div class="help-key">Right Thumbstick</div>
+          <div class="help-desc">Turn / snap rotate</div>
+          <div class="help-key">Trigger</div>
+          <div class="help-desc">Select / interact</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Store Directory Panel -->
+  <div id="directory-panel" class="hidden">
+    <div class="dir-backdrop" onclick="toggleDirectory()"></div>
+    <div class="dir-card">
+      <button class="dir-close" onclick="toggleDirectory()">&times;</button>
+      <h2 class="dir-title">Store Directory</h2>
+      <p class="dir-subtitle">Tap a store to teleport there instantly</p>
+      <div class="dir-grid">
+        <button class="dir-store" onclick="teleportToStore('entrance')" style="--sc: var(--gold)">
+          <span class="dir-icon">🚪</span>
+          <span class="dir-name">Grand Entrance</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('concrete-rose')" style="--sc: #c94060">
+          <span class="dir-icon">🌹</span>
+          <span class="dir-name">Concrete Rose</span>
+          <span class="dir-tag">Luxury Streetwear</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('bijadi')" style="--sc: #d4c0a8">
+          <span class="dir-icon">💎</span>
+          <span class="dir-name">BiJaDi</span>
+          <span class="dir-tag">Family Luxury</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('faithfully-faded')" style="--sc: #FFADED">
+          <span class="dir-icon">🦋</span>
+          <span class="dir-name">Faithfully Faded</span>
+          <span class="dir-tag">Edgy Streetwear</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('hoe')" style="--sc: #e8c060">
+          <span class="dir-icon">👑</span>
+          <span class="dir-name">H.O.E.</span>
+          <span class="dir-tag">Crown Culture</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('wanderlust')" style="--sc: #60c890">
+          <span class="dir-icon">🌍</span>
+          <span class="dir-name">Wanderlust</span>
+          <span class="dir-tag">Travel Fashion</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('cafe-sativa')" style="--sc: #c09060">
+          <span class="dir-icon">☕</span>
+          <span class="dir-name">Cafe Sativa</span>
+          <span class="dir-tag">Sip. Smoke. Vibe.</span>
+        </button>
+        <button class="dir-store" onclick="teleportToStore('verse-alkemist')" style="--sc: #a060e0">
+          <span class="dir-icon">🎤</span>
+          <span class="dir-name">The Verse Alkemist</span>
+          <span class="dir-tag">Music &amp; Merch</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Chat panel -->
@@ -169,7 +293,7 @@
 
   <!-- ─── Camera Rig (First Person) ─── -->
   <a-entity id="camera-rig" position="0 0 5"
-    movement-controls="fly: false; speed: 0.15"
+    movement-controls="fly: false; speed: 0.22"
     >
     <a-entity id="camera"
       camera
