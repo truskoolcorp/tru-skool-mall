@@ -51,15 +51,15 @@ const StoreInteriors = {
 
   // ─── Apply textures to furniture after TextureGen loads ───
   applyTextures(scene) {
-    // Apply wood textures to counters
-    scene.querySelectorAll('[data-tex="wood-dark"]').forEach(el => {
-      el.setAttribute('material', 'src: #tex-wood-dark; repeat: 2 2; roughness: 0.5; metalness: 0.1');
-    });
-    scene.querySelectorAll('[data-tex="leather"]').forEach(el => {
-      el.setAttribute('material', 'src: #tex-leather-brown; repeat: 2 2; roughness: 0.7');
-    });
-    scene.querySelectorAll('[data-tex="metal"]').forEach(el => {
-      el.setAttribute('material', 'src: #tex-metal-brushed; repeat: 1 1; metalness: 0.8; roughness: 0.3');
+    if (typeof TextureGen === 'undefined' || !TextureGen._ready) {
+      setTimeout(() => this.applyTextures(scene), 500);
+      return;
+    }
+    // Apply textures to all elements with data-tex attribute
+    scene.querySelectorAll('[data-tex]').forEach(el => {
+      var tex = el.getAttribute('data-tex');
+      var r = parseFloat(el.getAttribute('data-repeat') || '2');
+      TextureGen.applyTo(el, tex, r, r);
     });
     console.log('[Interiors] Textures applied to furniture');
   },

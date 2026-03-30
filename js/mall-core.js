@@ -15,7 +15,7 @@ const MallState = {
 
 // ─── Teleport Positions ───
 const TELEPORT_POSITIONS = {
-  'entrance':         { x: 0,    y: 0,   z: 5,   label: 'Grand Entrance' },
+  'entrance':         { x: 0,    y: 0,   z: 14,  label: 'Grand Entrance' },
   'concrete-rose':    { x: -7,   y: 0,   z: -8,  label: 'Concrete Rose' },
   'bijadi':           { x: 7,    y: 0,   z: -8,  label: 'BiJaDi' },
   'faithfully-faded': { x: -7,   y: 0,   z: -22, label: 'Faithfully Faded' },
@@ -167,6 +167,16 @@ function teleportTo(locationId) {
   setTimeout(() => {
     // Move player
     rig.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+
+    // Reset camera look direction toward mall interior
+    var cam = document.getElementById('camera');
+    if (cam) {
+      var lookComp = cam.components['look-controls'];
+      if (lookComp) {
+        lookComp.pitchObject.rotation.x = 0;
+        lookComp.yawObject.rotation.y = Math.PI; // Face into mall (negative Z)
+      }
+    }
 
     // Update zone
     MallState.currentZone = pos.label;

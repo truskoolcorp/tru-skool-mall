@@ -10,46 +10,97 @@ const TextureGen = {
   _ready: false,
 
   init() {
-    var assets = document.querySelector('a-assets');
-    if (!assets) {
-      assets = document.createElement('a-assets');
-      document.querySelector('a-scene').prepend(assets);
-    }
-
-    // Generate all textures
-    this.generate('floor-marble',   512, 512, this.drawMarble);
-    this.generate('floor-tile',     512, 512, this.drawTile);
-    this.generate('wall-concrete',  512, 512, this.drawConcrete);
-    this.generate('wall-plaster',   256, 256, this.drawPlaster);
-    this.generate('wood-dark',      256, 256, this.drawWoodDark);
-    this.generate('wood-light',     256, 256, this.drawWoodLight);
-    this.generate('metal-brushed',  256, 256, this.drawMetalBrushed);
-    this.generate('metal-gold',     256, 256, this.drawMetalGold);
-    this.generate('fabric-dark',    128, 128, this.drawFabricDark);
-    this.generate('leather-brown',  256, 256, this.drawLeather);
-    this.generate('carpet-dark',    256, 256, this.drawCarpet);
-    this.generate('glass-frosted',  128, 128, this.drawGlass);
+    // Generate all textures as Three.js CanvasTextures
+    this.genTex('floor-marble',   512, 512, this.drawMarble);
+    this.genTex('floor-tile',     512, 512, this.drawTile);
+    this.genTex('wall-concrete',  512, 512, this.drawConcrete);
+    this.genTex('wall-plaster',   256, 256, this.drawPlaster);
+    this.genTex('wood-dark',      256, 256, this.drawWoodDark);
+    this.genTex('wood-light',     256, 256, this.drawWoodLight);
+    this.genTex('metal-brushed',  256, 256, this.drawMetalBrushed);
+    this.genTex('metal-gold',     256, 256, this.drawMetalGold);
+    this.genTex('fabric-dark',    128, 128, this.drawFabricDark);
+    this.genTex('leather-brown',  256, 256, this.drawLeather);
+    this.genTex('carpet-dark',    256, 256, this.drawCarpet);
+    this.genTex('glass-frosted',  128, 128, this.drawGlass);
 
     this._ready = true;
     console.log('[TextureGen] 12 procedural textures generated');
 
-    // Apply textures to existing corridor geometry
-    this.applyCorridorTextures();
+    // Apply to corridor after a short delay
+    setTimeout(() => this.applyCorridorTextures(), 600);
   },
 
-  generate(id, w, h, drawFn) {
+  genTex(id, w, h, drawFn) {
     var c = document.createElement('canvas');
     c.width = w; c.height = h;
     var ctx = c.getContext('2d');
     drawFn(ctx, w, h);
 
+    // Three.js texture for direct application
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.needsUpdate = true;
+    this.textures[id] = tex;
+
+    // Also create an A-Frame asset image so src: #tex-... references work
     var img = document.createElement('img');
     img.id = 'tex-' + id;
     img.src = c.toDataURL('image/jpeg', 0.85);
+    img.setAttribute('crossorigin', 'anonymous');
     var assets = document.querySelector('a-assets');
-    if (assets) assets.appendChild(img);
+    if (!assets) {
+      assets = document.createElement('a-assets');
+      document.querySelector('a-scene').prepend(assets);
+    }
+    assets.appendChild(img);
+  },
 
-    this.textures[id] = img;
+  // Apply a texture to an A-Frame element via Three.js
+  applyTo(el, texId, repeatX, repeatY, opts) {
+    if (!el || !this.textures[texId]) return;
+    var mesh = el.getObject3D('mesh');
+    if (!mesh) {
+      // Retry after mesh is ready
+      el.addEventListener('loaded', () => this.applyTo(el, texId, repeatX, repeatY, opts));
+      return;
+    }
+
+    var tex = this.textures[texId].clone();
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(repeatX || 1, repeatY || 1);
+    tex.needsUpdate = true;
+
+    mesh.traverse(function(child) {
+      if (child.isMesh && child.material) {
+        child.material.map = tex;
+        if (opts && opts.roughness !== undefined) child.material.roughness = opts.roughness;
+        if (opts && opts.metalness !== undefined) child.material.metalness = opts.metalness;
+        child.material.needsUpdate = true;
+      }
+    });
+  },
+
+  // ─── Apply textures to main corridor geometry ───
+  applyCorridorTextures() {
+    var self = this;
+
+    // Floor — marble
+    var floor = document.getElementById('corridor-floor');
+    if (floor) self.applyTo(floor, 'floor-marble', 8, 16, { roughness: 0.3, metalness: 0.1 });
+
+    // Ceiling — plaster
+    var ceiling = document.getElementById('corridor-ceiling');
+    if (ceiling) self.applyTo(ceiling, 'wall-plaster', 4, 8, { roughness: 0.9, metalness: 0.05 });
+
+    // Walls — concrete
+    document.querySelectorAll('.corridor-wall').forEach(function(wall) {
+      self.applyTo(wall, 'wall-concrete', 4, 2, { roughness: 0.8, metalness: 0.05 });
+    });
+
+    console.log('[TextureGen] Textures applied to corridor');
   },
 
   // ─── MARBLE (white with grey veins) ───
@@ -264,43 +315,6 @@ const TextureGen = {
       ctx.fillStyle = 'rgba(220,230,240,' + (Math.random()*0.08) + ')';
       ctx.fillRect(Math.random()*w, Math.random()*h, 3, 3);
     }
-  },
-
-  // ─── Apply textures to main corridor geometry ───
-  applyCorridorTextures() {
-    var scene = document.querySelector('a-scene');
-    if (!scene) return;
-
-    // Wait for textures to be in assets
-    setTimeout(function() {
-      // Floor
-      var floor = document.getElementById('corridor-floor');
-      if (floor) {
-        floor.setAttribute('material', 'src: #tex-floor-marble; repeat: 8 16; roughness: 0.3; metalness: 0.1; color: #d0c8c0');
-      }
-
-      // Walls
-      document.querySelectorAll('.corridor-wall').forEach(function(wall) {
-        wall.setAttribute('material', 'src: #tex-wall-concrete; repeat: 4 2; roughness: 0.8; metalness: 0.05; color: #2a2a32');
-      });
-
-      // Ceiling
-      var ceiling = document.getElementById('corridor-ceiling');
-      if (ceiling) {
-        ceiling.setAttribute('material', 'src: #tex-wall-plaster; repeat: 4 8; roughness: 0.9; color: #1a1a22');
-      }
-
-      // Store floors (apply carpet to clothing stores, wood to cafe/verse)
-      document.querySelectorAll('.store-floor-carpet').forEach(function(f) {
-        f.setAttribute('material', 'src: #tex-carpet-dark; repeat: 4 4; roughness: 0.95');
-      });
-
-      document.querySelectorAll('.store-floor-wood').forEach(function(f) {
-        f.setAttribute('material', 'src: #tex-wood-dark; repeat: 6 6; roughness: 0.6; metalness: 0.1');
-      });
-
-      console.log('[TextureGen] Textures applied to corridor');
-    }, 500);
   },
 };
 
