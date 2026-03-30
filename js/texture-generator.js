@@ -27,9 +27,12 @@ const TextureGen = {
     this._ready = true;
     console.log('[TextureGen] 12 procedural textures generated');
 
-    // Apply to corridor after a short delay
-    setTimeout(() => this.applyCorridorTextures(), 600);
+    // Apply to corridor after scene is fully ready
+    setTimeout(() => this.applyCorridorTextures(), 2000);
   },
+
+  // Store data URLs for direct material application
+  dataUrls: {},
 
   genTex(id, w, h, drawFn) {
     var c = document.createElement('canvas');
@@ -37,50 +40,30 @@ const TextureGen = {
     var ctx = c.getContext('2d');
     drawFn(ctx, w, h);
 
-    // Three.js texture for direct application
+    // Store the data URL — this is what we'll apply directly
+    this.dataUrls[id] = c.toDataURL('image/jpeg', 0.85);
+
+    // Also create Three.js texture for advanced use
     var tex = new THREE.CanvasTexture(c);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.needsUpdate = true;
     this.textures[id] = tex;
-
-    // Also create an A-Frame asset image so src: #tex-... references work
-    var img = document.createElement('img');
-    img.id = 'tex-' + id;
-    img.src = c.toDataURL('image/jpeg', 0.85);
-    img.setAttribute('crossorigin', 'anonymous');
-    var assets = document.querySelector('a-assets');
-    if (!assets) {
-      assets = document.createElement('a-assets');
-      document.querySelector('a-scene').prepend(assets);
-    }
-    assets.appendChild(img);
   },
 
-  // Apply a texture to an A-Frame element via Three.js
+  // Apply texture via A-Frame setAttribute (most reliable method)
   applyTo(el, texId, repeatX, repeatY, opts) {
-    if (!el || !this.textures[texId]) return;
-    var mesh = el.getObject3D('mesh');
-    if (!mesh) {
-      // Retry after mesh is ready
-      el.addEventListener('loaded', () => this.applyTo(el, texId, repeatX, repeatY, opts));
-      return;
+    if (!el || !this.dataUrls[texId]) return;
+    var url = this.dataUrls[texId];
+    var matObj = {
+      src: url,
+      repeat: (repeatX || 1) + ' ' + (repeatY || 1)
+    };
+    if (opts) {
+      if (opts.roughness !== undefined) matObj.roughness = opts.roughness;
+      if (opts.metalness !== undefined) matObj.metalness = opts.metalness;
     }
-
-    var tex = this.textures[texId].clone();
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(repeatX || 1, repeatY || 1);
-    tex.needsUpdate = true;
-
-    mesh.traverse(function(child) {
-      if (child.isMesh && child.material) {
-        child.material.map = tex;
-        if (opts && opts.roughness !== undefined) child.material.roughness = opts.roughness;
-        if (opts && opts.metalness !== undefined) child.material.metalness = opts.metalness;
-        child.material.needsUpdate = true;
-      }
-    });
+    el.setAttribute('material', matObj);
   },
 
   // ─── Apply textures to main corridor geometry ───
@@ -100,7 +83,7 @@ const TextureGen = {
       self.applyTo(wall, 'wall-concrete', 4, 2, { roughness: 0.8, metalness: 0.05 });
     });
 
-    console.log('[TextureGen] Textures applied to corridor');
+    console.log('[TextureGen] Corridor textures applied via data URLs');
   },
 
   // ─── MARBLE (white with grey veins) ───
@@ -322,7 +305,7 @@ const TextureGen = {
 document.addEventListener('DOMContentLoaded', function() {
   var scene = document.querySelector('a-scene');
   if (scene) {
-    var start = function() { setTimeout(function() { TextureGen.init(); }, 800); };
+    var start = function() { setTimeout(function() { TextureGen.init(); }, 1500); };
     if (scene.hasLoaded) start();
     else scene.addEventListener('loaded', start);
   }

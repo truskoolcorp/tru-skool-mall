@@ -23,8 +23,8 @@ const StoreInteriors = {
     this.addCeilingDetails(scene);
     this.addAvatars(scene);
 
-    // Apply textures after TextureGen has created them
-    setTimeout(() => this.applyTextures(scene), 1200);
+    // Apply textures after TextureGen has created them (needs scene fully loaded)
+    setTimeout(() => this.applyTextures(scene), 3000);
 
     console.log('[Interiors] Enhanced store interiors with textures loaded');
   },
@@ -55,13 +55,34 @@ const StoreInteriors = {
       setTimeout(() => this.applyTextures(scene), 500);
       return;
     }
-    // Apply textures to all elements with data-tex attribute
+
+    // Fix all elements with data-tex attribute
     scene.querySelectorAll('[data-tex]').forEach(el => {
       var tex = el.getAttribute('data-tex');
       var r = parseFloat(el.getAttribute('data-repeat') || '2');
       TextureGen.applyTo(el, tex, r, r);
     });
-    console.log('[Interiors] Textures applied to furniture');
+
+    // Fix elements with #tex- references in their material
+    // A-Frame stores material as component data — read the src property
+    scene.querySelectorAll('[material]').forEach(el => {
+      var matData = el.getAttribute('material');
+      if (!matData) return;
+      // matData can be object or string depending on how it was set
+      var src = (typeof matData === 'object') ? matData.src : null;
+      if (!src && typeof matData === 'string') {
+        var m = matData.match(/#tex-([a-z-]+)/);
+        if (m) src = '#tex-' + m[1];
+      }
+      if (src && typeof src === 'string' && src.indexOf('#tex-') === 0) {
+        var texId = src.replace('#tex-', '');
+        if (TextureGen.dataUrls[texId]) {
+          el.setAttribute('material', 'src', TextureGen.dataUrls[texId]);
+        }
+      }
+    });
+
+    console.log('[Interiors] Textures applied to all furniture');
   },
 
   // ─── Helper: Create entity with children ───
