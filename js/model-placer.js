@@ -247,17 +247,46 @@ const ModelPlacer = {
       var mesh = entity.getObject3D('mesh');
       if (!mesh) return;
 
-      // Auto-ground: move model so feet touch the floor
-      var box = new THREE.Box3().setFromObject(mesh);
-      var yOffset = -box.min.y;
-      if (Math.abs(yOffset) > 0.01) {
-        var pos = entity.getAttribute('position');
-        entity.setAttribute('position', {
-          x: pos.x,
-          y: pos.y + yOffset,
-          z: pos.z
+      // Auto-ground: for avatars, normalize the 100x FBX scale and place feet on floor
+      if (isAvatar) {
+        // FBX→GLB conversion applies 100x scale. Normalize it.
+        var rootBone = null;
+        mesh.traverse(function(n) {
+          if (n.name === 'Mesh1.0' || (n.isMesh && n.scale.x > 10)) {
+            // This is the 100x scaled mesh — normalize
+            var s = 1.0 / n.scale.x;
+            n.scale.set(s, s, s);
+            n.updateMatrixWorld(true);
+            console.log('[ModelPlacer] Normalized ' + id + ' scale from ' + (1/s).toFixed(0) + 'x to 1x');
+          }
         });
-        console.log('[ModelPlacer] Auto-grounded ' + id + ' (offset: ' + yOffset.toFixed(2) + ')');
+        // Recalculate bounding box after scale fix
+        var box = new THREE.Box3().setFromObject(mesh);
+        var height = box.max.y - box.min.y;
+        var yOffset = -box.min.y;
+        // Scale entity to ~1.7m tall
+        if (height > 0.01 && height < 0.5) {
+          var targetH = 1.7;
+          var sc = targetH / height;
+          entity.setAttribute('scale', sc + ' ' + sc + ' ' + sc);
+          yOffset = -box.min.y * sc;
+        }
+        var pos = entity.getAttribute('position');
+        entity.setAttribute('position', { x: pos.x, y: yOffset, z: pos.z });
+        console.log('[ModelPlacer] Avatar ' + id + ': height=' + height.toFixed(2) + 'm, grounded at y=' + yOffset.toFixed(2));
+      } else {
+        // Non-avatar models: standard auto-ground
+        var box = new THREE.Box3().setFromObject(mesh);
+        var yOffset = -box.min.y;
+        if (Math.abs(yOffset) > 0.01) {
+          var pos = entity.getAttribute('position');
+          entity.setAttribute('position', {
+            x: pos.x,
+            y: pos.y + yOffset,
+            z: pos.z
+          });
+          console.log('[ModelPlacer] Auto-grounded ' + id + ' (offset: ' + yOffset.toFixed(2) + ')');
+        }
       }
 
       // Log skeleton/animation info
