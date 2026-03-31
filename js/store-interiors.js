@@ -21,7 +21,7 @@ const StoreInteriors = {
     this.enhanceCafeSativa(scene);
     this.enhanceVerseAlkemist(scene);
     this.addCeilingDetails(scene);
-    this.addAvatars(scene);
+    // Avatars are now inline in index.html
 
     // Apply textures after scene is fully loaded
     setTimeout(() => this.applyTextures(scene), 4000);
