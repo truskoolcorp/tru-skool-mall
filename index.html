@@ -266,9 +266,18 @@
 >
   <!-- ─── Assets ─── -->
   <a-assets timeout="30000">
-    <!-- Textures (procedural fallbacks used inline) -->
-    <img id="marble-floor" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect fill='%23181820' width='128' height='128'/%3E%3Crect fill='%231a1a24' x='0' y='0' width='64' height='64'/%3E%3Crect fill='%231a1a24' x='64' y='64' width='64' height='64'/%3E%3C/svg%3E" crossorigin="anonymous">
-    <img id="wall-tex" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23222230' width='64' height='64'/%3E%3C/svg%3E" crossorigin="anonymous">
+    <!-- Real procedural textures (generated as static files) -->
+    <img id="tex-marble" src="assets/textures/marble.jpg" crossorigin="anonymous">
+    <img id="tex-concrete" src="assets/textures/concrete.jpg" crossorigin="anonymous">
+    <img id="tex-wood-dark" src="assets/textures/wood-dark.jpg" crossorigin="anonymous">
+    <img id="tex-wood-light" src="assets/textures/wood-light.jpg" crossorigin="anonymous">
+    <img id="tex-carpet" src="assets/textures/carpet.jpg" crossorigin="anonymous">
+    <img id="tex-leather" src="assets/textures/leather.jpg" crossorigin="anonymous">
+    <img id="tex-metal" src="assets/textures/metal.jpg" crossorigin="anonymous">
+    <img id="tex-plaster" src="assets/textures/plaster.jpg" crossorigin="anonymous">
+    <!-- Legacy ID for backward compat -->
+    <img id="marble-floor" src="assets/textures/marble.jpg" crossorigin="anonymous">
+    <img id="wall-tex" src="assets/textures/concrete.jpg" crossorigin="anonymous">
   </a-assets>
 
   <!-- ─── Lighting ─── -->
@@ -319,7 +328,7 @@
     position="0 0 -30"
     rotation="-90 0 0"
     width="30" height="80"
-    material="src: #marble-floor; repeat: 15 40; color: #2a2a34"
+    material="src: #tex-marble; repeat: 10 30; roughness: 0.25; metalness: 0.1; color: #c0b8b0"
   ></a-plane>
 
   <!-- ─── Ceiling ─── -->
@@ -327,28 +336,28 @@
     position="0 12 -30"
     rotation="90 0 0"
     width="30" height="80"
-    material="color: #181828; metalness: 0.3; roughness: 0.8"
+    material="src: #tex-plaster; repeat: 6 15; roughness: 0.9; metalness: 0.05; color: #28262e"
   ></a-plane>
 
   <!-- ─── Left Wall (full corridor) ─── -->
   <a-box class="corridor-wall"
     position="-15 6 -30"
     width="0.3" height="12" depth="80"
-    material="color: #24243a"
+    material="src: #tex-concrete; repeat: 1 6; roughness: 0.8; metalness: 0.05; color: #3a3a44"
   ></a-box>
 
   <!-- ─── Right Wall (full corridor) ─── -->
   <a-box class="corridor-wall"
     position="15 6 -30"
     width="0.3" height="12" depth="80"
-    material="color: #24243a"
+    material="src: #tex-concrete; repeat: 1 6; roughness: 0.8; metalness: 0.05; color: #3a3a44"
   ></a-box>
 
   <!-- ─── Back Wall ─── -->
   <a-box class="corridor-wall"
     position="0 6 -70"
     width="30" height="12" depth="0.3"
-    material="color: #24243a"
+    material="src: #tex-concrete; repeat: 4 2; roughness: 0.8; metalness: 0.05; color: #3a3a44"
   ></a-box>
 
   <!-- ═══════════════════════════════════════════════════════════
