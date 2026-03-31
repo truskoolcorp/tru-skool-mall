@@ -115,15 +115,18 @@ const ModelPlacer = {
 
     // ─── CHARACTER AVATARS ───
     'assets/models/laviche.glb': [
-      { pos: '0 0 2', rot: '0 180 0', scale: '1 1 1', store: 'entrance', id: 'avatar-laviche' },
+      { pos: '2 0 2', rot: '0 200 0', scale: '1 1 1', store: 'entrance', id: 'glb-laviche',
+        replaces_ids: ['avatar-laviche', 'laviche-avatar'] },
     ],
 
     'assets/models/ginger.glb': [
-      { pos: '-7 0 -36', rot: '0 60 0', scale: '1 1 1', store: 'wanderlust', id: 'avatar-ginger' },
+      { pos: '-7 0 -36', rot: '0 60 0', scale: '1 1 1', store: 'wanderlust', id: 'glb-ginger',
+        replaces_ids: ['avatar-ginger'] },
     ],
 
     'assets/models/ahnika.glb': [
-      { pos: '-7 0 -20', rot: '0 60 0', scale: '1 1 1', store: 'faithfully-faded', id: 'avatar-ahnika' },
+      { pos: '-7 0 -20', rot: '0 60 0', scale: '1 1 1', store: 'faithfully-faded', id: 'glb-ahnika',
+        replaces_ids: ['avatar-ahnika'] },
     ],
 
     // ─── MALL CORRIDOR (full replacement) ───
@@ -204,28 +207,95 @@ const ModelPlacer = {
     // Add shadow
     entity.setAttribute('shadow', 'cast: true; receive: true');
 
+    // Check if this is an avatar model
+    var isAvatar = modelFile.indexOf('laviche') !== -1 ||
+                   modelFile.indexOf('ginger') !== -1 ||
+                   modelFile.indexOf('ahnika') !== -1;
+
     // Add to scene
     scene.appendChild(entity);
+
+    var self = this;
 
     // Handle model load events
     entity.addEventListener('model-loaded', function() {
       console.log('[ModelPlacer] Rendered: ' + id + ' at ' + placement.pos);
 
-      // Auto-center on ground if model is floating
-      // (Some Sketchfab models have origin at center instead of bottom)
-      // Uncomment below to auto-fix:
-      // var mesh = entity.getObject3D('mesh');
-      // if (mesh) {
-      //   var box = new THREE.Box3().setFromObject(mesh);
-      //   var yOffset = -box.min.y;
-      //   var pos = entity.getAttribute('position');
-      //   entity.setAttribute('position', pos.x + ' ' + (pos.y + yOffset) + ' ' + pos.z);
-      // }
+      var mesh = entity.getObject3D('mesh');
+      if (!mesh) return;
+
+      // Fix T-pose for avatar models — rotate arms down
+      if (isAvatar) {
+        self.fixTPose(mesh, id);
+      }
+
+      // Auto-ground: move model so its feet touch the floor
+      var box = new THREE.Box3().setFromObject(mesh);
+      var yOffset = -box.min.y;
+      if (Math.abs(yOffset) > 0.01) {
+        var pos = entity.getAttribute('position');
+        entity.setAttribute('position', {
+          x: pos.x,
+          y: pos.y + yOffset,
+          z: pos.z
+        });
+        console.log('[ModelPlacer] Auto-grounded ' + id + ' (offset: ' + yOffset.toFixed(2) + ')');
+      }
+
+      // Remove old placeholder avatars that this GLB replaces
+      if (placement.replaces_ids) {
+        placement.replaces_ids.forEach(function(oldId) {
+          var oldEl = document.getElementById(oldId);
+          if (oldEl) {
+            oldEl.parentNode.removeChild(oldEl);
+            console.log('[ModelPlacer] Removed old placeholder: #' + oldId);
+          }
+        });
+      }
     });
 
     entity.addEventListener('model-error', function(e) {
       console.warn('[ModelPlacer] Error loading ' + modelFile + ':', e.detail);
     });
+  },
+
+  // ─── Fix T-Pose: rotate arms down to natural standing position ───
+  fixTPose(mesh, id) {
+    var bonesFound = 0;
+
+    mesh.traverse(function(bone) {
+      if (!bone.isBone) return;
+      var name = bone.name.toLowerCase();
+
+      // Left upper arm — rotate down (positive Z rotation)
+      if ((name.indexOf('leftupperarm') !== -1 || name.indexOf('leftshoulder') !== -1 ||
+           name.indexOf('left_upper_arm') !== -1 || name.indexOf('l_upperarm') !== -1 ||
+           name.indexOf('leftarm') !== -1 || name === 'left arm' ||
+           name.indexOf('l_arm') !== -1) && name.indexOf('fore') === -1 && name.indexOf('lower') === -1) {
+        bone.rotation.z += 1.2; // ~70 degrees down
+        bonesFound++;
+      }
+
+      // Right upper arm — rotate down (negative Z rotation)
+      if ((name.indexOf('rightupperarm') !== -1 || name.indexOf('rightshoulder') !== -1 ||
+           name.indexOf('right_upper_arm') !== -1 || name.indexOf('r_upperarm') !== -1 ||
+           name.indexOf('rightarm') !== -1 || name === 'right arm' ||
+           name.indexOf('r_arm') !== -1) && name.indexOf('fore') === -1 && name.indexOf('lower') === -1) {
+        bone.rotation.z -= 1.2; // ~70 degrees down
+        bonesFound++;
+      }
+    });
+
+    if (bonesFound > 0) {
+      console.log('[ModelPlacer] Fixed T-pose for ' + id + ' (' + bonesFound + ' bones adjusted)');
+    } else {
+      // If no standard bone names found, try to find ANY arm-like bones
+      var allBones = [];
+      mesh.traverse(function(bone) {
+        if (bone.isBone) allBones.push(bone.name);
+      });
+      console.log('[ModelPlacer] No arm bones found for ' + id + '. Skeleton bones: ' + allBones.slice(0, 15).join(', '));
+    }
   },
 };
 

@@ -23,8 +23,8 @@ const StoreInteriors = {
     this.addCeilingDetails(scene);
     this.addAvatars(scene);
 
-    // Apply textures after TextureGen has created them (needs scene fully loaded)
-    setTimeout(() => this.applyTextures(scene), 3000);
+    // Apply textures after scene is fully loaded
+    setTimeout(() => this.applyTextures(scene), 4000);
 
     console.log('[Interiors] Enhanced store interiors with textures loaded');
   },
@@ -51,9 +51,80 @@ const StoreInteriors = {
 
   // ─── Apply textures to furniture after TextureGen loads ───
   applyTextures(scene) {
-    // Textures are now static files loaded via <a-assets>.
-    // All material="src: #tex-*" references in the HTML work natively.
-    console.log('[Interiors] Static textures applied via A-Frame assets');
+    // Auto-texture remaining flat-colored surfaces
+    var count = 0;
+    scene.querySelectorAll('a-box, a-cylinder, a-plane, a-sphere').forEach(el => {
+      var mat = el.getAttribute('material');
+      if (!mat) return;
+      // Skip if already has a texture
+      var matStr = typeof mat === 'object' ? JSON.stringify(mat) : String(mat);
+      if (matStr.indexOf('src') !== -1 || matStr.indexOf('tex-') !== -1) return;
+      // Skip emissive/glow elements
+      if (matStr.indexOf('emissive') !== -1) return;
+      // Skip transparent elements
+      if (matStr.indexOf('opacity') !== -1 && matStr.indexOf('opacity: 1') === -1) return;
+
+      var color = typeof mat === 'object' ? mat.color : '';
+      if (!color && typeof mat === 'string') {
+        var cm = mat.match(/color:\s*(#[a-fA-F0-9]+)/);
+        if (cm) color = cm[1];
+      }
+      if (!color) return;
+
+      var hex = color.toLowerCase();
+      var r = parseInt(hex.substr(1,2),16) || 0;
+      var g = parseInt(hex.substr(3,2),16) || 0;
+      var b = parseInt(hex.substr(5,2),16) || 0;
+      var brightness = (r + g + b) / 3;
+      var warmth = r - b; // positive = warm
+
+      // Get element size for context
+      var w = parseFloat(el.getAttribute('width') || el.getAttribute('radius') || '0');
+      var h = parseFloat(el.getAttribute('height') || '0');
+      var isLarge = (w > 1 || h > 2);
+      var tag = el.tagName.toLowerCase();
+
+      // Skip very bright colors (white, light accents)
+      if (brightness > 150) return;
+      // Skip brand accent colors (saturated colors)
+      var saturation = Math.max(r,g,b) - Math.min(r,g,b);
+      if (saturation > 80) return;
+
+      var texId = null;
+      var repeat = '2 2';
+
+      if (isLarge) {
+        // Large surfaces → concrete or wood
+        if (warmth > 20 && brightness < 100) {
+          texId = 'tex-wood-dark'; repeat = '3 2';
+        } else {
+          texId = 'tex-concrete'; repeat = '2 2';
+        }
+      } else if (tag === 'a-cylinder' && h > 1.5) {
+        // Tall cylinders = pillars/stands → metal
+        texId = 'tex-metal'; repeat = '1 2';
+      } else if (warmth > 15 && brightness < 80) {
+        // Warm dark small → wood-dark (furniture)
+        texId = 'tex-wood-dark'; repeat = '2 1';
+      } else if (warmth > 10 && brightness >= 80) {
+        // Warm medium → wood-light (shelves)
+        texId = 'tex-wood-light'; repeat = '2 1';
+      } else if (brightness < 60) {
+        // Neutral dark small → concrete
+        texId = 'tex-concrete'; repeat = '2 2';
+      } else {
+        // Neutral medium small → metal
+        texId = 'tex-metal'; repeat = '2 2';
+      }
+
+      if (texId) {
+        el.setAttribute('material', 'src', '#' + texId);
+        el.setAttribute('material', 'repeat', repeat);
+        el.setAttribute('material', 'color', '#ffffff');
+        count++;
+      }
+    });
+    console.log('[Interiors] Auto-textured ' + count + ' flat surfaces');
   },
 
   // ─── Helper: Create entity with children ───
@@ -397,26 +468,34 @@ const StoreInteriors = {
   // ─── AI Persona Avatar Figures ───
   // These are stylized placeholder figures until Ready Player Me GLBs are added
   addAvatars(scene) {
-    // Laviche — Grand Entrance hostess (gold/platinum accent)
-    this.addAvatar(scene, {
-      pos: '2 0 2', rot: '0 200 0', id: 'avatar-laviche',
-      skin: '#c49470', hair: '#1a0a05', hairStyle: 'long',
-      top: '#1a1a1a', bottom: '#1a1a1a', shoes: '#c9a84c',
-      accent: '#c9a84c', label: 'LAVICHE', labelColor: '#c9a84c'
-    });
-    // Ginger — Wanderlust store (red hair, green accent)
-    this.addAvatar(scene, {
-      pos: '-7 0 -36', rot: '0 60 0', id: 'avatar-ginger',
-      skin: '#f0d0b8', hair: '#a03020', hairStyle: 'long',
-      top: '#e8e0d8', bottom: '#60c890', shoes: '#3a3a3a',
-      accent: '#60c890', label: 'GINGER', labelColor: '#60c890'
-    });
-    // Ahnika — Faithfully Faded store (dark hair, pink accent)
-    this.addAvatar(scene, {
-      pos: '-7 0 -20', rot: '0 60 0', id: 'avatar-ahnika',
-      skin: '#d4a880', hair: '#0a0508', hairStyle: 'medium',
-      top: '#FFADED', bottom: '#420420', shoes: '#1a1a1a',
-      accent: '#FFADED', label: 'AHNIKA', labelColor: '#FFADED'
+    var avatarConfigs = [
+      { glb: 'assets/models/laviche.glb', pos: '2 0 2', rot: '0 200 0', id: 'avatar-laviche',
+        skin: '#c49470', hair: '#1a0a05', hairStyle: 'long',
+        top: '#1a1a1a', bottom: '#1a1a1a', shoes: '#c9a84c',
+        accent: '#c9a84c', label: 'LAVICHE', labelColor: '#c9a84c' },
+      { glb: 'assets/models/ginger.glb', pos: '-7 0 -36', rot: '0 60 0', id: 'avatar-ginger',
+        skin: '#f0d0b8', hair: '#a03020', hairStyle: 'long',
+        top: '#e8e0d8', bottom: '#60c890', shoes: '#3a3a3a',
+        accent: '#60c890', label: 'GINGER', labelColor: '#60c890' },
+      { glb: 'assets/models/ahnika.glb', pos: '-7 0 -20', rot: '0 60 0', id: 'avatar-ahnika',
+        skin: '#d4a880', hair: '#0a0508', hairStyle: 'medium',
+        top: '#FFADED', bottom: '#420420', shoes: '#1a1a1a',
+        accent: '#FFADED', label: 'AHNIKA', labelColor: '#FFADED' },
+    ];
+    var self = this;
+    avatarConfigs.forEach(function(cfg) {
+      // Check if GLB exists — if so, skip the stick figure (model-placer handles it)
+      fetch(cfg.glb, { method: 'HEAD' }).then(function(r) {
+        if (!r.ok) {
+          // GLB not found — add stick figure fallback
+          self.addAvatar(scene, cfg);
+          console.log('[Interiors] Stick-figure fallback for ' + cfg.id);
+        } else {
+          console.log('[Interiors] GLB found for ' + cfg.id + ' — skipping stick figure');
+        }
+      }).catch(function() {
+        self.addAvatar(scene, cfg);
+      });
     });
   },
 
