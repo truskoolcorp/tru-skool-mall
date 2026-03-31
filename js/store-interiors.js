@@ -469,7 +469,7 @@ const StoreInteriors = {
   // These are stylized placeholder figures until Ready Player Me GLBs are added
   addAvatars(scene) {
     var avatarConfigs = [
-      { glb: 'assets/models/laviche.glb', pos: '2 0 2', rot: '0 200 0', id: 'avatar-laviche',
+      { glb: 'assets/models/laviche.glb', pos: '2 0 4', rot: '0 200 0', id: 'avatar-laviche',
         skin: '#c49470', hair: '#1a0a05', hairStyle: 'long',
         top: '#1a1a1a', bottom: '#1a1a1a', shoes: '#c9a84c',
         accent: '#c9a84c', label: 'LAVICHE', labelColor: '#c9a84c' },

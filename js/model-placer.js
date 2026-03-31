@@ -113,19 +113,31 @@ const ModelPlacer = {
       { pos: '-8 0 -36',  rot: '0 15 0', scale: '1.2 1.2 1.2', store: 'wanderlust' },
     ],
 
-    // ─── CHARACTER AVATARS ───
+    // ─── CHARACTER AVATARS (FBX preferred for Mixamo animations, GLB fallback) ───
+    'assets/models/laviche.fbx': [
+      { pos: '2 0 4', rot: '0 200 0', scale: '1 1 1', store: 'entrance', id: 'fbx-laviche',
+        replaces_ids: ['avatar-laviche', 'laviche-avatar', 'glb-laviche'], format: 'fbx' },
+    ],
     'assets/models/laviche.glb': [
-      { pos: '2 0 2', rot: '0 200 0', scale: '1 1 1', store: 'entrance', id: 'glb-laviche',
+      { pos: '2 0 4', rot: '0 200 0', scale: '1 1 1', store: 'entrance', id: 'glb-laviche',
         replaces_ids: ['avatar-laviche', 'laviche-avatar'] },
     ],
 
+    'assets/models/ginger.fbx': [
+      { pos: '-8 0 -36', rot: '0 90 0', scale: '1 1 1', store: 'wanderlust', id: 'fbx-ginger',
+        replaces_ids: ['avatar-ginger', 'glb-ginger'], format: 'fbx' },
+    ],
     'assets/models/ginger.glb': [
-      { pos: '-7 0 -36', rot: '0 60 0', scale: '1 1 1', store: 'wanderlust', id: 'glb-ginger',
+      { pos: '-8 0 -36', rot: '0 90 0', scale: '1 1 1', store: 'wanderlust', id: 'glb-ginger',
         replaces_ids: ['avatar-ginger'] },
     ],
 
+    'assets/models/ahnika.fbx': [
+      { pos: '-9 0 -20', rot: '0 90 0', scale: '1 1 1', store: 'faithfully-faded', id: 'fbx-ahnika',
+        replaces_ids: ['avatar-ahnika', 'glb-ahnika'], format: 'fbx' },
+    ],
     'assets/models/ahnika.glb': [
-      { pos: '-7 0 -20', rot: '0 60 0', scale: '1 1 1', store: 'faithfully-faded', id: 'glb-ahnika',
+      { pos: '-9 0 -20', rot: '0 90 0', scale: '1 1 1', store: 'faithfully-faded', id: 'glb-ahnika',
         replaces_ids: ['avatar-ahnika'] },
     ],
 
@@ -166,6 +178,20 @@ const ModelPlacer = {
         self._checked++;
 
         if (response.ok) {
+          // If this is an FBX avatar, mark the GLB version to skip
+          var glbEquiv = modelFile.replace('.fbx', '.glb');
+          if (modelFile.endsWith('.fbx') && self.placements[glbEquiv]) {
+            self._skipFiles = self._skipFiles || {};
+            self._skipFiles[glbEquiv] = true;
+            console.log('[ModelPlacer] FBX found — will skip GLB: ' + glbEquiv);
+          }
+
+          // Skip if this GLB was superseded by an FBX
+          if (self._skipFiles && self._skipFiles[modelFile]) {
+            console.log('[ModelPlacer] Skipping (FBX takes priority): ' + modelFile);
+            return;
+          }
+
           self._loaded[modelFile] = true;
           var placements = self.placements[modelFile];
           console.log('[ModelPlacer] Found: ' + modelFile + ' (' + placements.length + ' placements)');
@@ -192,19 +218,15 @@ const ModelPlacer = {
   placeModel(scene, modelFile, placement, index) {
     var entity = document.createElement('a-entity');
 
-    // Set position, rotation, scale
     entity.setAttribute('position', placement.pos);
     if (placement.rot) entity.setAttribute('rotation', placement.rot);
     if (placement.scale) entity.setAttribute('scale', placement.scale);
 
-    // Load the GLTF model
+    // Load GLTF/GLB model
     entity.setAttribute('gltf-model', modelFile);
 
-    // Set an ID for reference
     var id = placement.id || ('model-' + modelFile.split('/').pop().replace('.glb', '') + '-' + index);
     entity.setAttribute('id', id);
-
-    // Add shadow
     entity.setAttribute('shadow', 'cast: true; receive: true');
 
     // Check if this is an avatar model
@@ -212,24 +234,20 @@ const ModelPlacer = {
                    modelFile.indexOf('ginger') !== -1 ||
                    modelFile.indexOf('ahnika') !== -1;
 
-    // Add to scene
+    // Enable animation playback for avatars (uses aframe-extras animation-mixer)
+    if (isAvatar) {
+      entity.setAttribute('animation-mixer', 'loop: repeat; timeScale: 1');
+    }
+
     scene.appendChild(entity);
 
-    var self = this;
-
-    // Handle model load events
     entity.addEventListener('model-loaded', function() {
       console.log('[ModelPlacer] Rendered: ' + id + ' at ' + placement.pos);
 
       var mesh = entity.getObject3D('mesh');
       if (!mesh) return;
 
-      // Fix T-pose for avatar models — rotate arms down
-      if (isAvatar) {
-        self.fixTPose(mesh, id);
-      }
-
-      // Auto-ground: move model so its feet touch the floor
+      // Auto-ground: move model so feet touch the floor
       var box = new THREE.Box3().setFromObject(mesh);
       var yOffset = -box.min.y;
       if (Math.abs(yOffset) > 0.01) {
@@ -242,13 +260,20 @@ const ModelPlacer = {
         console.log('[ModelPlacer] Auto-grounded ' + id + ' (offset: ' + yOffset.toFixed(2) + ')');
       }
 
-      // Remove old placeholder avatars that this GLB replaces
+      // Log skeleton/animation info
+      if (isAvatar) {
+        var boneCount = 0;
+        mesh.traverse(function(n) { if (n.isBone) boneCount++; });
+        console.log('[ModelPlacer] Avatar ' + id + ': ' + boneCount + ' bones');
+      }
+
+      // Remove old placeholders
       if (placement.replaces_ids) {
         placement.replaces_ids.forEach(function(oldId) {
           var oldEl = document.getElementById(oldId);
           if (oldEl) {
             oldEl.parentNode.removeChild(oldEl);
-            console.log('[ModelPlacer] Removed old placeholder: #' + oldId);
+            console.log('[ModelPlacer] Removed placeholder: #' + oldId);
           }
         });
       }
@@ -257,45 +282,6 @@ const ModelPlacer = {
     entity.addEventListener('model-error', function(e) {
       console.warn('[ModelPlacer] Error loading ' + modelFile + ':', e.detail);
     });
-  },
-
-  // ─── Fix T-Pose: rotate arms down to natural standing position ───
-  fixTPose(mesh, id) {
-    var bonesFound = 0;
-
-    mesh.traverse(function(bone) {
-      if (!bone.isBone) return;
-      var name = bone.name.toLowerCase();
-
-      // Left upper arm — rotate down (positive Z rotation)
-      if ((name.indexOf('leftupperarm') !== -1 || name.indexOf('leftshoulder') !== -1 ||
-           name.indexOf('left_upper_arm') !== -1 || name.indexOf('l_upperarm') !== -1 ||
-           name.indexOf('leftarm') !== -1 || name === 'left arm' ||
-           name.indexOf('l_arm') !== -1) && name.indexOf('fore') === -1 && name.indexOf('lower') === -1) {
-        bone.rotation.z += 1.2; // ~70 degrees down
-        bonesFound++;
-      }
-
-      // Right upper arm — rotate down (negative Z rotation)
-      if ((name.indexOf('rightupperarm') !== -1 || name.indexOf('rightshoulder') !== -1 ||
-           name.indexOf('right_upper_arm') !== -1 || name.indexOf('r_upperarm') !== -1 ||
-           name.indexOf('rightarm') !== -1 || name === 'right arm' ||
-           name.indexOf('r_arm') !== -1) && name.indexOf('fore') === -1 && name.indexOf('lower') === -1) {
-        bone.rotation.z -= 1.2; // ~70 degrees down
-        bonesFound++;
-      }
-    });
-
-    if (bonesFound > 0) {
-      console.log('[ModelPlacer] Fixed T-pose for ' + id + ' (' + bonesFound + ' bones adjusted)');
-    } else {
-      // If no standard bone names found, try to find ANY arm-like bones
-      var allBones = [];
-      mesh.traverse(function(bone) {
-        if (bone.isBone) allBones.push(bone.name);
-      });
-      console.log('[ModelPlacer] No arm bones found for ' + id + '. Skeleton bones: ' + allBones.slice(0, 15).join(', '));
-    }
   },
 };
 
