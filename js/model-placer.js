@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   TRU SKOOL MALL — Model Placer (Clean Rewrite)
-   Auto-loads GLB models from assets/models/ and positions them.
+   TRU SKOOL MALL — Model Placer v3 (Clean)
    ═══════════════════════════════════════════════════════════ */
 
 var ModelPlacer = {
@@ -12,61 +11,60 @@ var ModelPlacer = {
   },
 
   furniture: {
-    'assets/models/clothing-rack.glb':       [{ pos: '-12 0 -7', rot: '0 90 0', s: '1.2 1.2 1.2' }, { pos: '-12 0 -9.5', rot: '0 90 0', s: '1.2 1.2 1.2' }, { pos: '-12 0 -21', rot: '0 90 0', s: '1.2 1.2 1.2' }, { pos: '12 0 -21', rot: '0 -90 0', s: '1.2 1.2 1.2' }],
-    'assets/models/mannequin.glb':           [{ pos: '-7.5 0 -6', rot: '0 60 0', s: '1 1 1' }, { pos: '7.5 0 -6', rot: '0 -60 0', s: '1 1 1' }],
-    'assets/models/display-case.glb':        [{ pos: '9 0 -7', rot: '0 -90 0', s: '1 1 1' }, { pos: '1 0 -57', rot: '0 0 0', s: '1 1 1' }],
-    'assets/models/turntable.glb':           [{ pos: '0 1 -59', rot: '0 180 0', s: '1.5 1.5 1.5' }],
-    'assets/models/globe.glb':               [{ pos: '-9 1.5 -38', rot: '0 0 0', s: '2 2 2' }],
+    'assets/models/clothing-rack.glb': [
+      { pos: '-12 0 -7', rot: '0 90 0', s: '1.2 1.2 1.2' },
+      { pos: '-12 0 -21', rot: '0 90 0', s: '1.2 1.2 1.2' },
+      { pos: '12 0 -21', rot: '0 -90 0', s: '1.2 1.2 1.2' }
+    ],
+    'assets/models/mannequin.glb':    [{ pos: '-7.5 0 -6', rot: '0 60 0' }, { pos: '7.5 0 -6', rot: '0 -60 0' }],
+    'assets/models/display-case.glb': [{ pos: '9 0 -7', rot: '0 -90 0' }, { pos: '1 0 -57' }],
+    'assets/models/turntable.glb':    [{ pos: '0 1 -59', rot: '0 180 0', s: '1.5 1.5 1.5' }],
+    'assets/models/globe.glb':        [{ pos: '-9 1.5 -38', s: '2 2 2' }],
   },
 
   init: function() {
     var scene = document.querySelector('a-scene');
     if (!scene) return;
-
     var self = this;
 
-    // Load avatars
     Object.keys(this.avatars).forEach(function(file) {
-      self.tryLoad(scene, file, true);
+      self.tryLoadAvatar(scene, file);
+    });
+    Object.keys(this.furniture).forEach(function(file) {
+      self.tryLoadFurniture(scene, file);
     });
 
-    // Load furniture
-    Object.keys(this.furniture).forEach(function(file) {
-      self.tryLoad(scene, file, false);
-    });
+    console.log('[ModelPlacer] Checking for models...');
   },
 
-  tryLoad: function(scene, file, isAvatar) {
+  tryLoadAvatar: function(scene, file) {
     var self = this;
     fetch(file, { method: 'HEAD' }).then(function(r) {
       if (!r.ok) return;
+      var cfg = self.avatars[file];
 
-      if (isAvatar) {
-        var cfg = self.avatars[file];
-        self.placeAvatar(scene, file, cfg);
-      } else {
-        var placements = self.furniture[file];
-        placements.forEach(function(p, i) {
-          self.placeFurniture(scene, file, p, i);
+      var el = document.createElement('a-entity');
+      el.setAttribute('id', cfg.id);
+      el.setAttribute('gltf-model', file);
+      el.setAttribute('position', cfg.pos);
+      el.setAttribute('rotation', cfg.rot || '0 0 0');
+      // DO NOT set scale here — set it after model loads to avoid frustum culling
+      el.setAttribute('animation-mixer', 'loop: repeat; timeScale: 1');
+      scene.appendChild(el);
+
+      el.addEventListener('model-loaded', function() {
+        var mesh = el.getObject3D('mesh');
+        if (!mesh) return;
+
+        // Find and fix the 100x FBX scale on the mesh node
+        mesh.traverse(function(node) {
+          if (node.scale && node.scale.x > 10) {
+            node.scale.set(1, 1, 1);
+            node.updateMatrixWorld(true);
+          }
         });
-      }
-    }).catch(function() {});
-  },
 
-  placeAvatar: function(scene, file, cfg) {
-    var el = document.createElement('a-entity');
-    el.setAttribute('id', cfg.id);
-    el.setAttribute('gltf-model', file);
-    el.setAttribute('position', cfg.pos);
-    el.setAttribute('rotation', cfg.rot);
-    el.setAttribute('scale', '0.01 0.01 0.01');
-    el.setAttribute('animation-mixer', 'loop: repeat; timeScale: 1');
-    scene.appendChild(el);
-
-    el.addEventListener('model-loaded', function() {
-      // Fix metallic skin
-      var mesh = el.getObject3D('mesh');
-      if (mesh) {
+        // Fix metallic skin
         mesh.traverse(function(child) {
           if (child.isMesh && child.material) {
             var mats = Array.isArray(child.material) ? child.material : [child.material];
@@ -77,36 +75,45 @@ var ModelPlacer = {
             });
           }
         });
-      }
 
-      // Remove old placeholders
-      if (cfg.removes) {
-        cfg.removes.forEach(function(oldId) {
-          var old = document.getElementById(oldId);
-          if (old && old.parentNode) old.parentNode.removeChild(old);
-        });
-      }
+        // Remove old placeholders
+        if (cfg.removes) {
+          cfg.removes.forEach(function(oldId) {
+            var old = document.getElementById(oldId);
+            if (old && old.parentNode) old.parentNode.removeChild(old);
+          });
+        }
 
-      console.log('[ModelPlacer] Avatar loaded: ' + cfg.id);
-    });
+        console.log('[ModelPlacer] Avatar: ' + cfg.id + ' loaded, scale fixed, metalness→0');
+      });
+
+      el.addEventListener('model-error', function(e) {
+        console.warn('[ModelPlacer] Avatar error ' + cfg.id + ':', e.detail);
+      });
+    }).catch(function() {});
   },
 
-  placeFurniture: function(scene, file, p, i) {
-    var el = document.createElement('a-entity');
-    el.setAttribute('gltf-model', file);
-    el.setAttribute('position', p.pos);
-    if (p.rot) el.setAttribute('rotation', p.rot);
-    if (p.s) el.setAttribute('scale', p.s);
-    el.setAttribute('shadow', 'cast: true; receive: true');
-    scene.appendChild(el);
+  tryLoadFurniture: function(scene, file) {
+    fetch(file, { method: 'HEAD' }).then(function(r) {
+      if (!r.ok) return;
+      var placements = ModelPlacer.furniture[file];
+      placements.forEach(function(p, i) {
+        var el = document.createElement('a-entity');
+        el.setAttribute('gltf-model', file);
+        el.setAttribute('position', p.pos);
+        if (p.rot) el.setAttribute('rotation', p.rot);
+        if (p.s) el.setAttribute('scale', p.s);
+        el.setAttribute('shadow', 'cast: true; receive: true');
+        scene.appendChild(el);
+      });
+    }).catch(function() {});
   },
 };
 
-// Auto-init
 document.addEventListener('DOMContentLoaded', function() {
   var scene = document.querySelector('a-scene');
   if (scene) {
-    var go = function() { setTimeout(function() { ModelPlacer.init(); }, 1500); };
+    var go = function() { setTimeout(function() { ModelPlacer.init(); }, 2000); };
     if (scene.hasLoaded) go();
     else scene.addEventListener('loaded', go);
   }
