@@ -1,13 +1,15 @@
 /* ═══════════════════════════════════════════════════════════
-   TRU SKOOL MALL — Model Placer v3 (Clean)
+   TRU SKOOL MALL — Model Placer v4
+   FBX→GLB avatars have 100x mesh scale (cm→visual).
+   Entity scale 0.01 counters it. Frustum culling disabled.
    ═══════════════════════════════════════════════════════════ */
 
 var ModelPlacer = {
 
   avatars: {
-    'assets/models/laviche.glb': { pos: '2 0 2', rot: '0 200 0', id: 'glb-laviche', removes: ['avatar-laviche', 'laviche-avatar'] },
-    'assets/models/ginger.glb':  { pos: '-7 0 -36', rot: '0 60 0', id: 'glb-ginger', removes: ['avatar-ginger'] },
-    'assets/models/ahnika.glb':  { pos: '-7 0 -20', rot: '0 60 0', id: 'glb-ahnika', removes: ['avatar-ahnika'] },
+    'assets/models/laviche.glb': { pos: '2 0 0', rot: '0 180 0', id: 'glb-laviche', removes: ['avatar-laviche', 'laviche-avatar'] },
+    'assets/models/ginger.glb':  { pos: '-4 0 -36', rot: '0 90 0', id: 'glb-ginger', removes: ['avatar-ginger'] },
+    'assets/models/ahnika.glb':  { pos: '-4 0 -20', rot: '0 90 0', id: 'glb-ahnika', removes: ['avatar-ahnika'] },
   },
 
   furniture: {
@@ -26,21 +28,15 @@ var ModelPlacer = {
     var scene = document.querySelector('a-scene');
     if (!scene) return;
     var self = this;
-
-    Object.keys(this.avatars).forEach(function(file) {
-      self.tryLoadAvatar(scene, file);
-    });
-    Object.keys(this.furniture).forEach(function(file) {
-      self.tryLoadFurniture(scene, file);
-    });
-
-    console.log('[ModelPlacer] Checking for models...');
+    Object.keys(this.avatars).forEach(function(f) { self.tryLoadAvatar(scene, f); });
+    Object.keys(this.furniture).forEach(function(f) { self.tryLoadFurniture(scene, f); });
+    console.log('[ModelPlacer] v4 init — checking models...');
   },
 
   tryLoadAvatar: function(scene, file) {
     var self = this;
     fetch(file, { method: 'HEAD' }).then(function(r) {
-      if (!r.ok) return;
+      if (!r.ok) { console.log('[ModelPlacer] Not found: ' + file); return; }
       var cfg = self.avatars[file];
 
       var el = document.createElement('a-entity');
@@ -48,25 +44,23 @@ var ModelPlacer = {
       el.setAttribute('gltf-model', file);
       el.setAttribute('position', cfg.pos);
       el.setAttribute('rotation', cfg.rot || '0 0 0');
-      // DO NOT set scale here — set it after model loads to avoid frustum culling
       el.setAttribute('animation-mixer', 'loop: repeat; timeScale: 1');
       scene.appendChild(el);
 
+      console.log('[ModelPlacer] Loading avatar: ' + cfg.id + ' from ' + file);
+
       el.addEventListener('model-loaded', function() {
         var mesh = el.getObject3D('mesh');
-        if (!mesh) return;
+        if (!mesh) { console.warn('[ModelPlacer] No mesh for ' + cfg.id); return; }
 
-        // Find and fix the 100x FBX scale on the mesh node
-        mesh.traverse(function(node) {
-          if (node.scale && node.scale.x > 10) {
-            node.scale.set(1, 1, 1);
-            node.updateMatrixWorld(true);
-          }
-        });
+        // Apply 0.01 scale to counter FBX 100x mesh scale
+        el.object3D.scale.set(0.01, 0.01, 0.01);
 
-        // Fix metallic skin
+        // Disable frustum culling so the avatar isn't hidden
         mesh.traverse(function(child) {
-          if (child.isMesh && child.material) {
+          if (child.isMesh) {
+            child.frustumCulled = false;
+            // Fix metallic/shiny skin
             var mats = Array.isArray(child.material) ? child.material : [child.material];
             mats.forEach(function(m) {
               m.metalness = 0.0;
@@ -84,20 +78,19 @@ var ModelPlacer = {
           });
         }
 
-        console.log('[ModelPlacer] Avatar: ' + cfg.id + ' loaded, scale fixed, metalness→0');
+        console.log('[ModelPlacer] ✓ Avatar ' + cfg.id + ' — scale 0.01, frustum off, metalness 0');
       });
 
       el.addEventListener('model-error', function(e) {
-        console.warn('[ModelPlacer] Avatar error ' + cfg.id + ':', e.detail);
+        console.error('[ModelPlacer] ✗ Avatar error ' + cfg.id + ':', e.detail);
       });
-    }).catch(function() {});
+    }).catch(function(err) { console.error('[ModelPlacer] Fetch error: ' + file, err); });
   },
 
   tryLoadFurniture: function(scene, file) {
     fetch(file, { method: 'HEAD' }).then(function(r) {
       if (!r.ok) return;
-      var placements = ModelPlacer.furniture[file];
-      placements.forEach(function(p, i) {
+      ModelPlacer.furniture[file].forEach(function(p) {
         var el = document.createElement('a-entity');
         el.setAttribute('gltf-model', file);
         el.setAttribute('position', p.pos);

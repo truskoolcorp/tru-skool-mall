@@ -174,7 +174,7 @@ function teleportTo(locationId) {
       var lookComp = cam.components['look-controls'];
       if (lookComp) {
         lookComp.pitchObject.rotation.x = 0;
-        lookComp.yawObject.rotation.y = Math.PI; // Face into mall (negative Z)
+        lookComp.yawObject.rotation.y = 0; // Face into mall (-Z direction)
       }
     }
 
