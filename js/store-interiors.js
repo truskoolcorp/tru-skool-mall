@@ -32,19 +32,19 @@ const StoreInteriors = {
   // ─── Store Floor Planes (separate from corridor) ───
   addStoreFloors(scene) {
     const stores = [
-      { pos: '-10 0.01 -8', size: '8 8', tex: 'carpet', color: '#1a0a10' },   // Concrete Rose
-      { pos: '10 0.01 -8', size: '8 8', tex: 'carpet', color: '#1a1510' },     // BiJaDi
-      { pos: '-10 0.01 -22', size: '8 8', tex: 'carpet', color: '#1a0510' },   // Faithfully Faded
-      { pos: '10 0.01 -22', size: '8 8', tex: 'carpet', color: '#1a1508' },    // H.O.E.
-      { pos: '-10 0.01 -38', size: '8 8', tex: 'wood-dark', color: '#3a2a18' },     // Wanderlust
-      { pos: '10 0.01 -38', size: '8 8', tex: 'wood-dark', color: '#2a1a10' },      // Cafe Sativa
-      { pos: '0 0.01 -58', size: '14 12', tex: 'carpet', color: '#0a0515' },   // Verse Alkemist
+      { pos: '-10 0.01 -8', size: '8 8', tex: 'carpet' },   // Concrete Rose
+      { pos: '10 0.01 -8', size: '8 8', tex: 'carpet' },     // BiJaDi
+      { pos: '-10 0.01 -22', size: '8 8', tex: 'carpet' },   // Faithfully Faded
+      { pos: '10 0.01 -22', size: '8 8', tex: 'carpet' },    // H.O.E.
+      { pos: '-10 0.01 -38', size: '8 8', tex: 'wood-dark' },     // Wanderlust
+      { pos: '10 0.01 -38', size: '8 8', tex: 'wood-dark' },      // Cafe Sativa
+      { pos: '0 0.01 -58', size: '14 12', tex: 'carpet' },   // Verse Alkemist
     ];
     stores.forEach(s => {
       const sizes = s.size.split(' ');
       this.addEntity(scene, s.pos, `
         <a-plane rotation="-90 0 0" width="${sizes[0]}" height="${sizes[1]}"
-          material="src: #tex-${s.tex}; repeat: 4 4; roughness: 0.85; color: ${s.color}"></a-plane>
+          material="src: #tex-${s.tex}; repeat: 4 4; roughness: 0.85; color: #ffffff"></a-plane>
       `);
     });
   },
@@ -74,7 +74,7 @@ const StoreInteriors = {
         <a-cylinder position="1.2 1 0" radius="0.025" height="2" material="color: #c9a84c; metalness: 0.9; roughness: 0.1"></a-cylinder>
         <a-cylinder position="0 2 0" radius="0.02" height="2.5" rotation="0 0 90" material="color: #c9a84c; metalness: 0.9; roughness: 0.1"></a-cylinder>
         <!-- Hanging garments -->
-        <a-box position="-0.6 1.5 0" width="0.4" height="0.9" depth="0.06" material="color: #1a0a10; opacity: 0.9"></a-box>
+        <a-box position="-0.6 1.5 0" width="0.4" height="0.9" depth="0.06" material="color: #ffffff; opacity: 0.9"></a-box>
         <a-box position="0 1.5 0" width="0.4" height="0.85" depth="0.06" material="color: #c94060; opacity: 0.7"></a-box>
         <a-box position="0.6 1.5 0" width="0.4" height="0.95" depth="0.06" material="color: #2a1520"></a-box>
       </a-entity>
@@ -167,7 +167,7 @@ const StoreInteriors = {
         <!-- Hanging garments (thin fabric shapes) -->
         <a-box position="-0.7 1.5 0" width="0.38" height="0.85" depth="0.04" material="color: #420420; opacity: 0.85"></a-box>
         <a-box position="-0.2 1.5 0" width="0.38" height="0.8" depth="0.04" material="color: #FFADED; opacity: 0.7"></a-box>
-        <a-box position="0.3 1.5 0" width="0.38" height="0.9" depth="0.04" material="color: #1a0a10"></a-box>
+        <a-box position="0.3 1.5 0" width="0.38" height="0.9" depth="0.04" material="color: #ffffff"></a-box>
         <a-box position="0.8 1.5 0" width="0.38" height="0.75" depth="0.04" material="color: #FFADED; opacity: 0.5"></a-box>
       </a-entity>
 
@@ -347,7 +347,7 @@ const StoreInteriors = {
       <a-box position="5.8 0.1 -2" width="0.05" height="0.05" depth="8" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.5; opacity: 0.6; transparent: true"></a-box>
 
       <!-- Monitor/screen behind booth -->
-      <a-plane position="0 5 -4.7" width="4" height="2" material="color: #0a0515; emissive: #a060e0; emissiveIntensity: 0.08"></a-plane>
+      <a-plane position="0 5 -4.7" width="4" height="2" material="color: #ffffff; emissive: #a060e0; emissiveIntensity: 0.08"></a-plane>
       <a-text value="THE VERSE ALKEMIST" position="0 5.3 -4.65" align="center" color="#a060e0" width="5" opacity="0.4"></a-text>
       <a-text value="WALLS OF THE WORLD EP" position="0 4.7 -4.65" align="center" color="#e0d0f0" width="4" opacity="0.3"></a-text>
 
