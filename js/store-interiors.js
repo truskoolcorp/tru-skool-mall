@@ -32,13 +32,13 @@ const StoreInteriors = {
   // ─── Store Floor Planes (separate from corridor) ───
   addStoreFloors(scene) {
     const stores = [
-      { pos: '-10 0.01 -8', size: '8 8', tex: 'carpet-dark', color: '#1a0a10' },   // Concrete Rose
-      { pos: '10 0.01 -8', size: '8 8', tex: 'carpet-dark', color: '#1a1510' },     // BiJaDi
-      { pos: '-10 0.01 -22', size: '8 8', tex: 'carpet-dark', color: '#1a0510' },   // Faithfully Faded
-      { pos: '10 0.01 -22', size: '8 8', tex: 'carpet-dark', color: '#1a1508' },    // H.O.E.
+      { pos: '-10 0.01 -8', size: '8 8', tex: 'carpet', color: '#1a0a10' },   // Concrete Rose
+      { pos: '10 0.01 -8', size: '8 8', tex: 'carpet', color: '#1a1510' },     // BiJaDi
+      { pos: '-10 0.01 -22', size: '8 8', tex: 'carpet', color: '#1a0510' },   // Faithfully Faded
+      { pos: '10 0.01 -22', size: '8 8', tex: 'carpet', color: '#1a1508' },    // H.O.E.
       { pos: '-10 0.01 -38', size: '8 8', tex: 'wood-dark', color: '#3a2a18' },     // Wanderlust
       { pos: '10 0.01 -38', size: '8 8', tex: 'wood-dark', color: '#2a1a10' },      // Cafe Sativa
-      { pos: '0 0.01 -58', size: '14 12', tex: 'carpet-dark', color: '#0a0515' },   // Verse Alkemist
+      { pos: '0 0.01 -58', size: '14 12', tex: 'carpet', color: '#0a0515' },   // Verse Alkemist
     ];
     stores.forEach(s => {
       const sizes = s.size.split(' ');
@@ -51,38 +51,9 @@ const StoreInteriors = {
 
   // ─── Apply textures to furniture after TextureGen loads ───
   applyTextures(scene) {
-    if (typeof TextureGen === 'undefined' || !TextureGen._ready) {
-      setTimeout(() => this.applyTextures(scene), 500);
-      return;
-    }
-
-    // Fix all elements with data-tex attribute
-    scene.querySelectorAll('[data-tex]').forEach(el => {
-      var tex = el.getAttribute('data-tex');
-      var r = parseFloat(el.getAttribute('data-repeat') || '2');
-      TextureGen.applyTo(el, tex, r, r);
-    });
-
-    // Fix elements with #tex- references in their material
-    // A-Frame stores material as component data — read the src property
-    scene.querySelectorAll('[material]').forEach(el => {
-      var matData = el.getAttribute('material');
-      if (!matData) return;
-      // matData can be object or string depending on how it was set
-      var src = (typeof matData === 'object') ? matData.src : null;
-      if (!src && typeof matData === 'string') {
-        var m = matData.match(/#tex-([a-z-]+)/);
-        if (m) src = '#tex-' + m[1];
-      }
-      if (src && typeof src === 'string' && src.indexOf('#tex-') === 0) {
-        var texId = src.replace('#tex-', '');
-        if (TextureGen.dataUrls[texId]) {
-          el.setAttribute('material', 'src', TextureGen.dataUrls[texId]);
-        }
-      }
-    });
-
-    console.log('[Interiors] Textures applied to all furniture');
+    // Textures are now static files loaded via <a-assets>.
+    // All material="src: #tex-*" references in the HTML work natively.
+    console.log('[Interiors] Static textures applied via A-Frame assets');
   },
 
   // ─── Helper: Create entity with children ───
@@ -133,7 +104,7 @@ const StoreInteriors = {
 
       <!-- Checkout counter (textured wood + glass) -->
       <a-box position="3 0.5 2" width="1.8" height="1" depth="0.7" material="src: #tex-wood-dark; repeat: 2 1; roughness: 0.5; metalness: 0.1"></a-box>
-      <a-box position="3 1.05 2" width="1.85" height="0.04" depth="0.75" material="src: #tex-metal-brushed; metalness: 0.6; roughness: 0.3"></a-box>
+      <a-box position="3 1.05 2" width="1.85" height="0.04" depth="0.75" material="src: #tex-metal; metalness: 0.6; roughness: 0.3"></a-box>
       <!-- Register -->
       <a-box position="3.2 1.2 2" width="0.3" height="0.15" depth="0.25" material="color: #111; metalness: 0.4"></a-box>
 
@@ -302,7 +273,7 @@ const StoreInteriors = {
     this.addEntity(scene, base, `
       <!-- Bar counter with bottles -->
       <a-box position="-2 0.55 0" width="3" height="1.1" depth="0.7" material="src: #tex-wood-dark; repeat: 3 1; roughness: 0.4; metalness: 0.15"></a-box>
-      <a-box position="-2 1.15 0" width="3.1" height="0.06" depth="0.75" material="src: #tex-metal-brushed; metalness: 0.5; roughness: 0.3"></a-box>
+      <a-box position="-2 1.15 0" width="3.1" height="0.06" depth="0.75" material="src: #tex-metal; metalness: 0.5; roughness: 0.3"></a-box>
       <!-- Bottles on bar -->
       <a-cylinder position="-2.5 1.5 0.1" radius="0.05" height="0.6" material="color: #4a6a3a; metalness: 0.3"></a-cylinder>
       <a-cylinder position="-2.2 1.45 0.1" radius="0.05" height="0.5" material="color: #8a6020; metalness: 0.4"></a-cylinder>
@@ -328,8 +299,8 @@ const StoreInteriors = {
 
       <!-- Lounge seating (leather sofa) -->
       <a-entity position="2 0 -2">
-        <a-box position="0 0.25 0" width="1.8" height="0.5" depth="0.8" material="src: #tex-leather-brown; repeat: 2 1; roughness: 0.7"></a-box>
-        <a-box position="0 0.55 -0.35" width="1.8" height="0.4" depth="0.1" material="src: #tex-leather-brown; repeat: 2 1; roughness: 0.7"></a-box>
+        <a-box position="0 0.25 0" width="1.8" height="0.5" depth="0.8" material="src: #tex-leather; repeat: 2 1; roughness: 0.7"></a-box>
+        <a-box position="0 0.55 -0.35" width="1.8" height="0.4" depth="0.1" material="src: #tex-leather; repeat: 2 1; roughness: 0.7"></a-box>
         <!-- Throw pillows -->
         <a-box position="-0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 10" material="color: #c09060; opacity: 0.8"></a-box>
         <a-box position="0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 -10" material="color: #8a6040; opacity: 0.8"></a-box>
