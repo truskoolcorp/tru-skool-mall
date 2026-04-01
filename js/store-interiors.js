@@ -342,7 +342,8 @@ const StoreInteriors = {
   enhanceCafeSativa(scene) {
     const base = '10 0 -38';
     this.addEntity(scene, base, `
-      <!-- ═══ THE BAR ═══ -->
+      <!-- ═══ THE BAR (CLICKABLE) ═══ -->
+      <a-entity position="-2 1.5 1" class="clickable" interactive-panel="type: cocktail-menu; label: View Cocktail Menu; color: #c09060"></a-entity>
       <a-box position="-2 0.55 0" width="3.5" height="1.1" depth="0.7" material="src: #tex-wood-dark; repeat: 3 1; roughness: 0.4; metalness: 0.15; color: #ffffff"></a-box>
       <a-box position="-2 1.15 0" width="3.6" height="0.06" depth="0.75" material="src: #tex-metal; metalness: 0.5; roughness: 0.3; color: #ffffff"></a-box>
       <!-- Bottles -->
@@ -378,6 +379,8 @@ const StoreInteriors = {
         <a-cylinder position="0 0.55 0" radius="0.12" height="0.15" material="color: #d8c0a0"></a-cylinder>
         <a-cylinder position="0.3 0.55 0" radius="0.12" height="0.15" material="color: #b0a0e0"></a-cylinder>
         <a-cylinder position="0.6 0.55 0" radius="0.12" height="0.15" material="color: #e0d080"></a-cylinder>
+        <!-- CLICKABLE gelato menu -->
+        <a-entity position="0 0.5 0.5" class="clickable" interactive-panel="type: gelato-menu; label: View Gelato Menu; color: #e8d0ff"></a-entity>
         <!-- Sign -->
         <a-text value="COLD STONED" position="0 1.6 0" align="center" color="#e8d0ff" width="3" font="mozillavr"></a-text>
         <a-text value="CBD Infused Gelato" position="0 1.3 0" align="center" color="#a08060" width="2" opacity="0.6"></a-text>
@@ -431,13 +434,14 @@ const StoreInteriors = {
         <a-cylinder position="0 0.82 0.8" radius="0.03" height="0.15" material="color: #888; metalness: 0.6"></a-cylinder>
       </a-entity>
 
-      <!-- ═══ THE GALLERY (Art on walls) ═══ -->
+      <!-- ═══ THE GALLERY (CLICKABLE — opens art marketplace) (Art on walls) ═══ -->
       <a-plane position="-3.8 3.5 -2" width="1.5" height="1.2" rotation="0 90 0" material="color: #2a1a10; roughness: 0.3"></a-plane>
       <a-plane position="-3.8 3.5 -2" width="1.4" height="1.1" rotation="0 90 0" material="color: #e8d8c0; emissive: #e8d0c0; emissiveIntensity: 0.05"></a-plane>
       <a-plane position="-3.8 3.5 0.5" width="1.5" height="1.2" rotation="0 90 0" material="color: #2a1a10; roughness: 0.3"></a-plane>
       <a-plane position="-3.8 3.5 0.5" width="1.4" height="1.1" rotation="0 90 0" material="color: #d8c8b0; emissive: #d8c0b0; emissiveIntensity: 0.05"></a-plane>
 
-      <!-- ═══ CIGAR HUMIDOR ═══ -->
+      <!-- ═══ CIGAR HUMIDOR (CLICKABLE) ═══ -->
+      <a-entity position="-3.5 1.5 -3" class="clickable" interactive-panel="type: cigar-menu; label: Browse Cigars; color: #c09060"></a-entity>
       <a-box position="-3.5 1 -3.3" width="0.9" height="0.55" depth="0.55" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3; metalness: 0.15; color: #ffffff"></a-box>
       <a-box position="-3.5 1.3 -3.3" width="0.92" height="0.05" depth="0.57" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3; color: #ffffff"></a-box>
 
@@ -535,7 +539,7 @@ const StoreInteriors = {
 
       <!-- CLICKABLE HEADPHONES (music player) -->
       <a-entity position="2 1.2 -2" class="clickable"
-        music-player="track: assets/audio/walls-of-the-world.mp3; label: Walls of the World EP; color: #a060e0">
+        interactive-panel="type: music; label: Stream Music; color: #a060e0">
         <a-torus radius="0.18" radius-tubular="0.035" rotation="0 0 10" material="color: #1a1a1a; metalness: 0.6; roughness: 0.3"></a-torus>
         <a-box position="0 0.15 0" width="0.38" height="0.04" depth="0.06" material="color: #1a1a1a; metalness: 0.5"></a-box>
         <a-cylinder position="-0.17 0 0" radius="0.07" height="0.04" rotation="90 0 0" material="color: #222; metalness: 0.4"></a-cylinder>
@@ -547,7 +551,7 @@ const StoreInteriors = {
 
       <!-- Second listening station -->
       <a-entity position="-3 1.2 -4" class="clickable"
-        music-player="track: assets/audio/sodade-cypher.mp3; label: Sodade Cypher; color: #a060e0">
+        interactive-panel="type: music; label: Stream Sodade Cypher; color: #a060e0">
         <a-torus radius="0.15" radius-tubular="0.03" rotation="10 0 0" material="color: #2a2a2a; metalness: 0.5"></a-torus>
         <a-box position="0 0.12 0" width="0.32" height="0.03" depth="0.05" material="color: #2a2a2a; metalness: 0.4"></a-box>
         <a-ring position="0 -0.25 0" rotation="-90 0 0" radius-inner="0.15" radius-outer="0.3"
