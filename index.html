@@ -258,6 +258,35 @@
 <!-- ═══════════════════════════════════════════════════════════════
      A-FRAME 3D SCENE
      ═══════════════════════════════════════════════════════════════ -->
+<script src="js/avatar-interaction.js"></script>
+<script>
+// Fix FBX→GLB 100x scale and metallic materials
+AFRAME.registerComponent('fix-avatar', {
+  init: function() {
+    this.el.addEventListener('model-loaded', () => {
+      var mesh = this.el.getObject3D('mesh');
+      if (!mesh) return;
+      mesh.traverse(child => {
+        if (child.isMesh) {
+          child.frustumCulled = false;
+          var mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach(m => { m.metalness = 0; m.roughness = 0.7; m.needsUpdate = true; });
+        }
+        if (child.scale && child.scale.x > 10) {
+          child.scale.set(1, 1, 1);
+        }
+      });
+      var removes = this.data.split(',');
+      removes.forEach(id => {
+        var old = document.getElementById(id.trim());
+        if (old && old.parentNode) old.parentNode.removeChild(old);
+      });
+      console.log('[Avatar] Loaded: ' + this.el.id);
+    });
+  }
+});
+</script>
+
 <a-scene
   id="mall-scene"
   vr-mode-ui="enabled: true"
@@ -386,7 +415,7 @@
     gltf-model="assets/models/laviche.glb"
     animation-mixer="loop: repeat; timeScale: 1"
     fix-avatar="laviche-avatar"
-    avatar-interact="name: Laviche Cárdenas; color: #c9a84c; range: 8; guide: laviche"
+    avatar-interact="name: Laviche Cárdenas; color: #c9a84c; range: 10; guide: laviche"
     class="clickable" data-guide="laviche">
   </a-entity>
 
@@ -395,7 +424,7 @@
     gltf-model="assets/models/ginger.glb"
     animation-mixer="loop: repeat; timeScale: 1"
     fix-avatar="avatar-ginger"
-    avatar-interact="name: Ginger Pelirroja; color: #60c890; range: 8; guide: ginger"
+    avatar-interact="name: Ginger Pelirroja; color: #60c890; range: 10; guide: ginger"
     class="clickable" data-guide="ginger">
   </a-entity>
 
@@ -404,7 +433,7 @@
     gltf-model="assets/models/ahnika.glb"
     animation-mixer="loop: repeat; timeScale: 1"
     fix-avatar="avatar-ahnika"
-    avatar-interact="name: Ahnika Merlot; color: #FFADED; range: 8; guide: ahnika"
+    avatar-interact="name: Ahnika Merlot; color: #FFADED; range: 10; guide: ahnika"
     class="clickable" data-guide="ahnika">
   </a-entity>
 
@@ -631,34 +660,6 @@
 <!-- ═══════════════════════════════════════════════════════════════
      SCRIPTS
      ═══════════════════════════════════════════════════════════════ -->
-<script>
-// Custom component to fix FBX→GLB 100x scale and metallic materials
-AFRAME.registerComponent('fix-avatar', {
-  init: function() {
-    this.el.addEventListener('model-loaded', () => {
-      var mesh = this.el.getObject3D('mesh');
-      if (!mesh) return;
-      mesh.traverse(child => {
-        if (child.isMesh) {
-          child.frustumCulled = false;
-          var mats = Array.isArray(child.material) ? child.material : [child.material];
-          mats.forEach(m => { m.metalness = 0; m.roughness = 0.7; m.needsUpdate = true; });
-        }
-        if (child.scale && child.scale.x > 10) {
-          child.scale.set(1, 1, 1);
-        }
-      });
-      // Remove old placeholder
-      var removes = this.data.split(',');
-      removes.forEach(id => {
-        var old = document.getElementById(id.trim());
-        if (old && old.parentNode) old.parentNode.removeChild(old);
-      });
-      console.log('[Avatar] Loaded: ' + this.el.id);
-    });
-  }
-});
-</script>
 <script src="js/loading-screen.js"></script>
 <script src="js/mall-core.js"></script>
 <script src="js/guide-system.js"></script>
@@ -670,7 +671,6 @@ AFRAME.registerComponent('fix-avatar', {
 <script src="js/texture-generator.js"></script>
 <script src="js/store-interiors.js"></script>
 <script src="js/environment-upgrade.js"></script>
-<script src="js/avatar-interaction.js"></script>
 <script src="js/model-placer.js"></script>
 
 </body>
