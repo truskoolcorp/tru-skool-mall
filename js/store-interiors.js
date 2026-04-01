@@ -342,68 +342,122 @@ const StoreInteriors = {
   enhanceCafeSativa(scene) {
     const base = '10 0 -38';
     this.addEntity(scene, base, `
-      <!-- Bar counter with bottles -->
-      <a-box position="-2 0.55 0" width="3" height="1.1" depth="0.7" material="src: #tex-wood-dark; repeat: 3 1; roughness: 0.4; metalness: 0.15"></a-box>
-      <a-box position="-2 1.15 0" width="3.1" height="0.06" depth="0.75" material="src: #tex-metal; metalness: 0.5; roughness: 0.3"></a-box>
-      <!-- Bottles on bar -->
-      <a-cylinder position="-2.5 1.5 0.1" radius="0.05" height="0.6" material="color: #4a6a3a; metalness: 0.3"></a-cylinder>
-      <a-cylinder position="-2.2 1.45 0.1" radius="0.05" height="0.5" material="color: #8a6020; metalness: 0.4"></a-cylinder>
-      <a-cylinder position="-1.8 1.5 0.1" radius="0.05" height="0.6" material="color: #3a2a2a; metalness: 0.3"></a-cylinder>
-
-      <!-- Bar stools (realistic: thin leg + seat + footrest) -->
-      <a-entity position="-2.5 0 1">
+      <!-- ═══ THE BAR ═══ -->
+      <a-box position="-2 0.55 0" width="3.5" height="1.1" depth="0.7" material="src: #tex-wood-dark; repeat: 3 1; roughness: 0.4; metalness: 0.15; color: #ffffff"></a-box>
+      <a-box position="-2 1.15 0" width="3.6" height="0.06" depth="0.75" material="src: #tex-metal; metalness: 0.5; roughness: 0.3; color: #ffffff"></a-box>
+      <!-- Bottles -->
+      <a-cylinder position="-3 1.5 0.1" radius="0.05" height="0.6" material="color: #4a6a3a; metalness: 0.4"></a-cylinder>
+      <a-cylinder position="-2.6 1.45 0.1" radius="0.05" height="0.5" material="color: #8a6020; metalness: 0.5"></a-cylinder>
+      <a-cylinder position="-2.2 1.5 0.1" radius="0.05" height="0.6" material="color: #3a2a2a; metalness: 0.4"></a-cylinder>
+      <a-cylinder position="-1.8 1.48 0.1" radius="0.04" height="0.55" material="color: #c9a84c; metalness: 0.6"></a-cylinder>
+      <a-cylinder position="-1.3 1.5 0.1" radius="0.05" height="0.6" material="color: #2a4a4a; metalness: 0.4"></a-cylinder>
+      <!-- Bar stools -->
+      <a-entity position="-2.8 0 1">
         <a-cylinder position="0 0.45 0" radius="0.03" height="0.9" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
-        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="color: #5a3a1a; roughness: 0.5"></a-cylinder>
-        <a-cylinder position="0 0.3 0" radius="0.15" height="0.02" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
+        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="src: #tex-leather; roughness: 0.5; color: #ffffff"></a-cylinder>
       </a-entity>
-      <a-entity position="-1.5 0 1">
+      <a-entity position="-2 0 1">
         <a-cylinder position="0 0.45 0" radius="0.03" height="0.9" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
-        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="color: #5a3a1a; roughness: 0.5"></a-cylinder>
-        <a-cylinder position="0 0.3 0" radius="0.15" height="0.02" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
+        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="src: #tex-leather; roughness: 0.5; color: #ffffff"></a-cylinder>
+      </a-entity>
+      <a-entity position="-1.2 0 1">
+        <a-cylinder position="0 0.45 0" radius="0.03" height="0.9" material="color: #2a2a2a; metalness: 0.6"></a-cylinder>
+        <a-cylinder position="0 0.92 0" radius="0.18" height="0.05" material="src: #tex-leather; roughness: 0.5; color: #ffffff"></a-cylinder>
       </a-entity>
 
-      <!-- Lounge sign (replaces coffee menu) -->
-      <a-plane position="0 4.5 -3.85" width="3.5" height="1.8" material="color: #1a1410; roughness: 0.9"></a-plane>
-      <a-text value="CAFE SATIVA" position="0 5 -3.82" align="center" color="#c09060" width="4" font="mozillavr"></a-text>
-      <a-text value="SIP . SMOKE . VIBE" position="0 4.4 -3.82" align="center" color="#e8d8c8" width="3" opacity="0.6"></a-text>
-      <a-text value="THE STAGE | THE GALLERY | THE KITCHEN\\nTHE CIGAR LOUNGE | THE BAR | THE LOUNGE" position="0 3.8 -3.82" align="center" color="#a08060" width="2.8" wrap-count="40" opacity="0.5"></a-text>
-
-      <!-- Lounge seating (leather sofa) -->
-      <a-entity position="2 0 -2">
-        <a-box position="0 0.25 0" width="1.8" height="0.5" depth="0.8" material="src: #tex-leather; repeat: 2 1; roughness: 0.7"></a-box>
-        <a-box position="0 0.55 -0.35" width="1.8" height="0.4" depth="0.1" material="src: #tex-leather; repeat: 2 1; roughness: 0.7"></a-box>
-        <!-- Throw pillows -->
-        <a-box position="-0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 10" material="color: #c09060; opacity: 0.8"></a-box>
-        <a-box position="0.5 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 -10" material="color: #8a6040; opacity: 0.8"></a-box>
+      <!-- ═══ COLD STONED GELATO BAR ═══ -->
+      <a-entity position="3 0 2">
+        <!-- Glass display case -->
+        <a-box position="0 0.5 0" width="2" height="1" depth="0.8" material="color: #1a1a1a; roughness: 0.3; metalness: 0.2"></a-box>
+        <a-box position="0 1.05 0" width="2.1" height="0.05" depth="0.85" material="color: #e8e8e8; metalness: 0.6; roughness: 0.2"></a-box>
+        <!-- Glass front -->
+        <a-box position="0 0.7 0.41" width="1.9" height="0.5" depth="0.02" material="color: #aaddff; opacity: 0.3; transparent: true; metalness: 0.4"></a-box>
+        <!-- Gelato tubs (colorful) -->
+        <a-cylinder position="-0.6 0.55 0" radius="0.12" height="0.15" material="color: #e8a0b0"></a-cylinder>
+        <a-cylinder position="-0.3 0.55 0" radius="0.12" height="0.15" material="color: #a0d8a0"></a-cylinder>
+        <a-cylinder position="0 0.55 0" radius="0.12" height="0.15" material="color: #d8c0a0"></a-cylinder>
+        <a-cylinder position="0.3 0.55 0" radius="0.12" height="0.15" material="color: #b0a0e0"></a-cylinder>
+        <a-cylinder position="0.6 0.55 0" radius="0.12" height="0.15" material="color: #e0d080"></a-cylinder>
+        <!-- Sign -->
+        <a-text value="COLD STONED" position="0 1.6 0" align="center" color="#e8d0ff" width="3" font="mozillavr"></a-text>
+        <a-text value="CBD Infused Gelato" position="0 1.3 0" align="center" color="#a08060" width="2" opacity="0.6"></a-text>
       </a-entity>
 
-      <!-- Low table (textured wood top + metal legs) -->
-      <a-entity position="2 0 -0.8">
-        <a-box position="0 0.35 0" width="1" height="0.04" depth="0.5" material="src: #tex-wood-light; repeat: 2 1; roughness: 0.4"></a-box>
-        <a-box position="-0.4 0.17 -0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
-        <a-box position="0.4 0.17 -0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
-        <a-box position="-0.4 0.17 0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
-        <a-box position="0.4 0.17 0.18" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+      <!-- ═══ THE STAGE ═══ -->
+      <a-entity position="0 0 -3.5">
+        <!-- Raised platform -->
+        <a-box position="0 0.15 0" width="4" height="0.3" depth="3" material="color: #2a1a10; roughness: 0.5"></a-box>
+        <!-- Stage edge trim -->
+        <a-box position="0 0.31 1.5" width="4" height="0.02" depth="0.05" material="color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.3"></a-box>
+
+        <!-- Spotlights -->
+        <a-entity light="type: spot; color: #e8c060; intensity: 2; angle: 30; penumbra: 0.5; distance: 8; decay: 1.5" position="-1.5 5 0" rotation="-60 0 0"></a-entity>
+        <a-entity light="type: spot; color: #c060a0; intensity: 1.5; angle: 25; penumbra: 0.5; distance: 8; decay: 1.5" position="1.5 5 0" rotation="-60 0 0"></a-entity>
+
+        <!-- Mic stand on stage -->
+        <a-cylinder position="0 0.3 0.3" radius="0.15" height="0.03" material="color: #333; metalness: 0.6"></a-cylinder>
+        <a-cylinder position="0 1.3 0.3" radius="0.02" height="1.7" material="color: #555; metalness: 0.6"></a-cylinder>
+        <a-sphere position="0 2.2 0.3" radius="0.06" material="color: #333; metalness: 0.5"></a-sphere>
+
+        <!-- Jazz singer silhouette -->
+        <a-cylinder position="-1 0.6 -0.5" radius="0.2" height="0.8" material="color: #1a0a10; roughness: 0.8"></a-cylinder>
+        <a-sphere position="-1 1.15 -0.5" radius="0.15" material="color: #c49470; roughness: 0.6"></a-sphere>
+        <a-sphere position="-1 1.3 -0.55" radius="0.17" material="color: #0a0508; roughness: 0.9"></a-sphere>
+
+        <!-- Piano (stage left) -->
+        <a-box position="1.2 0.6 -0.5" width="1" height="0.08" depth="0.5" material="color: #0a0a0a; metalness: 0.3"></a-box>
+        <a-box position="1.2 0.8 -0.75" width="1" height="0.5" depth="0.06" material="color: #0a0a0a; metalness: 0.3"></a-box>
       </a-entity>
 
-      <!-- Cigar humidor display (textured wood) -->
-      <a-box position="-3 1 -3.3" width="0.8" height="0.5" depth="0.5" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3; metalness: 0.15"></a-box>
-      <a-box position="-3 1.3 -3.3" width="0.82" height="0.05" depth="0.52" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3"></a-box>
+      <!-- ═══ SMOKERS LOUNGE ═══ -->
+      <a-entity position="2.5 0 -1.5">
+        <!-- Leather sofa -->
+        <a-box position="0 0.25 0" width="2" height="0.5" depth="0.8" material="src: #tex-leather; repeat: 2 1; roughness: 0.7; color: #ffffff"></a-box>
+        <a-box position="0 0.55 -0.35" width="2" height="0.45" depth="0.1" material="src: #tex-leather; repeat: 2 1; roughness: 0.7; color: #ffffff"></a-box>
+        <!-- Pillows -->
+        <a-box position="-0.6 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 10" material="color: #c09060"></a-box>
+        <a-box position="0.6 0.55 0" width="0.3" height="0.25" depth="0.25" rotation="0 0 -10" material="color: #8a6040"></a-box>
 
-      <!-- Gallery frames on wall (art marketplace) -->
-      <a-plane position="-1.5 3.5 -3.85" width="1.2" height="0.9" material="color: #2a2030; opacity: 0.8"></a-plane>
-      <a-box position="-1.5 3.5 -3.87" width="1.3" height="1" depth="0.03" material="color: #c09060; metalness: 0.5"></a-box>
-      <a-plane position="1.5 3.5 -3.85" width="1" height="1.2" material="color: #201a2a; opacity: 0.8"></a-plane>
-      <a-box position="1.5 3.5 -3.87" width="1.1" height="1.3" depth="0.03" material="color: #c09060; metalness: 0.5"></a-box>
+        <!-- Low table -->
+        <a-box position="0 0.35 0.8" width="1.2" height="0.04" depth="0.6" material="src: #tex-wood-light; repeat: 2 1; roughness: 0.4; color: #ffffff"></a-box>
+        <a-box position="-0.5 0.17 0.6" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+        <a-box position="0.5 0.17 0.6" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+        <a-box position="-0.5 0.17 1" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
+        <a-box position="0.5 0.17 1" width="0.04" height="0.34" depth="0.04" material="color: #2a2a2a; metalness: 0.5"></a-box>
 
-      <!-- Vinyl on wall (music venue element) -->
-      <a-cylinder position="3 4 -3.8" radius="0.4" height="0.02" material="color: #111; metalness: 0.5"></a-cylinder>
-      <a-circle position="3 4 -3.78" radius="0.12" material="color: #c09060"></a-circle>
+        <!-- Hookah/shisha -->
+        <a-cylinder position="0 0.4 0.8" radius="0.08" height="0.5" material="color: #c9a84c; metalness: 0.7"></a-cylinder>
+        <a-sphere position="0 0.7 0.8" radius="0.1" material="color: #4a3a2a; metalness: 0.3"></a-sphere>
+        <a-cylinder position="0 0.82 0.8" radius="0.03" height="0.15" material="color: #888; metalness: 0.6"></a-cylinder>
+      </a-entity>
 
-      <!-- Warm ambient light -->
-      <a-entity light="type: point; color: #e8a060; intensity: 0.4; distance: 8; decay: 1.5" position="0 3 0"></a-entity>
+      <!-- ═══ THE GALLERY (Art on walls) ═══ -->
+      <a-plane position="-3.8 3.5 -2" width="1.5" height="1.2" rotation="0 90 0" material="color: #2a1a10; roughness: 0.3"></a-plane>
+      <a-plane position="-3.8 3.5 -2" width="1.4" height="1.1" rotation="0 90 0" material="color: #e8d8c0; emissive: #e8d0c0; emissiveIntensity: 0.05"></a-plane>
+      <a-plane position="-3.8 3.5 0.5" width="1.5" height="1.2" rotation="0 90 0" material="color: #2a1a10; roughness: 0.3"></a-plane>
+      <a-plane position="-3.8 3.5 0.5" width="1.4" height="1.1" rotation="0 90 0" material="color: #d8c8b0; emissive: #d8c0b0; emissiveIntensity: 0.05"></a-plane>
+
+      <!-- ═══ CIGAR HUMIDOR ═══ -->
+      <a-box position="-3.5 1 -3.3" width="0.9" height="0.55" depth="0.55" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3; metalness: 0.15; color: #ffffff"></a-box>
+      <a-box position="-3.5 1.3 -3.3" width="0.92" height="0.05" depth="0.57" material="src: #tex-wood-dark; repeat: 1 1; roughness: 0.3; color: #ffffff"></a-box>
+
+      <!-- ═══ SIGNAGE ═══ -->
+      <a-plane position="0 5 -3.85" width="4" height="2" material="color: #1a1410; roughness: 0.9"></a-plane>
+      <a-text value="CAFE SATIVA" position="0 5.2 -3.82" align="center" color="#c09060" width="5" font="mozillavr"></a-text>
+      <a-text value="SIP . SMOKE . VIBE" position="0 4.6 -3.82" align="center" color="#e8d8c8" width="3" opacity="0.5"></a-text>
+      <!-- Neon effect -->
+      <a-box position="0 5.2 -3.84" width="3.5" height="0.5" depth="0.02" material="color: #c09060; emissive: #c09060; emissiveIntensity: 0.2; opacity: 0.15; transparent: true"></a-box>
+
+      <!-- Cold Stoned neon -->
+      <a-text value="COLD STONED" position="3 2.5 2.5" align="center" color="#e8d0ff" width="2.5" rotation="0 180 0"></a-text>
+      <a-box position="3 2.5 2.5" width="2" height="0.4" depth="0.02" rotation="0 180 0" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.15; opacity: 0.15; transparent: true"></a-box>
+
+      <!-- Ambient warm lighting -->
+      <a-entity light="type: point; color: #e8c060; intensity: 0.8; distance: 10; decay: 1.5" position="0 4 -2"></a-entity>
+      <a-entity light="type: point; color: #c09060; intensity: 0.6; distance: 8; decay: 1.5" position="3 3 2"></a-entity>
     `);
   },
+
 
   // ─── The Verse Alkemist Interior ───
   enhanceVerseAlkemist(scene) {
@@ -412,31 +466,100 @@ const StoreInteriors = {
       <!-- Sound absorption panels -->
       <a-box position="-6 3 -2" width="0.3" height="4" depth="3" material="color: #1a0a20; roughness: 0.95"></a-box>
       <a-box position="6 3 -2" width="0.3" height="4" depth="3" material="color: #1a0a20; roughness: 0.95"></a-box>
+      <a-box position="-6 3 2" width="0.3" height="4" depth="3" material="color: #1a0a20; roughness: 0.95"></a-box>
+      <a-box position="6 3 2" width="0.3" height="4" depth="3" material="color: #1a0a20; roughness: 0.95"></a-box>
 
-      <!-- LED strips on walls -->
+      <!-- LED strips on walls + floor -->
       <a-box position="-5.8 0.1 -2" width="0.05" height="0.05" depth="8" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.5; opacity: 0.6; transparent: true"></a-box>
       <a-box position="5.8 0.1 -2" width="0.05" height="0.05" depth="8" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.5; opacity: 0.6; transparent: true"></a-box>
+      <a-box position="0 0.02 -5.5" width="8" height="0.02" depth="0.05" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.3; opacity: 0.4; transparent: true"></a-box>
+      <a-box position="0 0.02 1" width="8" height="0.02" depth="0.05" material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.3; opacity: 0.4; transparent: true"></a-box>
 
-      <!-- Monitor/screen behind booth -->
-      <a-plane position="0 5 -4.7" width="4" height="2" material="color: #ffffff; emissive: #a060e0; emissiveIntensity: 0.08"></a-plane>
-      <a-text value="THE VERSE ALKEMIST" position="0 5.3 -4.65" align="center" color="#a060e0" width="5" opacity="0.4"></a-text>
-      <a-text value="WALLS OF THE WORLD EP" position="0 4.7 -4.65" align="center" color="#e0d0f0" width="4" opacity="0.3"></a-text>
+      <!-- Back wall screen -->
+      <a-plane position="0 5 -4.7" width="5" height="2.5" material="color: #0a0a14; emissive: #a060e0; emissiveIntensity: 0.05"></a-plane>
+      <a-text value="THE VERSE ALKEMIST" position="0 5.5 -4.65" align="center" color="#a060e0" width="6" font="mozillavr" opacity="0.6"></a-text>
+      <a-text value="WALLS OF THE WORLD EP" position="0 4.8 -4.65" align="center" color="#e0d0f0" width="4" opacity="0.3"></a-text>
 
-      <!-- Crate of vinyl records -->
-      <a-box position="-2 0.3 -1" width="0.8" height="0.6" depth="0.5" material="color: #2a2a2a"></a-box>
-      <a-box position="-2 0.35 -1.05" width="0.7" height="0.5" depth="0.02" material="color: #a060e0; opacity: 0.5"></a-box>
+      <!-- STUDIO DESK (center) -->
+      <a-box position="0 0.8 -3.5" width="3" height="0.06" depth="1" material="color: #1a1a1a; metalness: 0.3; roughness: 0.4"></a-box>
+      <a-box position="-1.4 0.4 -3.5" width="0.06" height="0.8" depth="0.8" material="color: #1a1a1a; metalness: 0.4"></a-box>
+      <a-box position="1.4 0.4 -3.5" width="0.06" height="0.8" depth="0.8" material="color: #1a1a1a; metalness: 0.4"></a-box>
+      <!-- Keyboard shelf -->
+      <a-box position="0 0.65 -3.2" width="2.5" height="0.04" depth="0.5" material="color: #222; metalness: 0.3"></a-box>
 
-      <!-- MPC/drum machine -->
-      <a-box position="-1 1.2 -3" width="0.5" height="0.1" depth="0.4" material="color: #2a2a2a; metalness: 0.5"></a-box>
-      <a-box position="-1 1.3 -3" width="0.4" height="0.02" depth="0.3" material="color: #333; emissive: #a060e0; emissiveIntensity: 0.1"></a-box>
+      <!-- STUDIO MONITORS (left + right of desk) -->
+      <a-entity position="-2.2 0.85 -4">
+        <a-box width="0.35" height="0.5" depth="0.35" material="color: #1a1a1a; roughness: 0.3"></a-box>
+        <a-circle position="0 0.05 0.18" radius="0.1" material="color: #333; emissive: #a060e0; emissiveIntensity: 0.1"></a-circle>
+        <a-circle position="0 -0.1 0.18" radius="0.05" material="color: #444"></a-circle>
+      </a-entity>
+      <a-entity position="2.2 0.85 -4">
+        <a-box width="0.35" height="0.5" depth="0.35" material="color: #1a1a1a; roughness: 0.3"></a-box>
+        <a-circle position="0 0.05 0.18" radius="0.1" material="color: #333; emissive: #a060e0; emissiveIntensity: 0.1"></a-circle>
+        <a-circle position="0 -0.1 0.18" radius="0.05" material="color: #444"></a-circle>
+      </a-entity>
 
-      <!-- Additional mic with pop filter -->
-      <a-cylinder position="-2 1.5 0" radius="0.025" height="2.5" material="color: #888"></a-cylinder>
-      <a-sphere position="-2 2.8 0" radius="0.08" material="color: #444"></a-sphere>
-      <a-ring position="-2 2.8 0.15" radius-inner="0.08" radius-outer="0.12" material="color: #555; opacity: 0.5; transparent: true"></a-ring>
+      <!-- BIG FLOOR SPEAKERS (left + right of stage) -->
+      <a-entity position="-4.5 0 -3">
+        <a-box width="0.7" height="1.2" depth="0.5" position="0 0.6 0" material="color: #0a0a0a; roughness: 0.3"></a-box>
+        <a-circle position="0 0.85 0.26" radius="0.2" material="color: #1a1a1a; metalness: 0.3"></a-circle>
+        <a-circle position="0 0.85 0.27" radius="0.08" material="color: #333"></a-circle>
+        <a-circle position="0 0.45 0.26" radius="0.12" material="color: #1a1a1a; metalness: 0.3"></a-circle>
+      </a-entity>
+      <a-entity position="4.5 0 -3">
+        <a-box width="0.7" height="1.2" depth="0.5" position="0 0.6 0" material="color: #0a0a0a; roughness: 0.3"></a-box>
+        <a-circle position="0 0.85 0.26" radius="0.2" material="color: #1a1a1a; metalness: 0.3"></a-circle>
+        <a-circle position="0 0.85 0.27" radius="0.08" material="color: #333"></a-circle>
+        <a-circle position="0 0.45 0.26" radius="0.12" material="color: #1a1a1a; metalness: 0.3"></a-circle>
+      </a-entity>
 
-      <!-- Headphones on hook -->
-      <a-torus position="1 3 -4.5" radius="0.15" radius-tubular="0.025" rotation="0 90 20" material="color: #2a2a2a; metalness: 0.5"></a-torus>
+      <!-- MPC/DRUM MACHINE on desk -->
+      <a-box position="-0.8 0.87 -3.5" width="0.5" height="0.08" depth="0.4" material="color: #2a2a2a; metalness: 0.5"></a-box>
+      <a-box position="-0.8 0.92 -3.5" width="0.4" height="0.02" depth="0.3" material="color: #333; emissive: #a060e0; emissiveIntensity: 0.15"></a-box>
+
+      <!-- TURNTABLE on desk -->
+      <a-box position="0.8 0.87 -3.5" width="0.5" height="0.06" depth="0.4" material="color: #1a1a1a; metalness: 0.4"></a-box>
+      <a-cylinder position="0.8 0.92 -3.5" radius="0.15" height="0.01" material="color: #222; metalness: 0.3"></a-cylinder>
+      <a-cylinder position="0.8 0.93 -3.5" radius="0.01" height="0.02" material="color: #888; metalness: 0.8"></a-cylinder>
+
+      <!-- CONDENSER MIC with boom arm -->
+      <a-cylinder position="0 0 -3" radius="0.025" height="2.5" material="color: #666; metalness: 0.5"></a-cylinder>
+      <a-box position="0 2.5 -3" width="0.8" height="0.03" depth="0.03" rotation="0 0 -15" material="color: #666; metalness: 0.5"></a-box>
+      <a-cylinder position="0.35 2.4 -3" radius="0.04" height="0.15" rotation="0 0 0" material="color: #333; metalness: 0.6"></a-cylinder>
+      <a-ring position="0.35 2.4 -2.85" radius-inner="0.06" radius-outer="0.09" material="color: #444; opacity: 0.4; transparent: true"></a-ring>
+
+      <!-- VINYL RECORD CRATES -->
+      <a-box position="-4 0.3 -1" width="0.8" height="0.6" depth="0.5" material="color: #2a2018"></a-box>
+      <a-box position="-4 0.35 -1.05" width="0.7" height="0.5" depth="0.02" material="color: #a060e0; opacity: 0.4; transparent: true"></a-box>
+      <a-box position="-4 0.3 0" width="0.8" height="0.6" depth="0.5" material="color: #2a2018"></a-box>
+
+      <!-- CLICKABLE HEADPHONES (music player) -->
+      <a-entity position="2 1.2 -2" class="clickable"
+        music-player="track: assets/audio/walls-of-the-world.mp3; label: Walls of the World EP; color: #a060e0">
+        <a-torus radius="0.18" radius-tubular="0.035" rotation="0 0 10" material="color: #1a1a1a; metalness: 0.6; roughness: 0.3"></a-torus>
+        <a-box position="0 0.15 0" width="0.38" height="0.04" depth="0.06" material="color: #1a1a1a; metalness: 0.5"></a-box>
+        <a-cylinder position="-0.17 0 0" radius="0.07" height="0.04" rotation="90 0 0" material="color: #222; metalness: 0.4"></a-cylinder>
+        <a-cylinder position="0.17 0 0" radius="0.07" height="0.04" rotation="90 0 0" material="color: #222; metalness: 0.4"></a-cylinder>
+        <!-- Glow pulse -->
+        <a-ring position="0 -0.3 0" rotation="-90 0 0" radius-inner="0.2" radius-outer="0.35"
+          material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.4; opacity: 0.3; transparent: true"></a-ring>
+      </a-entity>
+
+      <!-- Second listening station -->
+      <a-entity position="-3 1.2 -4" class="clickable"
+        music-player="track: assets/audio/sodade-cypher.mp3; label: Sodade Cypher; color: #a060e0">
+        <a-torus radius="0.15" radius-tubular="0.03" rotation="10 0 0" material="color: #2a2a2a; metalness: 0.5"></a-torus>
+        <a-box position="0 0.12 0" width="0.32" height="0.03" depth="0.05" material="color: #2a2a2a; metalness: 0.4"></a-box>
+        <a-ring position="0 -0.25 0" rotation="-90 0 0" radius-inner="0.15" radius-outer="0.3"
+          material="color: #a060e0; emissive: #a060e0; emissiveIntensity: 0.3; opacity: 0.25; transparent: true"></a-ring>
+      </a-entity>
+
+      <!-- Studio chair -->
+      <a-entity position="0 0 -2.5">
+        <a-box position="0 0.45 0" width="0.5" height="0.06" depth="0.5" material="color: #1a1a1a"></a-box>
+        <a-box position="0 0.7 -0.23" width="0.5" height="0.5" depth="0.06" material="color: #1a1a1a"></a-box>
+        <a-cylinder position="0 0.2 0" radius="0.03" height="0.4" material="color: #333; metalness: 0.5"></a-cylinder>
+      </a-entity>
     `);
   },
 
