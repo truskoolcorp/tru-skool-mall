@@ -1,40 +1,45 @@
 /* ═══════════════════════════════════════════════════════════
-   TRU SKOOL MALL — Navigation & Collision System
+   TRU SKOOL MALL — Navigation & Collision System v2
    
-   Level 2 collision: zone-based walkable area enforcement
+   CRITICAL: This script MUST be loaded BEFORE <a-scene> tag
+   (alongside avatar-interaction.js, music-player.js, etc.)
+   Otherwise the component registration is silently ignored.
    
    Features:
-   - Walkable zones defined as rectangles (corridor + each store interior)
-   - SLIDING collision — hit a wall, slide along it (not hard snap)
-   - Y-axis lock (can't fly up or fall down)
-   - Automatic detection of corridor vs store interior
-   - Teleporting into a store remains valid (teleport coords are in store bounds)
+   - Walkable zones: corridor + store interiors (connected)
+   - Sliding collision along walls
+   - Y-axis lock (no flying)
+   - Zones overlap at store entrances so you can walk in/out
    ═══════════════════════════════════════════════════════════ */
 
 (function() {
   if (typeof AFRAME === 'undefined') return;
 
-  // ─── Walkable zones ───
-  // Corridor: the main walking path between stores (narrow to match storefront walls)
-  // Stores: the interior of each store (accessible only via teleport)
-  const WALKABLE_ZONES = [
-    // Main corridor — between the storefront walls (±5) and entrance to back wall
-    // Extends slightly beyond entrance (z=14) and nearly to back wall (z=-65)
-    { name: 'corridor',         xMin: -4.5,  xMax: 4.5,  zMin: -65, zMax: 14 },
+  // Walkable zones — corridor + stores with OVERLAPPING entries
+  // Left stores open at their RIGHT edge (x = -5.5)
+  // Right stores open at their LEFT edge (x = 5.5)
+  // Corridor extends to x=±6 to overlap with store openings
+  var WALKABLE_ZONES = [
+    // Main corridor (wide enough to overlap store openings)
+    { name: 'corridor', xMin: -6, xMax: 6, zMin: -65, zMax: 14 },
 
-    // Store interiors — accessed via teleport (Store Directory buttons)
-    { name: 'concrete-rose',    xMin: -13.5, xMax: -5.5, zMin: -12, zMax: -4 },
-    { name: 'bijadi',           xMin: 5.5,   xMax: 13.5, zMin: -12, zMax: -4 },
-    { name: 'faithfully-faded', xMin: -13.5, xMax: -5.5, zMin: -26, zMax: -18 },
-    { name: 'hoe',              xMin: 5.5,   xMax: 13.5, zMin: -26, zMax: -18 },
-    { name: 'wanderlust',       xMin: -13.5, xMax: -5.5, zMin: -42, zMax: -34 },
-    { name: 'cafe-sativa',      xMin: 5.5,   xMax: 13.5, zMin: -42, zMax: -34 },
-    { name: 'verse-alkemist',   xMin: -6,    xMax: 6,    zMin: -64, zMax: -52 },
+    // Left-side stores (open toward corridor at x=-5.5, overlap with corridor at x=-6)
+    { name: 'concrete-rose',    xMin: -14, xMax: -5, zMin: -12, zMax: -4 },
+    { name: 'faithfully-faded', xMin: -14, xMax: -5, zMin: -26, zMax: -18 },
+    { name: 'wanderlust',       xMin: -14, xMax: -5, zMin: -42, zMax: -34 },
+
+    // Right-side stores (open toward corridor at x=5.5, overlap with corridor at x=6)
+    { name: 'bijadi',           xMin: 5,  xMax: 14, zMin: -12, zMax: -4 },
+    { name: 'hoe',              xMin: 5,  xMax: 14, zMin: -26, zMax: -18 },
+    { name: 'cafe-sativa',      xMin: 5,  xMax: 14, zMin: -42, zMax: -34 },
+
+    // Verse Alkemist (end of mall, wider, centered)
+    { name: 'verse-alkemist',   xMin: -7, xMax: 7,  zMin: -64, zMax: -52 },
   ];
 
-  // Check if a world position (x, z) is inside any walkable zone
   function pointInAnyZone(x, z) {
-    for (const zone of WALKABLE_ZONES) {
+    for (var i = 0; i < WALKABLE_ZONES.length; i++) {
+      var zone = WALKABLE_ZONES[i];
       if (x >= zone.xMin && x <= zone.xMax &&
           z >= zone.zMin && z <= zone.zMax) {
         return zone;
@@ -46,77 +51,57 @@
   AFRAME.registerComponent('mall-nav', {
     schema: {
       enabled: { default: true },
-      debug:   { default: false },
     },
 
-    init() {
-      // Starting position = entrance
+    init: function() {
       this.lastValid = { x: 0, z: 14 };
-      this.currentZoneName = 'corridor';
-
-      // Expose for debugging
-      window.MallNav = this;
-
-      console.log('[MallNav] Collision system active');
+      console.log('[MallNav v2] Collision system active (registered before scene)');
     },
 
-    tick() {
+    tick: function() {
       if (!this.data.enabled) return;
 
-      const obj = this.el.object3D;
-      const pos = obj.position;
+      var pos = this.el.object3D.position;
 
-      // ─── Y-LOCK: player stays at ground level ───
-      if (Math.abs(pos.y) > 0.001) {
+      // Y-LOCK: stay at ground level
+      if (Math.abs(pos.y) > 0.01) {
         pos.y = 0;
       }
 
-      const newX = pos.x;
-      const newZ = pos.z;
+      var newX = pos.x;
+      var newZ = pos.z;
 
-      // ─── Check if new position is valid ───
-      const newZone = pointInAnyZone(newX, newZ);
+      // Check if new position is valid
+      var zone = pointInAnyZone(newX, newZ);
 
-      if (newZone) {
-        // Valid position — update last-valid and detect zone transition
+      if (zone) {
+        // Valid — update last known good position
         this.lastValid.x = newX;
         this.lastValid.z = newZ;
-
-        if (newZone.name !== this.currentZoneName) {
-          if (this.data.debug) {
-            console.log(`[MallNav] Zone transition: ${this.currentZoneName} → ${newZone.name}`);
-          }
-          this.currentZoneName = newZone.name;
-        }
         return;
       }
 
-      // ─── Invalid position — try SLIDING COLLISION ───
-      // Try keeping only the X movement (as if Z hit a wall)
-      const xOnly = pointInAnyZone(newX, this.lastValid.z);
-      if (xOnly) {
+      // Invalid — try SLIDING (keep one axis, revert the other)
+      // Try keeping X movement (Z hit a wall)
+      if (pointInAnyZone(newX, this.lastValid.z)) {
         pos.z = this.lastValid.z;
         this.lastValid.x = newX;
-        this.currentZoneName = xOnly.name;
         return;
       }
 
-      // Try keeping only the Z movement (as if X hit a wall)
-      const zOnly = pointInAnyZone(this.lastValid.x, newZ);
-      if (zOnly) {
+      // Try keeping Z movement (X hit a wall)
+      if (pointInAnyZone(this.lastValid.x, newZ)) {
         pos.x = this.lastValid.x;
         this.lastValid.z = newZ;
-        this.currentZoneName = zOnly.name;
         return;
       }
 
-      // Both axes invalid — full snap-back to last valid position
+      // Both invalid — snap back
       pos.x = this.lastValid.x;
       pos.z = this.lastValid.z;
     },
   });
 
-  // ─── Also expose walkable zones + detector for other scripts ───
   window.MallWalkableZones = WALKABLE_ZONES;
   window.MallPointInZone = pointInAnyZone;
 })();
