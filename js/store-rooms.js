@@ -1,10 +1,9 @@
 /* ═══════════════════════════════════════════════════════════
-   TRU SKOOL MALL — Store Room System (replaces panoramas)
+   TRU SKOOL MALL — Store Room System (GLB rooms only)
    
-   NEW ARCHITECTURE:
-   - Stores with GLB rooms: load real 3D environment + props
-   - Stores without rooms: fallback to panorama sphere
-   - Room walls ARE the boundaries (visual + collision)
+   NO PANORAMAS. Each store with a room GLB loads it when
+   you enter the zone. Stores without rooms keep their
+   existing primitive A-Frame shells (no hiding).
    ═══════════════════════════════════════════════════════════ */
 
 (function() {
@@ -31,102 +30,34 @@ var STORE_ROOMS = {
       { color: '#fff2d8', intensity: 0.8, distance: 6, position: '0 4 -56' },
       { color: '#a060e0', intensity: 0.6, distance: 5, position: '0 0.5 -60' },
     ],
+    // Which zone entity to hide when room loads (the old primitive store shell)
+    hideZone: 'zone-verse-alkemist',
   },
 };
 
-var PANORAMA_FALLBACK = {
-  'Concrete Rose':      'panoramas/concrete-rose.jpg',
-  'BiJaDi':             'panoramas/bijadi.jpg',
-  'Faithfully Faded':   'panoramas/faithfully-faded.jpg',
-  'H.O.E.':             'panoramas/hoe.jpg',
-  'Wanderlust':         'panoramas/wanderlust.jpg',
-  'Cafe Sativa':        'panoramas/cafe-sativa.jpg',
-};
-
+// Zone detection bounds
 var ROOM_ZONES = [
-  { label: 'Concrete Rose',      x: -8,  z: -8,  w: 4,  d: 6 },
-  { label: 'BiJaDi',             x: 8,   z: -8,  w: 4,  d: 6 },
-  { label: 'Faithfully Faded',   x: -8,  z: -22, w: 4,  d: 6 },
-  { label: 'H.O.E.',             x: 8,   z: -22, w: 4,  d: 6 },
-  { label: 'Wanderlust',         x: -8,  z: -38, w: 4,  d: 6 },
-  { label: 'Cafe Sativa',        x: 8,   z: -38, w: 4,  d: 6 },
-  { label: 'The Verse Alkemist', x: 0,   z: -58, w: 10, d: 8 },
+  { label: 'The Verse Alkemist', x: 0, z: -58, w: 10, d: 8 },
+  // Add more as GLB rooms are built
 ];
 
-var ALWAYS_KEEP = new Set([
-  'camera-rig', 'panorama-sphere', 'store-room-container',
-  'glb-laviche', 'glb-ginger', 'glb-ahnika',
-]);
-
-// Follow-camera for panorama fallback
-if (typeof AFRAME !== 'undefined' && !AFRAME.components['follow-camera']) {
-  AFRAME.registerComponent('follow-camera', {
-    tick: function() {
-      var cam = document.querySelector('[camera]');
-      if (!cam) return;
-      var p = new THREE.Vector3();
-      cam.object3D.getWorldPosition(p);
-      this.el.object3D.position.copy(p);
-      this.el.object3D.rotation.y += 0.0002;
-    }
-  });
-}
-
 var StoreRoomSystem = {
-  pSphere: null, pMat: null, pTextures: {},
   container: null,
-  hidden: [],
+  hiddenZone: null,
   _last: null,
-  _pTarget: 0, _pCurrent: 0,
 
   init: function() {
     var scene = document.querySelector('a-scene');
     if (!scene) return;
+
+    this.container = document.createElement('a-entity');
+    this.container.id = 'store-room-container';
+    scene.appendChild(this.container);
+
     var S = this;
-
-    // Room container
-    S.container = document.createElement('a-entity');
-    S.container.id = 'store-room-container';
-    scene.appendChild(S.container);
-
-    // Panorama sphere (fallback)
-    var sp = document.createElement('a-sphere');
-    sp.setAttribute('radius', '20');
-    sp.setAttribute('segments-width', '64');
-    sp.setAttribute('segments-height', '32');
-    sp.setAttribute('position', '0 1.6 14');
-    sp.setAttribute('material', 'side: back; shader: flat; opacity: 0; transparent: true; fog: false');
-    sp.setAttribute('visible', 'false');
-    sp.setAttribute('follow-camera', '');
-    sp.id = 'panorama-sphere';
-    sp.addEventListener('loaded', function() {
-      var m = sp.getObject3D('mesh');
-      if (m) { m.renderOrder = -100; m.material.depthWrite = false; m.material.depthTest = true; S.pMat = m.material; }
-    });
-    scene.appendChild(sp);
-    S.pSphere = sp;
-
-    // Load panorama textures
-    var ldr = new THREE.TextureLoader();
-    Object.keys(PANORAMA_FALLBACK).forEach(function(k) {
-      ldr.load(PANORAMA_FALLBACK[k], function(t) {
-        if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
-        S.pTextures[k] = t;
-      });
-    });
-
     setInterval(function() { S.update(); }, 200);
 
-    // Panorama fade
-    (function fade() {
-      requestAnimationFrame(fade);
-      if (!S.pMat) return;
-      S._pCurrent += (S._pTarget - S._pCurrent) * 0.15;
-      S.pMat.opacity = S._pCurrent;
-      sp.object3D.visible = S._pCurrent > 0.02;
-    })();
-
-    console.log('[StoreRooms] Ready — GLB rooms + panorama fallback');
+    console.log('[StoreRooms] Ready — GLB rooms only, no panoramas');
   },
 
   detect: function() {
@@ -135,33 +66,11 @@ var StoreRoomSystem = {
     var p = rig.getAttribute('position');
     for (var i = 0; i < ROOM_ZONES.length; i++) {
       var z = ROOM_ZONES[i];
-      if (p.x >= z.x-z.w/2 && p.x <= z.x+z.w/2 && p.z >= z.z-z.d/2 && p.z <= z.z+z.d/2)
+      if (p.x >= z.x - z.w/2 && p.x <= z.x + z.w/2 &&
+          p.z >= z.z - z.d/2 && p.z <= z.z + z.d/2)
         return z;
     }
     return null;
-  },
-
-  hideScene: function() {
-    var scene = document.querySelector('a-scene');
-    if (!scene) return;
-    this.hidden = [];
-    var S = this;
-    Array.from(scene.children).forEach(function(c) {
-      var t = (c.tagName||'').toLowerCase();
-      if (t === 'a-assets') return;
-      if (ALWAYS_KEEP.has(c.id)) return;
-      if (c.getAttribute && c.getAttribute('light') !== null) return;
-      var v = c.getAttribute('visible');
-      if (v !== 'false' && v !== false) {
-        S.hidden.push(c);
-        c.setAttribute('visible', 'false');
-      }
-    });
-  },
-
-  showScene: function() {
-    this.hidden.forEach(function(c) { c.setAttribute('visible', 'true'); });
-    this.hidden = [];
   },
 
   loadRoom: function(label) {
@@ -170,7 +79,16 @@ var StoreRoomSystem = {
     this.container.innerHTML = '';
     var S = this;
 
-    // Room model
+    // Hide the old primitive store zone
+    if (cfg.hideZone) {
+      var oldZone = document.getElementById(cfg.hideZone);
+      if (oldZone) {
+        oldZone.setAttribute('visible', 'false');
+        S.hiddenZone = oldZone;
+      }
+    }
+
+    // Room GLB
     var room = document.createElement('a-entity');
     room.id = 'store-room-model';
     room.setAttribute('gltf-model', cfg.room.src);
@@ -180,11 +98,11 @@ var StoreRoomSystem = {
     room.addEventListener('model-loaded', function() {
       var mesh = room.getObject3D('mesh');
       if (mesh) mesh.traverse(function(ch) { if (ch.isMesh) ch.frustumCulled = false; });
-      console.log('[StoreRooms] Room model loaded: ' + label);
+      console.log('[StoreRooms] Room loaded: ' + label);
     });
     S.container.appendChild(room);
 
-    // Props (world-space coordinates)
+    // Props
     (cfg.props || []).forEach(function(p) {
       var e = document.createElement('a-entity');
       e.id = p.id;
@@ -203,10 +121,20 @@ var StoreRoomSystem = {
     // Lights
     (cfg.lights || []).forEach(function(l) {
       var le = document.createElement('a-entity');
-      le.setAttribute('light', 'type:point; color:'+l.color+'; intensity:'+l.intensity+'; distance:'+l.distance+'; decay:1.5');
+      le.setAttribute('light', 'type:point; color:' + l.color +
+        '; intensity:' + l.intensity + '; distance:' + l.distance + '; decay:1.5');
       le.setAttribute('position', l.position);
       S.container.appendChild(le);
     });
+  },
+
+  unloadRoom: function() {
+    this.container.innerHTML = '';
+    // Restore hidden zone
+    if (this.hiddenZone) {
+      this.hiddenZone.setAttribute('visible', 'true');
+      this.hiddenZone = null;
+    }
   },
 
   update: function() {
@@ -214,23 +142,11 @@ var StoreRoomSystem = {
     var label = zone ? zone.label : null;
     if (label === this._last) return;
 
-    // Leave previous
-    this.showScene();
-    this.container.innerHTML = '';
-    this._pTarget = 0;
-
+    this.unloadRoom();
     this._last = label;
-    if (!label) return;
 
-    // Enter new
-    if (STORE_ROOMS[label]) {
-      this.hideScene();
+    if (label && STORE_ROOMS[label]) {
       this.loadRoom(label);
-    } else if (this.pTextures[label] && this.pMat) {
-      this.hideScene();
-      this.pMat.map = this.pTextures[label];
-      this.pMat.needsUpdate = true;
-      this._pTarget = 1.0;
     }
   },
 };
