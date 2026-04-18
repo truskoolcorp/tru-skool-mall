@@ -265,6 +265,7 @@
 <script>
 // Fix FBX→GLB 100x scale and metallic materials
 AFRAME.registerComponent('fix-avatar', {
+  schema: { default: '' },
   init: function() {
     this.el.addEventListener('model-loaded', () => {
       var mesh = this.el.getObject3D('mesh');
