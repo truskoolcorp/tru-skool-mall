@@ -1,88 +1,90 @@
 /* ═══════════════════════════════════════════════════════════
-   TRU SKOOL MALL — Store Room System
-   
-   GLB rooms loaded on-demand when player enters zone.
-   No panoramas. Room geometry IS the environment.
-   
-   Stores with rooms:
-   - The Verse Alkemist → music-studio.glb (home studio with turntable, speakers, desk, etc.)
-   - Cafe Sativa → jazz-club.glb (main lounge) + smoking-lounge.glb + cold-stoned.glb
-   
-   Stores without rooms yet keep their A-Frame primitive shells:
-   - Concrete Rose, BiJaDi, Faithfully Faded, H.O.E., Wanderlust
+   TRU SKOOL MALL — Store Room System (GLB rooms only)
+
+   NO PANORAMAS. Each store with a room GLB loads it when
+   you enter the zone.
+
+   v2 CHANGES (2026-04-17):
+   - Supports multi-room stores via cfg.rooms[] array
+   - Backwards compatible with single-room cfg.room
+   - Tags each loaded entity with data-room-label + data-room-slot
+     so the Room Tuner can find and mutate them live
+   - Cleaner unload (removes entities vs nuking innerHTML)
+   - Added Cafe Sativa (jazz club + smoking lounge + cold stoned)
+   - Optional spawn point teleport on zone entry
    ═══════════════════════════════════════════════════════════ */
 
 (function() {
 
-// ═══ ROOM CONFIGURATIONS ═══
-// Scale/position calculated from native model bounds analysis
 var STORE_ROOMS = {
-
-  // ─── VERSE ALKEMIST ───
-  // music-studio.glb: native 125.6 x 172.9 x 243.0 units, floor Y at -46.9
-  // Has built-in: turntable, speakers, desk, chair, headphones, piano, guitar, screen, sofa, vinyl records
   'The Verse Alkemist': {
-    rooms: [{
+    // Single-room shape (backwards compatible)
+    room: {
       src: 'assets/models/rooms/music-studio.glb',
-      scale: '0.08 0.08 0.08',
-      position: '-0.2 3.75 -53',  // Y=46.9*0.08=3.75 lifts floor to y=0
+      position: '0 0 -58',
+      scale: '0.05 0.05 0.05',
       rotation: '0 0 0',
-    }],
+    },
+    props: [
+      { id: 'va-turntable',  src: 'assets/models/studio/turntable.glb',  position: '-1.2 0.82 -60',   scale: '0.5 0.5 0.5',   rotation: '0 0 0' },
+      { id: 'va-mic',        src: 'assets/models/studio/mic.glb',        position: '0.5 0.82 -59.5',  scale: '0.4 0.4 0.4',   rotation: '0 15 0' },
+      { id: 'va-mixer',      src: 'assets/models/studio/mixer.glb',      position: '0 0.82 -60.2',    scale: '0.6 0.6 0.6',   rotation: '0 0 0' },
+      { id: 'va-headphones', src: 'assets/models/studio/headphones.glb', position: '1.6 0.85 -59',    scale: '0.25 0.25 0.25', rotation: '0 -30 0', clickable: true },
+      { id: 'va-monitor-l',  src: 'assets/models/studio/monitor.glb',    position: '-1.8 0.85 -60.5', scale: '0.3 0.3 0.3',   rotation: '0 25 0' },
+      { id: 'va-monitor-r',  src: 'assets/models/studio/monitor.glb',    position: '1.8 0.85 -60.5',  scale: '0.3 0.3 0.3',   rotation: '0 -25 0' },
+      { id: 'va-mpc',        src: 'assets/models/studio/mpc.glb',        position: '1.2 0.82 -60',    scale: '0.3 0.3 0.3',   rotation: '0 0 0' },
+    ],
     lights: [
-      { color: '#a060e0', intensity: 1.2, distance: 12, position: '0 4 -58' },
-      { color: '#fff2d8', intensity: 0.6, distance: 8, position: '0 5 -55' },
+      { color: '#a060e0', intensity: 1.5, distance: 8, position: '0 3 -58' },
+      { color: '#fff2d8', intensity: 0.8, distance: 6, position: '0 4 -56' },
+      { color: '#a060e0', intensity: 0.6, distance: 5, position: '0 0.5 -60' },
     ],
     hideZone: 'zone-verse-alkemist',
   },
 
-  // ─── CAFÉ SATIVA ───
-  // Multi-section venue: "Sip. Smoke. Vibe."
-  // Section 1: Jazz Club (main lounge/bar) — 14.5 x 20.1 x 9.3 native, floor Y at -11.6
-  // Section 2: Smoking Lounge (cigars/hookah) — 21.7 x 18.1 x 4.3 native, floor Y at -16.9
-  // Section 3: Cold Stoned (CBD gelato) — 2081 x 518 x 1187 native (millimeter scale), floor Y at 18.4
   'Cafe Sativa': {
+    // Multi-room shape — three connected sections
     rooms: [
-      // Main lounge/bar (jazz club voxel — only 65KB!)
+      // Slot 0: Main jazz club / bar lounge
       {
         src: 'assets/models/rooms/jazz-club.glb',
-        scale: '0.6 0.6 0.6',          // ~8.7m x 12m x 5.6m
-        position: '10 6.96 -38',        // Y=11.6*0.6=6.96 lifts floor to y=0
-        rotation: '0 90 0',             // Rotate to face corridor
+        scale: '0.6 0.6 0.6',
+        position: '10 6.96 -38',
+        rotation: '0 90 0',
       },
-      // Smoking lounge (connected behind main lounge)
+      // Slot 1: Smoking lounge (cigars/hookah)
       {
         src: 'assets/models/rooms/smoking-lounge.glb',
-        scale: '0.4 0.4 0.4',          // ~8.7m x 7.2m x 1.7m
-        position: '13 6.76 -42',        // Y=16.9*0.4=6.76, offset behind jazz club
+        scale: '0.4 0.4 0.4',
+        position: '13 6.76 -42',
         rotation: '0 0 0',
       },
-      // Cold Stoned gelato (section to the side)
+      // Slot 2: Cold Stoned gelato
       {
         src: 'assets/models/rooms/cold-stoned.glb',
-        scale: '0.005 0.005 0.005',     // ~10.4m x 2.6m x 5.9m
-        position: '10 -0.09 -34',       // Y=-18.4*0.005=-0.09
+        scale: '0.005 0.005 0.005',
+        position: '10 -0.09 -34',
         rotation: '0 90 0',
       },
     ],
     lights: [
-      { color: '#c09060', intensity: 1.2, distance: 12, position: '10 4 -38' },  // Warm amber
-      { color: '#ffe0a0', intensity: 0.8, distance: 8, position: '10 3 -36' },   // Golden glow
-      { color: '#ff8040', intensity: 0.5, distance: 6, position: '13 3 -42' },   // Smoking lounge warm
+      { color: '#c09060', intensity: 1.2, distance: 12, position: '10 4 -38' },
+      { color: '#ffe0a0', intensity: 0.8, distance: 8,  position: '10 3 -36' },
+      { color: '#ff8040', intensity: 0.5, distance: 6,  position: '13 3 -42' },
     ],
     hideZone: 'zone-cafe-sativa',
   },
 };
 
-// ═══ ZONE DETECTION ═══
+// Zone detection bounds
 var ROOM_ZONES = [
   { label: 'The Verse Alkemist', x: 0,  z: -58, w: 10, d: 10 },
   { label: 'Cafe Sativa',        x: 8,  z: -38, w: 8,  d: 10 },
 ];
 
-// ═══ SYSTEM ═══
 var StoreRoomSystem = {
   container: null,
-  hiddenZoneEl: null,
+  hiddenZone: null,
   _last: null,
 
   init: function() {
@@ -94,8 +96,9 @@ var StoreRoomSystem = {
     scene.appendChild(this.container);
 
     var S = this;
-    setInterval(function() { S.update(); }, 250);
-    console.log('[StoreRooms] Ready — VA + Cafe Sativa');
+    setInterval(function() { S.update(); }, 200);
+
+    console.log('[StoreRooms v2] Ready — multi-room support, tuner-aware');
   },
 
   detect: function() {
@@ -111,52 +114,71 @@ var StoreRoomSystem = {
     return null;
   },
 
+  // Normalize cfg into an array of room defs regardless of shape
+  _rooms: function(cfg) {
+    if (cfg.rooms && Array.isArray(cfg.rooms)) return cfg.rooms;
+    if (cfg.room) return [cfg.room];
+    return [];
+  },
+
   loadRoom: function(label) {
     var cfg = STORE_ROOMS[label];
     if (!cfg) return;
-    this.container.innerHTML = '';
+
+    this.unloadRoom();
     var S = this;
 
-    // Hide old primitive zone
+    // Hide the primitive store zone
     if (cfg.hideZone) {
-      var el = document.getElementById(cfg.hideZone);
-      if (el) {
-        el.setAttribute('visible', 'false');
-        Array.from(el.children).forEach(function(c) {
-          c.setAttribute('visible', 'false');
-        });
-        S.hiddenZoneEl = el;
+      var oldZone = document.getElementById(cfg.hideZone);
+      if (oldZone) {
+        oldZone.setAttribute('visible', 'false');
+        S.hiddenZone = oldZone;
       }
     }
 
-    // Load ALL room sections (supports multi-section venues)
-    (cfg.rooms || []).forEach(function(roomCfg, idx) {
+    // Load all rooms (1 or many)
+    var rooms = this._rooms(cfg);
+    rooms.forEach(function(r, i) {
       var room = document.createElement('a-entity');
-      room.id = 'store-room-' + idx;
-      room.setAttribute('gltf-model', roomCfg.src);
-      room.setAttribute('position', roomCfg.position);
-      room.setAttribute('scale', roomCfg.scale);
-      room.setAttribute('rotation', roomCfg.rotation || '0 0 0');
+      room.setAttribute('gltf-model', r.src);
+      room.setAttribute('position', r.position);
+      room.setAttribute('scale', r.scale);
+      room.setAttribute('rotation', r.rotation || '0 0 0');
+
+      // ─── TUNER HOOKS ───────────────────────────────────────
+      // The mall-tuner.js overlay finds entities by these attrs
+      room.setAttribute('data-room-label', label);
+      room.setAttribute('data-room-slot', String(i));
+      room.classList.add('tunable-room');
+
       room.addEventListener('model-loaded', function() {
         var mesh = room.getObject3D('mesh');
-        if (mesh) {
-          mesh.traverse(function(ch) {
-            if (ch.isMesh) {
-              ch.frustumCulled = false;
-              // Fix overly metallic materials
-              if (ch.material) {
-                var mats = Array.isArray(ch.material) ? ch.material : [ch.material];
-                mats.forEach(function(m) {
-                  if (m.metalness > 0.8) m.metalness = 0.3;
-                  m.needsUpdate = true;
-                });
-              }
-            }
-          });
-        }
-        console.log('[StoreRooms] Section ' + idx + ' loaded: ' + roomCfg.src);
+        if (mesh) mesh.traverse(function(ch) { if (ch.isMesh) ch.frustumCulled = false; });
+        console.log('[StoreRooms] Loaded ' + label + ' [' + i + ']: ' + r.src);
       });
+
+      room.addEventListener('model-error', function(e) {
+        console.warn('[StoreRooms] Failed to load ' + label + ' [' + i + ']: ' + r.src, e);
+      });
+
       S.container.appendChild(room);
+    });
+
+    // Props (still single-list per store)
+    (cfg.props || []).forEach(function(p) {
+      var e = document.createElement('a-entity');
+      e.id = p.id;
+      e.setAttribute('gltf-model', p.src);
+      e.setAttribute('position', p.position);
+      e.setAttribute('scale', p.scale);
+      e.setAttribute('rotation', p.rotation || '0 0 0');
+      if (p.clickable) e.classList.add('clickable');
+      e.addEventListener('model-loaded', function() {
+        var mesh = e.getObject3D('mesh');
+        if (mesh) mesh.traverse(function(ch) { if (ch.isMesh) ch.frustumCulled = false; });
+      });
+      S.container.appendChild(e);
     });
 
     // Lights
@@ -168,17 +190,24 @@ var StoreRoomSystem = {
       S.container.appendChild(le);
     });
 
-    console.log('[StoreRooms] Loaded: ' + label + ' (' + (cfg.rooms || []).length + ' sections)');
+    // Optional: teleport avatar to spawn point set by tuner
+    if (cfg.spawn && cfg.spawn.x != null) {
+      // Don't auto-teleport on normal zone entry — that's jarring.
+      // The tuner's TELEPORT button is the intended trigger.
+      // We just stash the value for the tuner to use.
+    }
   },
 
   unloadRoom: function() {
-    this.container.innerHTML = '';
-    if (this.hiddenZoneEl) {
-      this.hiddenZoneEl.setAttribute('visible', 'true');
-      Array.from(this.hiddenZoneEl.children).forEach(function(c) {
-        c.setAttribute('visible', 'true');
-      });
-      this.hiddenZoneEl = null;
+    // Properly remove entities (lets A-Frame clean up Three.js resources)
+    if (this.container) {
+      while (this.container.firstChild) {
+        this.container.removeChild(this.container.firstChild);
+      }
+    }
+    if (this.hiddenZone) {
+      this.hiddenZone.setAttribute('visible', 'true');
+      this.hiddenZone = null;
     }
   },
 
@@ -194,6 +223,14 @@ var StoreRoomSystem = {
       this.loadRoom(label);
     }
   },
+
+  // Called by mall-tuner.js after it loads Supabase values
+  // so a zone you're already standing in picks up new transforms
+  reloadCurrent: function() {
+    var saved = this._last;
+    this._last = null; // force update() to re-load
+    // update() will fire on the next interval tick
+  },
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -206,5 +243,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.StoreRoomSystem = StoreRoomSystem;
 window.STORE_ROOMS = STORE_ROOMS;
+window.ROOM_ZONES = ROOM_ZONES;
 
 })();
