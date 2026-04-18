@@ -17,30 +17,10 @@
 (function() {
 
 var STORE_ROOMS = {
-  'The Verse Alkemist': {
-    // Single-room shape (backwards compatible)
-    room: {
-      src: 'assets/models/rooms/music-studio.glb',
-      position: '0 0 -58',
-      scale: '0.05 0.05 0.05',
-      rotation: '0 0 0',
-    },
-    props: [
-      { id: 'va-turntable',  src: 'assets/models/studio/turntable.glb',  position: '-1.2 0.82 -60',   scale: '0.5 0.5 0.5',   rotation: '0 0 0' },
-      { id: 'va-mic',        src: 'assets/models/studio/mic.glb',        position: '0.5 0.82 -59.5',  scale: '0.4 0.4 0.4',   rotation: '0 15 0' },
-      { id: 'va-mixer',      src: 'assets/models/studio/mixer.glb',      position: '0 0.82 -60.2',    scale: '0.6 0.6 0.6',   rotation: '0 0 0' },
-      { id: 'va-headphones', src: 'assets/models/studio/headphones.glb', position: '1.6 0.85 -59',    scale: '0.25 0.25 0.25', rotation: '0 -30 0', clickable: true },
-      { id: 'va-monitor-l',  src: 'assets/models/studio/monitor.glb',    position: '-1.8 0.85 -60.5', scale: '0.3 0.3 0.3',   rotation: '0 25 0' },
-      { id: 'va-monitor-r',  src: 'assets/models/studio/monitor.glb',    position: '1.8 0.85 -60.5',  scale: '0.3 0.3 0.3',   rotation: '0 -25 0' },
-      { id: 'va-mpc',        src: 'assets/models/studio/mpc.glb',        position: '1.2 0.82 -60',    scale: '0.3 0.3 0.3',   rotation: '0 0 0' },
-    ],
-    lights: [
-      { color: '#a060e0', intensity: 1.5, distance: 8, position: '0 3 -58' },
-      { color: '#fff2d8', intensity: 0.8, distance: 6, position: '0 4 -56' },
-      { color: '#a060e0', intensity: 0.6, distance: 5, position: '0 0.5 -60' },
-    ],
-    hideZone: 'zone-verse-alkemist',
-  },
+  // 'The Verse Alkemist': DISABLED — awaiting Meshy walkable studio GLB.
+  // Original config preserved in git history (commit before this one).
+  // When the new walkable music-studio.glb lands in assets/models/rooms/,
+  // restore the block and re-tune positions via the Room Tuner.
 
   'Cafe Sativa': {
     // Multi-room shape — three connected sections
