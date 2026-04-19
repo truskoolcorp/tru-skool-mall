@@ -21,7 +21,7 @@ const TELEPORT_POSITIONS = {
   'faithfully-faded': { x: -7,   y: 0,   z: -22, label: 'Faithfully Faded' },
   'hoe':              { x: 7,    y: 0,   z: -22, label: 'H.O.E.' },
   'wanderlust':       { x: -7,   y: 0,   z: -38, label: 'Wanderlust' },
-  'cafe-sativa':      { x: 6,    y: 0,   z: -29, label: 'Cafe Sativa' },
+  'cafe-sativa':      { x: 22,   y: 0,   z: -16, label: 'Cafe Sativa' },
   'verse-alkemist':   { x: 0,    y: 0,   z: -55, label: 'The Verse Alkemist' },
 };
 
@@ -33,7 +33,7 @@ const ZONES = [
   { id: 'faithfully-faded', pos: {x:-7, z:-22}, size: {w:6, d:8},   label: 'Faithfully Faded',  guide: 'ahnika' },
   { id: 'hoe',              pos: {x:7, z:-22},  size: {w:6, d:8},   label: 'H.O.E.',            guide: 'laviche' },
   { id: 'wanderlust',       pos: {x:-7, z:-38}, size: {w:6, d:8},   label: 'Wanderlust',        guide: 'ginger' },
-  { id: 'cafe-sativa',      pos: {x:13, z:-35}, size: {w:22, d:22},  label: 'Cafe Sativa',       guide: 'laviche' },
+  { id: 'cafe-sativa',      pos: {x:27, z:-29}, size: {w:22, d:22},  label: 'Cafe Sativa',       guide: 'laviche' },
   { id: 'verse-alkemist',   pos: {x:0, z:-58},  size: {w:12, d:10}, label: 'The Verse Alkemist', guide: 'laviche' },
 ];
 

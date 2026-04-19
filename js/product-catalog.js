@@ -209,7 +209,7 @@ const ProductCatalog = {
       'faithfully-faded': { base: [-10, 0, -22], facing: 'right', offset: [1, 0, 0] },
       'hoe':              { base: [10, 0, -22],  facing: 'left',  offset: [-1, 0, 0] },
       'wanderlust':       { base: [-10, 0, -38], facing: 'right', offset: [1, 0, 0] },
-      'cafe-sativa':      { base: [9, 0, -32],   facing: 'left',  offset: [-1, 0, 0], y: 2.1 },
+      'cafe-sativa':      { base: [14, 0, -18],  facing: 'right', offset: [0, 0, -2], y: 2.1 },
       'verse-alkemist':   { base: [0, 0, -58],   facing: 'front', offset: [0, 0, 2] },
     };
 

@@ -1,172 +1,285 @@
-/* ═══════════════════════════════════════════════════════════
-   TRU SKOOL MALL — Café Sativa Wing (v3, from official floor plan)
+/* ═══════════════════════════════════════════════════════════════════════
+   CAFÉ SATIVA — WING V2 (Master Plan Spec)
+   ═══════════════════════════════════════════════════════════════════════
 
-   Rebuilds the Café Sativa experience from scratch using room
-   dimensions locked from the official hand-drawn floor plan and
-   labeled cutaway renders in Google Drive:
+   Built to the locked master-plan floor plan:
 
-     Entrance Foyer              3.66 × 5.49 m  (12 × 18 ft)
-     Cocktail Bar + Cold Stoned  5.49 × 6.71 m  (18 × 22 ft)
-     Central Gallery             6.71 × 6.71 m  (22 × 22 ft)
-     Main Lounge (+ built-in stage) 7.62 × 7.62 m (25 × 25 ft)
-     Cigar Lounge (members only) 5.49 × 6.71 m  (18 × 22 ft)
-     Event / Culinary Space      3.96 × 8.53 m  (13 × 28 ft)
+     Flow: Entrance → Gallery → Bar → Main Lounge → (Culinary | Cigar)
+     Total: ~22m × 20m (~4,700 sq ft, ~440 m²)
 
-   This file renders the architectural shells only — walls,
-   floors, ceilings, door openings, ambient lighting, and room
-   labels. Furniture/props and persona presence come in later
-   PRs.
+   9 rooms:
 
-   Coordinate system:
-   - Mall corridor runs along -Z at x=0 (visitor walks north/negative Z).
-   - Café Sativa occupies the east side of the corridor.
-   - Wing footprint spans roughly x=[3 .. 23], z=[-46 .. -25].
-   - Entry from the mall corridor is on the west wall of the
-     Entrance Foyer, facing west (toward the corridor).
+     1. Entrance Foyer          4 × 3.5m   — 4m ceiling, host stand
+     2. Cold Stoned Window      4 × 4.5m   — 4m, street-facing (east wall)
+     3. Cocktail Bar            10 × 8m    — 4.5m, horseshoe + bottle wall
+     4. Gallery Atrium          6 × 8m     — 10m DOUBLE HEIGHT, art + NFT wall
+     5. Main Lounge (Stage)     15 × 8.5m  — 6m, jazz stage + runway
+     6. Cigar Lounge            6 × 8.5m   — 3m, airlock, switchable glass
+     7. Culinary Theater        10 × 5m    — 5m, open demo kitchen
+     8. Courtyard               5 × 5m     — open to 12m shell, open-air
+     9. Back of House           5 × 5m     — 3m, staff corridor
 
-   Flow:
-     Entry (from mall) → Foyer → Bar → Gallery (hub)
-       → south: Main Lounge (with stage)
-       → east:  Event / Culinary
-       → wedged: Cigar Lounge (gated, members-only)
-   ═══════════════════════════════════════════════════════════ */
+   Golden rules:
+     - No guest accidentally walks into smoke (airlock + VIP gate)
+     - No smoke leaks into sip/vibe (separate ventilation conceptually)
+     - Energy builds, doesn't clash (Gallery as psychological transition)
+
+   Spatial placement in mall:
+     The wing sits EAST of the main corridor (x > 15). Players enter by
+     walking through a door opening cut into the corridor's east wall.
+     Wing occupies x = [16, 38], z = [-40, -18] (centered at x=27, z=-29).
+
+     Mall outer shell ceiling is at Y=12. Rooms have inset ceilings at
+     their own heights with plenum space above (dark, unrendered).
+
+   ═══════════════════════════════════════════════════════════════════════ */
 
 (function () {
   'use strict';
 
-  // ─── Room spec: center x, center z, width (x-axis), depth (z-axis), label ───
-  // All dimensions in meters. Center coords so walls compute via ± half-dims.
+  // ═══ Wing-level configuration ═══
   const WING = {
-    // Top-level wing anchor — all room positions are relative to (0,0,0)
-    // and translated to this origin at render time.
-    origin: { x: 13, z: -35 },
+    // World-space anchor for the wing. All room positions are relative.
+    // Wing footprint: 22m wide (x) × 22m deep (z), centered at anchor.
+    // Mall corridor right wall is at x=15; wing starts at x=16 (1m gap
+    // for the wall thickness + entry vestibule feeling).
+    origin: { x: 27, z: -29 },
 
-    // CEILING height (uniform across wing)
-    // 2.8m = ~9.2ft — realistic hospitality interior ceiling, reads as
-    // intimate without feeling cramped. Was 3.2m originally but that
-    // made the rooms feel cavernous once walls went dark. Door openings
-    // stay at 2.1m so the 0.7m lintel band above each door still works.
-    ceilingY: 2.8,
+    // Mall outer shell ceiling (matches corridor at y=12). Lower room
+    // ceilings are inset below this. The space between a room ceiling
+    // and the 12m shell is dark plenum — not rendered as a visible
+    // surface, just sits in shadow.
+    shellCeilingY: 12,
 
-    // WALL thickness
-    wallT: 0.15,
+    // Wall thickness for interior partitions.
+    wallT: 0.2,
+
+    // Door opening specs.
+    doorHeight: 2.4,      // standard door height (taller than previous 2.1 — more grand)
+    doorWidth:  1.6,      // single door
+    doubleWide: 2.4,      // double-wide opening (Gallery arches)
+    airlockGap: 1.2,      // airlock vestibule between cigar doors
   };
 
-  // Each room has center-relative x/z (before origin translation) and w/d.
-  // Layout drawn on a grid where the entrance is at south-west (lowest z
-  // is north, highest z is south). Picture looking down from above:
+  // ═══ Room definitions ═══
+  // Each room's x/z is the CENTER position, relative to wing origin.
+  // w/d are width (x-axis) and depth (z-axis).
+  // ceilingY is the room's own inset ceiling height.
   //
-  //   Cigar(5.5w × 6.7d)  MainLounge(7.6 × 7.6)  Culinary(4 × 8.5)
-  //   └─────────────────┴───────────────────────┴────────────────┘
-  //                     Gallery (6.7 × 6.7)
-  //                     └───────────────────────┘
-  //   Bar + ColdStoned(5.5 × 6.7)          Foyer(3.7 × 5.5)
-  //   └───────────────────┘                └──────────────┘  ← entry (mall side)
+  // Layout (looking down, +z is further from mall entrance = deeper into wing):
+  //
+  //   x-axis →  west (mall corridor side)  →  east (street side)
+  //                 x = -11            0             +11
+  //   z -10 ┌──────────────┬────────────────────┬──────────────┐
+  //   ▲     │ CULINARY     │    MAIN LOUNGE    │   CIGAR      │
+  //   │     │ THEATER      │     (STAGE)        │   LOUNGE     │
+  //   │     │ 10×5         │    15×8.5          │   6×8.5      │
+  //   │     │              │                    │  [airlock]   │
+  //   z  -2 ├──────────────┼────────────────────┼──────────────┤
+  //         │              │                    │              │
+  //         │   BOH        │  BAR (10×8)        │  COURTYARD   │
+  //         │  5×5         │  ← horseshoe       │  5×5         │
+  //         │              │                    │  (open-air)  │
+  //   z +5 ├──────────────┼────────────────────┼──────────────┤
+  //         │              │   GALLERY ATRIUM   │              │
+  //         │              │   6×8 (10m high)   │              │
+  //   z +9 │              ├────────┬───────────┤  COLD STONED │
+  //         │              │        │            │  4×4.5       │
+  //         │              │ FOYER  │            │  (street-    │
+  //         │              │ 4×3.5  │            │   facing)    │
+  //   z+11 └──────────────┴────────┴────────────┴──────────────┘
+  //                        ↓
+  //                 WING ENTRANCE (from mall corridor, west side)
+  //
+  // Note: this layout deviates slightly from a strict rectangle. The
+  // Foyer is small (3.5m deep) so the wing's total depth is 22m, with
+  // 2m of "entry buffer" in front of the Foyer for approach.
   //
   const ROOMS = [
-    // ENTRANCE FOYER — at the south-east corner (entry from mall corridor)
-    // Entry door pierces west wall
     {
-      id: 'cs-foyer',
+      id: 'foyer',
       label: 'Entrance Foyer',
-      x: -6.5, z: 5.5,
-      w: 3.66, d: 5.49,
-      floor: '#6b4c2e',        // warm oak planks
-      wall:  '#e8dfcd',        // cream plaster
-      ambient: { color: '#e8c080', intensity: 0.6 },
+      // Foyer is on the west (corridor) side, centered z-wise lower (near entry)
+      x: -5, z: 9.25,
+      w: 4,  d: 3.5,
+      ceilingY: 4,
+      floor: '#8b6f47',           // warm oak
+      wall:  '#f0e8da',           // cream plaster
+      ambient: { color: '#e8c080', intensity: 0.7 },
+      // Door openings:
+      //   south wall: the WING ENTRY — connects from mall corridor
+      //     (this is the door in the mall's east corridor wall)
+      //   north wall: leads INTO the Gallery Atrium
       doors: [
-        // West door opens to the mall corridor (entry into the wing)
-        { wall: 'west', offset: 0, width: 1.6 },
-        // North door opens to Cocktail Bar
-        { wall: 'north', offset: 0, width: 1.8 },
+        { wall: 'south', offset: 0, width: 1.8 },  // main entry
+        { wall: 'north', offset: 0, width: 2.4 },  // into Gallery (double-wide arch)
       ],
     },
 
-    // COCKTAIL BAR + COLD STONED — north of Foyer, west side of wing
     {
-      id: 'cs-bar',
-      label: 'Cocktail Bar + Cold Stoned',
-      x: -6.5, z: -0.75,
-      w: 5.49, d: 6.71,
-      floor: '#2a2a2a',        // polished concrete dark grey
-      wall:  '#1a1410',        // charcoal
-      ambient: { color: '#c08850', intensity: 0.9 },
+      id: 'gallery',
+      label: 'Gallery Atrium',
+      // Gallery is the CENTRAL hub — directly north of Foyer, between
+      // Bar (east) and... actually per master plan flow, Foyer → Gallery
+      // → Bar. So Gallery is ABOVE Foyer (smaller z), Bar is further
+      // north still. Let me re-read the flow:
+      //
+      //   Entrance → Gallery → Bar → Lounge → (Cigar | Culinary)
+      //
+      // So from Foyer, you walk forward (smaller z) into Gallery.
+      // From Gallery, you walk further forward (smaller z) into Bar.
+      // From Bar, you walk further forward into Main Lounge.
+      // From Main Lounge, you branch east (Cigar) or west (Culinary).
+      //
+      // This means the wing is organized as progressive rooms along
+      // the z-axis, deepening as you go in.
+      x: -5, z: 3.5,
+      w: 6,  d: 8,
+      ceilingY: 10,  // DOUBLE HEIGHT — the "reveal" moment
+      floor: '#e8e0d0',           // travertine
+      wall:  '#fbf6eb',           // warm cream white
+      ambient: { color: '#ffffff', intensity: 1.0 },  // bright, gallery-lit
       doors: [
-        { wall: 'south', offset: 0, width: 1.8 },   // to Foyer
-        { wall: 'east',  offset: 0, width: 2.0 },   // to Gallery
+        { wall: 'south', offset: 0, width: 2.4 },  // from Foyer
+        { wall: 'north', offset: 0, width: 2.4 },  // into Bar
       ],
     },
 
-    // CENTRAL GALLERY — center hub
     {
-      id: 'cs-gallery',
-      label: 'Central Gallery',
-      x: 0, z: -0.75,
-      w: 6.71, d: 6.71,
-      floor: '#d8cfbc',        // travertine cream
-      wall:  '#f4efe4',        // cream white
-      ambient: { color: '#ffffff', intensity: 0.85 },
+      id: 'bar',
+      label: 'Cocktail Bar',
+      x: -3, z: -4.5,
+      w: 10, d: 8,
+      ceilingY: 4.5,
+      floor: '#3a2a20',           // polished dark concrete
+      wall:  '#2a1f18',           // charcoal
+      ambient: { color: '#c08850', intensity: 0.85 },  // amber, seductive
       doors: [
-        { wall: 'west',  offset: 0, width: 2.0 },   // from Bar
-        { wall: 'north', offset: 0, width: 2.2 },   // to Main Lounge
-        { wall: 'east',  offset: 0, width: 2.0 },   // to Culinary
-        { wall: 'south', offset: 2.2, width: 1.4 }, // alt to Foyer (optional peek)
+        { wall: 'south', offset: 0, width: 2.4 },  // from Gallery
+        { wall: 'north', offset: 0, width: 3.0 },  // into Main Lounge (wider, more flow)
+        // Staff door to BOH (west wall)
+        { wall: 'west', offset: 0, width: 1.4 },
       ],
     },
 
-    // MAIN LOUNGE (with built-in stage) — north of Gallery
     {
-      id: 'cs-main-lounge',
-      label: 'Main Lounge',
-      x: 0, z: -7.8,
-      w: 7.62, d: 7.62,
-      floor: '#3a2518',        // dark oak chevron
-      wall:  '#5c6a56',        // sage green
-      ambient: { color: '#c08850', intensity: 0.55 },
+      id: 'main-lounge',
+      label: 'Main Lounge',   // "The Stage" in event mode
+      x: -3, z: -13,
+      w: 15, d: 8.5,
+      ceilingY: 6,  // tall — stage truss + lighting rigs
+      floor: '#2a1a10',           // dark oak chevron
+      wall:  '#3a4a38',           // sage
+      ambient: { color: '#c08850', intensity: 0.6 },
       doors: [
-        { wall: 'south', offset: 0, width: 2.2 },   // from Gallery
-        { wall: 'west',  offset: -2, width: 1.4 },  // to Cigar Lounge
-        { wall: 'east',  offset: -2, width: 1.4 },  // to Culinary
+        { wall: 'south', offset: 0, width: 3.0 },  // from Bar
+        // Branch points at the north end:
+        { wall: 'west', offset: -3, width: 1.4 },  // into Culinary
+        { wall: 'east', offset: -3, width: 1.6 },  // into Cigar Airlock
       ],
-      // Built-in stage sits against the north wall, raised 0.3m.
-      // Dimensions and placement rendered separately (see buildMainLoungeStage).
-      hasStage: true,
     },
 
-    // CIGAR LOUNGE — west of Main Lounge (members only)
     {
-      id: 'cs-cigar',
+      id: 'culinary',
+      label: 'Culinary Theater',
+      x: -11, z: -14.75,  // west of Main Lounge's north-west end
+      w: 10, d: 5,
+      ceilingY: 5,
+      floor: '#c8c0b0',           // polished concrete
+      wall:  '#f4f0e8',           // subway-tile light
+      ambient: { color: '#e8a050', intensity: 0.7 },  // copper heat-lamp warmth
+      doors: [
+        { wall: 'east', offset: 1.75, width: 1.4 },  // from Main Lounge NW corner
+        // Staff door to BOH
+        { wall: 'south', offset: 0, width: 1.2 },
+      ],
+    },
+
+    {
+      id: 'cigar-airlock',
+      label: 'Cigar Lounge Entrance',
+      // The airlock is a TINY vestibule between Main Lounge and Cigar.
+      // Two doors, one on each side, never open at the same time (visually).
+      x: 5, z: -14.75,
+      w: WING.airlockGap + 0.8, d: 1.5,
+      ceilingY: 3,
+      floor: '#2a2020',
+      wall:  '#1a1410',           // very dark, transitional
+      ambient: { color: '#603020', intensity: 0.3 },  // dim
+      doors: [
+        { wall: 'west', offset: 0, width: 1.4 },  // from Main Lounge east side
+        { wall: 'east', offset: 0, width: 1.4 },  // into Cigar Lounge proper
+      ],
+      vipGated: false,  // airlock itself is accessible — the INNER door gates
+    },
+
+    {
+      id: 'cigar',
       label: 'Cigar Lounge',
-      x: -6.7, z: -7.8,
-      w: 5.49, d: 6.71,
-      floor: '#2a1a0e',        // dark walnut
-      wall:  '#2a3a2a',        // deep forest leather
-      ambient: { color: '#a06030', intensity: 0.45 },
-      memberOnly: true,
+      x: 9, z: -13,
+      w: 6, d: 8.5,
+      ceilingY: 3,  // INTENTIONALLY LOW — cozy, per master plan
+      floor: '#1a1008',           // dark walnut
+      wall:  '#2a3828',           // forest-green leather feel
+      ambient: { color: '#a06030', intensity: 0.4 },  // dim, moody
       doors: [
-        // Single door from Main Lounge (gated)
-        { wall: 'east', offset: -2, width: 1.4 },
+        { wall: 'west', offset: 0, width: 1.4 },  // from airlock
+      ],
+      vipGated: true,   // VIP tier required — handled by CS access system
+    },
+
+    {
+      id: 'courtyard',
+      label: 'Courtyard',
+      x: 9, z: -4.5,
+      w: 5, d: 5,
+      ceilingY: 12,  // open-air — room ceiling = mall outer shell
+      ceilingOmit: true,  // don't render a ceiling plane (it's sky)
+      floor: '#c0a878',           // warm stone pavers
+      wall:  '#d0c0a0',           // sandstone
+      ambient: { color: '#ffd8a0', intensity: 0.6 },  // warm exterior light
+      doors: [
+        // Access from the Bar (spillover)
+        { wall: 'west', offset: 0, width: 1.8 },
+        // Access from Cold Stoned (to the south)
+        { wall: 'south', offset: 0, width: 1.4 },
       ],
     },
 
-    // EVENT / CULINARY — east of Main Lounge
     {
-      id: 'cs-culinary',
-      label: 'Event / Culinary',
-      x: 6.8, z: -4.25,  // centered between Gallery (north at z=-4.1) and Main Lounge (south at z=-4.4)
-      w: 3.96, d: 8.53,
-      floor: '#2e2e2e',        // polished concrete
-      wall:  '#e8e4dc',        // subway-tile light
-      ambient: { color: '#e8a050', intensity: 0.7 }, // copper heat-lamp warmth
+      id: 'cold-stoned',
+      label: 'Cold Stoned Window',
+      x: 9, z: 3.5,
+      w: 4, d: 4.5,
+      ceilingY: 4,
+      floor: '#f0ece0',           // bright tile
+      wall:  '#fdfaf0',           // bright white
+      ambient: { color: '#ffffff', intensity: 1.2 },  // bright daytime
       doors: [
-        { wall: 'west', offset: 3, width: 1.8 },    // from Gallery (upper)
-        { wall: 'west', offset: -3, width: 1.4 },   // from Main Lounge (lower)
+        { wall: 'north', offset: 0, width: 1.4 },  // into Courtyard
+        // "Street-facing window" — just a wall panel stylized as a window
+        // (no actual street outside yet; handled as decoration in render)
       ],
+    },
+
+    {
+      id: 'boh',
+      label: 'Back of House',
+      x: -11, z: -4.5,
+      w: 5, d: 5,
+      ceilingY: 3,
+      floor: '#606060',           // utility concrete
+      wall:  '#808080',           // industrial gray
+      ambient: { color: '#c0c0c0', intensity: 0.5 },
+      doors: [
+        { wall: 'east',  offset: 0, width: 1.4 },  // to Bar (staff corridor)
+        { wall: 'north', offset: 0, width: 1.2 },  // to Culinary
+      ],
+      staffOnly: true,  // visually distinct — players can enter but signage says STAFF
     },
   ];
 
-  // ─── Build helpers ───────────────────────────────────────────
-
+  // ═══ Helpers ═══
   function makeEntity(attrs) {
     const e = document.createElement('a-entity');
     for (const k in attrs) e.setAttribute(k, attrs[k]);
@@ -183,9 +296,7 @@
     return e;
   }
 
-  // Same as makeBox but additionally marks the entity as a solid wall
-  // for the mall collision system. Used for wall segments only — not for
-  // furniture or stage platforms.
+  // Wall segment marked solid for the mall collision system.
   function makeSolidBox(x, y, z, w, h, d, material) {
     const e = makeBox(x, y, z, w, h, d, material);
     e.setAttribute('solid-wall', '');
@@ -202,16 +313,28 @@
     return e;
   }
 
-  // Build a wall with a centered door cut-out by emitting two wall segments
-  // plus a lintel above the opening. Returns an array of entities.
+  function makeText(x, y, z, rotY, value, color, width) {
+    const e = document.createElement('a-text');
+    e.setAttribute('position', `${x} ${y} ${z}`);
+    e.setAttribute('rotation', `0 ${rotY} 0`);
+    e.setAttribute('value', value);
+    e.setAttribute('color', color || '#c9a84c');
+    e.setAttribute('width', width || 4);
+    e.setAttribute('align', 'center');
+    return e;
+  }
+
+  // ─── Wall-with-doors segmenter ────────────────────────────────────────
+  // Given one wall of a room, emit N solid-wall box segments with gaps
+  // at each door specified. Also emits a non-solid lintel above each
+  // door so players walk under the opening.
   function makeWallSegmented(axis, wallX, wallZ, wallW, wallH, thickness, material, doors) {
     const parts = [];
+    const half = wallW / 2;
 
-    // Sort door openings along the wall length
-    const openings = (doors || []).slice().sort((a, b) => a.offset - b.offset);
+    doors = (doors || []).slice().sort((a, b) => a.offset - b.offset);
 
-    // If no doors, emit solid wall
-    if (openings.length === 0) {
+    if (doors.length === 0) {
       parts.push(
         axis === 'x'
           ? makeSolidBox(wallX, wallH / 2, wallZ, wallW, wallH, thickness, material)
@@ -220,15 +343,12 @@
       return parts;
     }
 
-    // Walk the wall emitting segments between openings and lintels above openings
-    const half = wallW / 2;
     let cursor = -half;
-
-    for (const door of openings) {
+    for (const door of doors) {
       const dStart = door.offset - door.width / 2;
       const dEnd   = door.offset + door.width / 2;
 
-      // Segment before door
+      // Segment before this door
       if (dStart > cursor) {
         const segW = dStart - cursor;
         const segCenter = (cursor + dStart) / 2;
@@ -239,16 +359,14 @@
         );
       }
 
-      // Lintel above door (door opening ~2.1m tall, lintel fills from 2.1 to wallH)
-      // Lintels are NOT solid — player walks under them, not through them.
-      const lintelY = 2.1 + (wallH - 2.1) / 2;
-      const lintelH = wallH - 2.1;
+      // Lintel above door (non-solid, so player walks under)
+      const lintelY = WING.doorHeight + (wallH - WING.doorHeight) / 2;
+      const lintelH = wallH - WING.doorHeight;
       if (lintelH > 0.05) {
-        const doorCenter = door.offset;
         parts.push(
           axis === 'x'
-            ? makeBox(wallX + doorCenter, lintelY, wallZ, door.width, lintelH, thickness, material)
-            : makeBox(wallX, lintelY, wallZ + doorCenter, thickness, lintelH, door.width, material)
+            ? makeBox(wallX + door.offset, lintelY, wallZ, door.width, lintelH, thickness, material)
+            : makeBox(wallX, lintelY, wallZ + door.offset, thickness, lintelH, door.width, material)
         );
       }
 
@@ -269,173 +387,231 @@
     return parts;
   }
 
+  // ─── Single room builder ──────────────────────────────────────────────
   function buildRoom(parent, room) {
     const g = makeEntity({
-      id: room.id,
+      id: `cs-room-${room.id}`,
       'data-room-label': room.label,
       position: `${WING.origin.x + room.x} 0 ${WING.origin.z + room.z}`,
     });
 
-    const h = WING.ceilingY;
+    const h = room.ceilingY;
     const t = WING.wallT;
     const w = room.w;
     const d = room.d;
 
-    const wallMat = `color: ${room.wall}; roughness: 0.85; metalness: 0.0`;
+    const wallMat  = `color: ${room.wall}; roughness: 0.85; metalness: 0.0`;
     const floorMat = `color: ${room.floor}; roughness: 0.6; metalness: 0.1`;
-    // Ceiling — a warm dark-neutral that's distinct from the black scene
-    // background. Low enough to feel interior but bright enough to read
-    // as a surface rather than void.
-    const ceilMat  = `color: #2a2420; roughness: 0.9`;
+    const ceilMat  = `color: #2a2420; roughness: 0.9; side: double`;
 
     // Floor
-    const floor = makePlane(0, 0.01, 0, w, d, -90, floorMat);
-    g.appendChild(floor);
+    g.appendChild(makePlane(0, 0.01, 0, w, d, -90, floorMat));
 
-    // Ceiling (light source side down). Use double-sided material so
-    // the ceiling always renders regardless of which side the camera
-    // happens to be on — A-Frame planes are single-sided by default,
-    // which is what caused the void-above-walls look.
-    const ceil = makePlane(0, h, 0, w, d, 90, ceilMat + '; side: double');
-    g.appendChild(ceil);
+    // Ceiling (unless room is open-air like Courtyard)
+    if (!room.ceilingOmit) {
+      g.appendChild(makePlane(0, h, 0, w, d, 90, ceilMat));
+    }
 
-    // Walls — collect door specs per wall
+    // Build each wall with door openings
     const doorsByWall = { north: [], south: [], east: [], west: [] };
     (room.doors || []).forEach((door) => {
       if (doorsByWall[door.wall]) doorsByWall[door.wall].push(door);
     });
 
-    // North wall (negative z direction, at z = -d/2)
     makeWallSegmented('x', 0, -d / 2, w, h, t, wallMat, doorsByWall.north)
       .forEach((p) => g.appendChild(p));
-
-    // South wall (positive z direction, at z = +d/2)
-    makeWallSegmented('x', 0, d / 2, w, h, t, wallMat, doorsByWall.south)
+    makeWallSegmented('x', 0,  d / 2, w, h, t, wallMat, doorsByWall.south)
       .forEach((p) => g.appendChild(p));
-
-    // East wall (positive x, at x = +w/2)
-    makeWallSegmented('z', w / 2, 0, d, h, t, wallMat, doorsByWall.east)
+    makeWallSegmented('z',  w / 2, 0, d, h, t, wallMat, doorsByWall.east)
       .forEach((p) => g.appendChild(p));
-
-    // West wall (negative x, at x = -w/2)
     makeWallSegmented('z', -w / 2, 0, d, h, t, wallMat, doorsByWall.west)
       .forEach((p) => g.appendChild(p));
 
-    // Ambient room light
+    // Ambient room light near the ceiling
     if (room.ambient) {
       g.appendChild(makeEntity({
-        light: `type: point; color: ${room.ambient.color}; intensity: ${room.ambient.intensity}; distance: ${Math.max(w, d) * 1.5}; decay: 1.5`,
-        position: `0 ${h - 0.4} 0`,
+        light: `type: point; color: ${room.ambient.color}; intensity: ${room.ambient.intensity}; distance: ${Math.max(w, d) * 1.8}; decay: 1.5`,
+        position: `0 ${h - 0.5} 0`,
       }));
     }
 
-    // Built-in stage for Main Lounge (north wall, raised 0.3m)
-    if (room.hasStage) {
-      const stageW = 4.2;
-      const stageD = 2.4;
-      const stageY = 0.3;
-      // Platform
-      g.appendChild(makeBox(0, stageY / 2, -d / 2 + stageD / 2 + 0.2,
-        stageW, stageY, stageD,
-        'color: #1a100a; roughness: 0.6; metalness: 0.15'));
-      // Edge glow strip
-      g.appendChild(makeBox(0, stageY + 0.01, -d / 2 + stageD + 0.2,
-        stageW, 0.03, 0.05,
-        'color: #c9a961; emissive: #c9a961; emissiveIntensity: 0.5'));
-    }
+    // Floor-level room label (diagnostic — helps orient during walkthrough)
+    g.appendChild(makeText(0, 0.03, 0, 0, room.label.toUpperCase(), '#555555', Math.min(w, d) * 0.9));
 
-    // Subtle floor label (hidden at eye level, visible from above in tuner)
-    const label = document.createElement('a-text');
-    label.setAttribute('value', room.label);
-    label.setAttribute('position', `0 0.02 0`);
-    label.setAttribute('rotation', '-90 0 0');
-    label.setAttribute('align', 'center');
-    label.setAttribute('color', '#8a8070');
-    label.setAttribute('width', w * 0.6);
-    label.setAttribute('opacity', '0.22');
-    g.appendChild(label);
-
-    // Member-only door: velvet rope visual in front of Cigar Lounge entrance
-    // (actual access check handled in PR 6)
-    if (room.memberOnly) {
-      const ropeX = w / 2 + 0.3;
-      g.appendChild(makeBox(ropeX, 0.9, 0, 0.05, 0.05, 1.4,
-        'color: #8a1a1a; emissive: #8a1a1a; emissiveIntensity: 0.2'));
-      g.appendChild(makeBox(ropeX, 0.45, -0.7, 0.08, 0.9, 0.08,
-        'color: #c9a961; metalness: 0.6; roughness: 0.3'));
-      g.appendChild(makeBox(ropeX, 0.45, 0.7, 0.08, 0.9, 0.08,
-        'color: #c9a961; metalness: 0.6; roughness: 0.3'));
+    // VIP gate indicator on the Cigar door (non-gameplay visual cue)
+    if (room.vipGated) {
+      // Velvet rope visual at the entrance (west door of Cigar)
+      const rope = makeEntity({
+        position: `${-w / 2 + 0.4} 0.5 0`,
+        rotation: '0 0 0',
+      });
+      // Two stanchion posts + rope between them
+      rope.appendChild(makeBox(0, 0.5, -0.4, 0.08, 1.0, 0.08, 'color: #c9a84c; metalness: 0.9; roughness: 0.2'));
+      rope.appendChild(makeBox(0, 0.5,  0.4, 0.08, 1.0, 0.08, 'color: #c9a84c; metalness: 0.9; roughness: 0.2'));
+      rope.appendChild(makeBox(0, 0.85, 0, 0.04, 0.04, 0.8, 'color: #6a0d1a; metalness: 0.1; roughness: 0.9'));
+      g.appendChild(rope);
     }
 
     parent.appendChild(g);
-    return g;
   }
 
-  // ─── External wing signage — visible from the mall corridor ─
-  function buildSignage(parent) {
-    const sig = makeEntity({
-      id: 'cs-wing-signage',
-      position: `${WING.origin.x - 6.5 - 5.49 / 2 - 0.1} 0 ${WING.origin.z + 5.5}`,
+  // ─── Wing shell — outer walls that close off the wing from the sky ────
+  // These walls form the perimeter that the master-plan master shape sits
+  // inside. Because we've placed rooms to tile the 22×22 footprint, most
+  // of the perimeter is already covered by room walls. But the wing's
+  // outer-facing walls (especially east = street-facing, north = back
+  // alley) need a shell so we don't see the skybox through gaps.
+  //
+  // For now we rely on the rooms' own outer walls. If gaps appear at
+  // walkthrough time, we add shell panels here.
+  function buildWingShell(parent) {
+    // Floor under the whole wing (safety net in case any room floor misses)
+    const floorMat = 'color: #1a1410; roughness: 0.9';
+    const floor = makePlane(WING.origin.x, 0, WING.origin.z, 22, 22, -90, floorMat);
+    parent.appendChild(floor);
+
+    // No outer ceiling — the mall's 12m shell ceiling above the corridor
+    // doesn't extend over the wing. We rely on a skybox or dark void.
+    // The wing is covered by its rooms' own inset ceilings.
+  }
+
+  // ─── Wing entry cue — a signed archway at the wing entrance ──────────
+  // Visible from the main mall corridor, announces "Café Sativa" to
+  // entering guests.
+  function buildEntryCue(parent) {
+    // The Foyer's south wall is at world z = origin.z + foyer.z + foyer.d/2
+    //   = -29 + 9.25 + 1.75 = -18
+    // The Foyer is centered at world x = origin.x + foyer.x
+    //   = 27 + (-5) = 22
+    // So the entry door is at world (22, 0, -18).
+    //
+    // Place signage + torches just in front of it on the corridor side.
+
+    const sign = makeEntity({
+      position: `22 3.2 -18.5`,
+      rotation: '0 180 0',
     });
+    // Glowing "CAFÉ SATIVA" text
+    const text = document.createElement('a-text');
+    text.setAttribute('value', 'CAFÉ SATIVA');
+    text.setAttribute('color', '#c9a84c');
+    text.setAttribute('align', 'center');
+    text.setAttribute('width', 6);
+    text.setAttribute('font', 'mozillavr');
+    sign.appendChild(text);
 
-    // "CAFÉ SATIVA" text on the foyer west wall, facing -x (toward corridor)
-    const title = document.createElement('a-text');
-    title.setAttribute('value', 'CAFÉ SATIVA');
-    title.setAttribute('position', '-0.1 2.4 0');
-    title.setAttribute('rotation', '0 -90 0');
-    title.setAttribute('align', 'center');
-    title.setAttribute('color', '#c9a961');
-    title.setAttribute('width', '5');
-    sig.appendChild(title);
+    // Tagline below
+    const tag = document.createElement('a-text');
+    tag.setAttribute('value', 'SIP  •  SMOKE  •  VIBE');
+    tag.setAttribute('color', '#888');
+    tag.setAttribute('position', '0 -0.6 0');
+    tag.setAttribute('align', 'center');
+    tag.setAttribute('width', 4);
+    sign.appendChild(tag);
 
-    const sub = document.createElement('a-text');
-    sub.setAttribute('value', 'Sip • Stage • Gallery');
-    sub.setAttribute('position', '-0.1 1.9 0');
-    sub.setAttribute('rotation', '0 -90 0');
-    sub.setAttribute('align', 'center');
-    sub.setAttribute('color', '#f5e6d3');
-    sub.setAttribute('width', '3');
-    sub.setAttribute('opacity', '0.7');
-    sig.appendChild(sub);
+    parent.appendChild(sign);
 
-    parent.appendChild(sig);
+    // Two amber wall sconces flanking the door
+    const sconceMat = 'color: #c9a84c; emissive: #c9a84c; emissiveIntensity: 0.7';
+    parent.appendChild(makeBox(20.5, 2.2, -18.1, 0.2, 0.4, 0.2, sconceMat));
+    parent.appendChild(makeBox(23.5, 2.2, -18.1, 0.2, 0.4, 0.2, sconceMat));
+
+    // Point lights at each sconce
+    parent.appendChild(makeEntity({
+      light: 'type: point; color: #c9a84c; intensity: 0.6; distance: 4; decay: 2',
+      position: '20.5 2.2 -18.1',
+    }));
+    parent.appendChild(makeEntity({
+      light: 'type: point; color: #c9a84c; intensity: 0.6; distance: 4; decay: 2',
+      position: '23.5 2.2 -18.1',
+    }));
   }
 
-  // ─── Entry point ─────────────────────────────────────────────
-  const CafeSativaWing = {
-    build: function () {
-      const scene = document.querySelector('a-scene');
-      if (!scene) return;
+  // ─── Door in mall corridor wall — opening for the wing entry ──────────
+  // The mall's east corridor wall is at x=15, runs from z=-70 to z=10.
+  // We need a door opening at z ≈ -18 so players can walk from the
+  // corridor into the CS Foyer. The corridor wall itself is a single
+  // large box in index.html, so we can't easily segment it here. Instead:
+  // we add a THIN door-frame visual and rely on the fact that the
+  // corridor wall is just visually solid. Players walking east at z=-18
+  // will hit the collision, but the door opening is where they expect
+  // to pass through.
+  //
+  // For now, we'll add a visible door-frame archway at the boundary,
+  // and accept that collision needs an override. TODO: in a follow-up,
+  // cut a physical gap in the corridor wall by replacing index.html's
+  // single wall with a segmented version.
+  function buildCorridorEntry(parent) {
+    // Door frame at x=15 (corridor wall), z=-18 (lining up with Foyer)
+    const frameMat = 'color: #2a1f18; roughness: 0.7; metalness: 0.3';
 
-      // Remove any previous wing (supports hot reload / retry)
-      const prev = document.getElementById('cs-wing');
-      if (prev) prev.remove();
+    // Top lintel
+    parent.appendChild(makeBox(15, 2.8, -18, 0.4, 0.4, 2.2, frameMat));
+    // Left jamb (toward z=-17)
+    parent.appendChild(makeBox(15, 1.3, -16.9, 0.4, 2.6, 0.2, frameMat));
+    // Right jamb (toward z=-19.1)
+    parent.appendChild(makeBox(15, 1.3, -19.1, 0.4, 2.6, 0.2, frameMat));
 
-      const wing = makeEntity({
-        id: 'cs-wing',
-        'data-wing': 'cafe-sativa',
-      });
-      scene.appendChild(wing);
+    // "Welcome" sign on corridor side (facing west into corridor)
+    const welcome = document.createElement('a-text');
+    welcome.setAttribute('value', '→  Enter the Lounge');
+    welcome.setAttribute('color', '#c9a84c');
+    welcome.setAttribute('position', '14.7 1.8 -18');
+    welcome.setAttribute('rotation', '0 -90 0');
+    welcome.setAttribute('align', 'center');
+    welcome.setAttribute('width', 3);
+    parent.appendChild(welcome);
+  }
 
-      ROOMS.forEach((room) => buildRoom(wing, room));
-      buildSignage(wing);
-
-      console.log('[CafeSativaWing] Built 6 rooms @', WING.origin);
-    },
-
-    // Exported for the tuner to live-introspect
-    ROOMS: ROOMS,
-    WING: WING,
-  };
-
-  window.CafeSativaWing = CafeSativaWing;
-
-  // Build on scene-loaded
-  document.addEventListener('DOMContentLoaded', function () {
+  // ─── Main render ──────────────────────────────────────────────────────
+  function render() {
     const scene = document.querySelector('a-scene');
     if (!scene) return;
-    const go = () => CafeSativaWing.build();
-    if (scene.hasLoaded) go();
-    else scene.addEventListener('loaded', go);
-  });
+
+    // Remove any previous wing (PR 2 / PR 6 old wing) so we start clean
+    ['cs-wing-root', 'cs-wing-entry'].forEach((id) => {
+      const existing = document.getElementById(id);
+      if (existing) existing.remove();
+    });
+
+    const root = makeEntity({ id: 'cs-wing-root' });
+
+    buildWingShell(root);
+    ROOMS.forEach((room) => buildRoom(root, room));
+    buildEntryCue(root);
+    buildCorridorEntry(root);
+
+    scene.appendChild(root);
+
+    // Refresh mall collision system after all solid walls are in place
+    setTimeout(() => {
+      if (window.MallCollider && typeof window.MallCollider.refresh === 'function') {
+        window.MallCollider.refresh();
+      }
+    }, 300);
+
+    console.log('[CS Wing V2] Rendered', ROOMS.length, 'rooms per master-plan spec');
+  }
+
+  function init() {
+    const scene = document.querySelector('a-scene');
+    if (!scene) {
+      document.addEventListener('DOMContentLoaded', init, { once: true });
+      return;
+    }
+    if (scene.hasLoaded) {
+      setTimeout(render, 400);
+    } else {
+      scene.addEventListener('loaded', () => setTimeout(render, 400));
+    }
+  }
+
+  // Public API
+  window.CSWingV2 = { render, ROOMS, WING };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
