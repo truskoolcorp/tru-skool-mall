@@ -10,13 +10,23 @@
 (function() {
   if (typeof AFRAME === 'undefined') return;
 
-  // Simple boundary clamp — keeps player inside the mall footprint
-  // Stores are INSIDE the corridor walls, so one big zone works
+  // Simple boundary clamp — keeps player inside the mall footprint.
+  //
+  // The mall has two zones:
+  //   - Main corridor: x=-14 to x=14 (between corridor walls at ±15)
+  //   - CS wing: extends east of the main corridor, x=16 to x=38
+  //
+  // The CS wing's physical walls + the mall-collision system handle
+  // fine-grained wall blocking inside the wing. This clamp only sets
+  // the OUTER bounds of the whole mall footprint so players can't
+  // walk off into the void beyond the east edge of the wing.
+  //
+  // zMax is +18 to accommodate the front plaza courtyard added in PR 5.
   var BOUNDS = {
     xMin: -14,   // Inside left corridor wall (wall at x=-15)
-    xMax: 14,    // Inside right corridor wall (wall at x=15)
+    xMax: 40,    // Just past east edge of CS wing (wing extends to x=38)
     zMin: -65,   // Just before back wall (wall at z=-70)
-    zMax: 14,    // Just past entrance archway
+    zMax: 18,    // Past the plaza courtyard (courtyard extends to z=+18)
   };
 
   AFRAME.registerComponent('mall-nav', {
