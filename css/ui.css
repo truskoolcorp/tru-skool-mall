@@ -352,62 +352,9 @@ body {
 #chat-send:hover { background: #ddb850; }
 
 /* ─── TELEPORT MENU ─── */
-#teleport-menu {
-  position: absolute;
-  bottom: 80px;
-  left: 20px;
-  width: 240px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-}
-
-.tp-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--gold);
-  margin-bottom: 8px;
-  text-align: center;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.tp-btn {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: rgba(30, 28, 44, 0.4);
-  color: var(--text);
-  font-size: 13px;
-  font-family: var(--font-body);
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s;
-}
-
-.tp-btn:hover {
-  border-color: var(--gold);
-  background: rgba(201, 168, 76, 0.1);
-  transform: translateX(4px);
-}
-
-.tp-close {
-  margin-top: 8px;
-  padding: 8px;
-  border: none;
-  background: none;
-  color: var(--text-dim);
-  font-size: 12px;
-  cursor: pointer;
-  text-align: center;
-}
+/* Teleport-menu removed in favor of Store Directory (🏪) for navigation
+   and Minimap (🗺) for orientation. See js/mall-core.js toggleMap() and
+   toggleDirectory(). */
 
 /* ─── VOICE STATUS ─── */
 #voice-status {
@@ -474,11 +421,64 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 8px;
+  padding: 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  min-width: 240px;
 }
 
-#minimap-canvas { display: block; border-radius: var(--radius-sm); }
+.mm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.mm-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mm-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.15s;
+}
+
+.mm-close:hover { color: var(--gold); }
+
+#minimap-canvas {
+  display: block;
+  border-radius: var(--radius-sm);
+}
+
+.mm-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 0 2px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.mm-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c9a84c;
+  border: 2px solid #ffe0a0;
+  flex-shrink: 0;
+}
 
 /* ─── MOBILE RESPONSIVENESS ─── */
 @media (max-width: 600px) {

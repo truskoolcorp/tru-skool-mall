@@ -60,8 +60,8 @@
   <div id="hud-top">
     <div id="location-label">Grand Entrance</div>
     <div id="hud-controls">
-      <button id="btn-map" class="hud-btn" onclick="toggleMap()" title="Mall Map">🗺</button>
-      <button id="btn-directory" class="hud-btn" onclick="toggleDirectory()" title="Store Directory">🏪</button>
+      <button id="btn-map" class="hud-btn" onclick="toggleMap()" title="Minimap — where am I">🗺</button>
+      <button id="btn-directory" class="hud-btn" onclick="toggleDirectory()" title="Store Directory — take me somewhere">🏪</button>
       <button id="btn-music" class="hud-btn" onclick="toggleMusic()" title="Background Music">🎵</button>
       <button id="btn-voice" class="hud-btn" onclick="toggleVoice()" title="Voice Guide">🔊</button>
       <button id="btn-chat" class="hud-btn" onclick="toggleChat()" title="Chat with Guide">💬</button>
@@ -72,7 +72,15 @@
 
   <!-- Mini-map -->
   <div id="minimap" class="hidden">
+    <div class="mm-header">
+      <span class="mm-title">Mall Map</span>
+      <button class="mm-close" onclick="toggleMap()" title="Close map">&times;</button>
+    </div>
     <canvas id="minimap-canvas" width="240" height="320"></canvas>
+    <div class="mm-legend">
+      <span class="mm-dot"></span>
+      <span>You are here</span>
+    </div>
   </div>
 
   <!-- Welcome Tooltip (shows on entry, auto-hides) -->
@@ -124,9 +132,9 @@
         <h3>🎮 HUD Buttons</h3>
         <div class="help-grid">
           <div class="help-key">🗺</div>
-          <div class="help-desc">Toggle minimap</div>
+          <div class="help-desc">Minimap — see where you are in the mall</div>
           <div class="help-key">🏪</div>
-          <div class="help-desc">Store directory (teleport to any store)</div>
+          <div class="help-desc">Store directory — teleport to any store</div>
           <div class="help-key">🎵</div>
           <div class="help-desc">Toggle background music</div>
           <div class="help-key">🔊</div>
@@ -227,19 +235,8 @@
     </div>
   </div>
 
-  <!-- Teleport menu -->
-  <div id="teleport-menu" class="hidden">
-    <div class="tp-title">Teleport To</div>
-    <button class="tp-btn" onclick="teleportTo('entrance')">🏛 Grand Entrance</button>
-    <button class="tp-btn" onclick="teleportTo('concrete-rose')">🌹 Concrete Rose</button>
-    <button class="tp-btn" onclick="teleportTo('bijadi')">💎 BiJaDi</button>
-    <button class="tp-btn" onclick="teleportTo('faithfully-faded')">🦋 Faithfully Faded</button>
-    <button class="tp-btn" onclick="teleportTo('hoe')">👑 H.O.E.</button>
-    <button class="tp-btn" onclick="teleportTo('wanderlust')">🌍 Wanderlust</button>
-    <button class="tp-btn" onclick="teleportTo('cafe-sativa')">☕ Café Sativa</button>
-    <button class="tp-btn" onclick="teleportTo('verse-alkemist')">🎤 The Verse Alkemist</button>
-    <button class="tp-close" onclick="toggleMap()">Close</button>
-  </div>
+  <!-- Teleport menu removed in favor of Store Directory (🏪 button).
+       🗺 button now toggles the minimap for "where am I" orientation. -->
 
   <!-- Voice narration status -->
   <div id="voice-status" class="hidden">

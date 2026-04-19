@@ -197,8 +197,9 @@ function teleportTo(locationId) {
     }
   }, 350);
 
-  // Close teleport menu
-  toggleMap();
+  // Note: callers are responsible for closing their own UI surfaces.
+  // toggleToStore() closes the Store Directory; the minimap stays open
+  // so you can see where you teleported to.
 }
 
 // ═══════════════════════════════════════════════════
@@ -272,8 +273,12 @@ function toggleChat() {
 }
 
 function toggleMap() {
+  // Option B: 🗺 button shows the minimap ("where am I"), 🏪 shows the
+  // Store Directory ("take me somewhere"). Previously 🗺 opened a text
+  // teleport list that duplicated the Directory.
   MallState.mapOpen = !MallState.mapOpen;
-  document.getElementById('teleport-menu').classList.toggle('hidden', !MallState.mapOpen);
+  const mm = document.getElementById('minimap');
+  if (mm) mm.classList.toggle('hidden', !MallState.mapOpen);
   document.getElementById('btn-map').classList.toggle('active', MallState.mapOpen);
 }
 
@@ -380,15 +385,18 @@ document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') return; // Don't capture when typing in chat
 
   switch(e.key.toLowerCase()) {
+    // Option B nav model:
+    //   T or M → toggle minimap ("where am I")
+    //   D     → toggle store directory ("take me somewhere")
+    //   C     → toggle chat
+    //   V     → toggle voice
+    //   N     → toggle music
     case 't': toggleMap(); break;
+    case 'm': toggleMap(); break;
+    case 'd': toggleDirectory(); break;
     case 'c': toggleChat(); break;
-    case 'm': {
-      const mm = document.getElementById('minimap');
-      mm.classList.toggle('hidden');
-      break;
-    }
     case 'v': toggleVoice(); break;
-    case 'n': toggleMusic(); break;  // N for music/notes
+    case 'n': toggleMusic(); break;
   }
 });
 
