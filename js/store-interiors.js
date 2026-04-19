@@ -18,7 +18,8 @@ const StoreInteriors = {
     this.enhanceFaithfullyFaded(scene);
     this.enhanceHOE(scene);
     this.enhanceWanderlust(scene);
-    this.enhanceCafeSativa(scene);
+    // CS disabled — replaced by js/cafe-sativa-wing.js (clean rebuild from official floor plan)
+    // this.enhanceCafeSativa(scene);
     this.enhanceVerseAlkemist(scene);
     this.addCeilingDetails(scene);
     // Avatars are now inline in index.html
@@ -37,7 +38,8 @@ const StoreInteriors = {
       { pos: '-10 0.01 -22', size: '8 8', tex: 'carpet' },   // Faithfully Faded
       { pos: '10 0.01 -22', size: '8 8', tex: 'carpet' },    // H.O.E.
       { pos: '-10 0.01 -38', size: '8 8', tex: 'wood-dark' },     // Wanderlust
-      { pos: '10 0.01 -38', size: '8 8', tex: 'wood-dark' },      // Cafe Sativa
+      // CS floor removed — handled by cafe-sativa-wing.js (per-room floors)
+      // { pos: '10 0.01 -38', size: '8 8', tex: 'wood-dark' },      // Cafe Sativa
       { pos: '0 0.01 -58', size: '14 12', tex: 'carpet' },   // Verse Alkemist
     ];
     stores.forEach(s => {

@@ -556,26 +556,13 @@ AFRAME.registerComponent('fix-avatar', {
   </a-entity>
 
   <!-- ═══════════════════════════════════════════════════════════
-       STORE 6: CAFÉ SATIVA (Right, far corridor)
-       "Sip. Smoke. Vibe." — warm browns, retro, cozy
+       CAFÉ SATIVA WING — Rebuilt from official floor plan (v3).
+       The 6-room wing (Foyer, Bar+ColdStoned, Gallery, Main Lounge,
+       Cigar Lounge, Event/Culinary) is constructed programmatically
+       by js/cafe-sativa-wing.js. Teleport target `cafe-sativa` still
+       points at (10, 0, -38) which is inside the new Foyer footprint.
        ═══════════════════════════════════════════════════════════ -->
-  <a-entity id="zone-cafe-sativa" position="10 0 -38" class="clickable" data-store="cafe-sativa">
-    <a-box position="0 4 0" width="9" height="8" depth="8" material="color: #1a1410; roughness: 0.8; side: back"></a-box>
-    <a-box position="-4.5 4 0" width="0.15" height="8" depth="8" material="color: #2a2018; metalness: 0.2"></a-box>
-    <a-box position="-4.5 7 0" width="0.2" height="2" depth="6" material="color: #1a1408"></a-box>
-    <!-- Brand signage -->
-    <a-text value="CAFE SATIVA" position="-4.6 7.5 0" rotation="0 -90 0" align="center" color="#c09060" width="5" font="mozillavr"></a-text>
-    <a-text value="Sip. Smoke. Vibe." position="-4.6 6.8 0" rotation="0 -90 0" align="center" color="#907050" width="4" font="mozillavr"></a-text>
-    <!-- Warm amber light -->
-    <a-entity light="type: point; color: #c09060; intensity: 1.4; distance: 25; decay: 1" position="-2 5 0"></a-entity>
-    <!-- Bar counter with cocktail -->
-    <a-box position="-1 1 0" width="3" height="1" depth="1.2" material="color: #3a2a1a; roughness: 0.9"></a-box>
-    <a-cylinder position="-1 1.7 0" radius="0.06" height="0.25" material="color: #ddd; metalness: 0.6; opacity: 0.5; transparent: true"></a-cylinder>
-    <!-- Hanging lights (bulb string) -->
-    <a-sphere position="-2 5 -1" radius="0.12" material="color: #ffe0a0; emissive: #ffe0a0; emissiveIntensity: 0.8"></a-sphere>
-    <a-sphere position="-1 5.2 0" radius="0.12" material="color: #ffe0a0; emissive: #ffe0a0; emissiveIntensity: 0.8"></a-sphere>
-    <a-sphere position="0 5 1" radius="0.12" material="color: #ffe0a0; emissive: #ffe0a0; emissiveIntensity: 0.8"></a-sphere>
-  </a-entity>
+  <a-entity id="zone-cafe-sativa" position="10 0 -38" class="clickable" data-store="cafe-sativa" visible="false"></a-entity>
 
   <!-- ═══════════════════════════════════════════════════════════
        STORE 7: THE VERSE ALKEMIST (End of mall, center)
@@ -656,13 +643,19 @@ AFRAME.registerComponent('fix-avatar', {
   <a-box id="trigger-ff" class="zone-trigger" position="-7 1 -22" width="6" height="3" depth="8" visible="false" data-zone="Faithfully Faded" data-guide="ahnika"></a-box>
   <a-box id="trigger-hoe" class="zone-trigger" position="7 1 -22" width="6" height="3" depth="8" visible="false" data-zone="H.O.E." data-guide="laviche"></a-box>
   <a-box id="trigger-wanderlust" class="zone-trigger" position="-7 1 -38" width="6" height="3" depth="8" visible="false" data-zone="Wanderlust" data-guide="ginger"></a-box>
-  <a-box id="trigger-cafe" class="zone-trigger" position="7 1 -38" width="6" height="3" depth="8" visible="false" data-zone="Cafe Sativa" data-guide="laviche"></a-box>
+  <a-box id="trigger-cafe" class="zone-trigger" position="13 1 -35" width="22" height="3" depth="22" visible="false" data-zone="Cafe Sativa" data-guide="laviche"></a-box>
   <a-box id="trigger-verse" class="zone-trigger" position="0 1 -58" width="12" height="3" depth="10" visible="false" data-zone="The Verse Alkemist" data-guide="laviche"></a-box>
 </a-scene>
 
 <!-- ═══════════════════════════════════════════════════════════════
      SCRIPTS
      ═══════════════════════════════════════════════════════════════ -->
+<!-- Config endpoint (sets window.MALL_CONFIG from Vercel env vars) -->
+<script src="/api/config.js"></script>
+<!-- Supabase identity bridge (shared auth with cafe-sativa.com) -->
+<script src="js/supabase-client.js"></script>
+<script src="js/member-pill.js"></script>
+
 <script src="js/loading-screen.js"></script>
 <script src="js/mall-core.js"></script>
 <script src="js/guide-system.js"></script>
@@ -675,6 +668,8 @@ AFRAME.registerComponent('fix-avatar', {
 <script src="js/store-rooms.js"></script>
 <script src="js/mall-tuner.js"></script>
 <script src="js/doorway-signs.js"></script>
+<!-- Café Sativa wing — programmatic 6-room build from official floor plan -->
+<script src="js/cafe-sativa-wing.js"></script>
 <script src="js/legacy-shim.js"></script>
 </body>
 </html>

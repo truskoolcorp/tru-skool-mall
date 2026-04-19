@@ -22,44 +22,17 @@ var STORE_ROOMS = {
   // When the new walkable music-studio.glb lands in assets/models/rooms/,
   // restore the block and re-tune positions via the Room Tuner.
 
-  'Cafe Sativa': {
-    // Multi-room shape — three connected sections
-    rooms: [
-      // Slot 0: Main jazz club / bar lounge
-      {
-        src: 'assets/models/rooms/jazz-club.glb',
-        scale: '0.6 0.6 0.6',
-        position: '10 6.96 -38',
-        rotation: '0 90 0',
-      },
-      // Slot 1: Smoking lounge (cigars/hookah)
-      {
-        src: 'assets/models/rooms/smoking-lounge.glb',
-        scale: '0.4 0.4 0.4',
-        position: '13 6.76 -42',
-        rotation: '0 0 0',
-      },
-      // Slot 2: Cold Stoned gelato
-      {
-        src: 'assets/models/rooms/cold-stoned.glb',
-        scale: '0.005 0.005 0.005',
-        position: '10 -0.09 -34',
-        rotation: '0 90 0',
-      },
-    ],
-    lights: [
-      { color: '#c09060', intensity: 1.2, distance: 12, position: '10 4 -38' },
-      { color: '#ffe0a0', intensity: 0.8, distance: 8,  position: '10 3 -36' },
-      { color: '#ff8040', intensity: 0.5, distance: 6,  position: '13 3 -42' },
-    ],
-    hideZone: 'zone-cafe-sativa',
-  },
+  // 'Cafe Sativa': DISABLED — replaced by js/cafe-sativa-wing.js (programmatic
+  // 6-room wing built from official floor plan dimensions). The old GLB
+  // loaders (jazz-club.glb, smoking-lounge.glb, cold-stoned.glb) remain in
+  // assets/models/rooms/ and can be reused as interior props in specific
+  // rooms of the new wing in a later PR.
 };
 
 // Zone detection bounds
 var ROOM_ZONES = [
   { label: 'The Verse Alkemist', x: 0,  z: -58, w: 10, d: 10 },
-  { label: 'Cafe Sativa',        x: 8,  z: -38, w: 8,  d: 10 },
+  // 'Cafe Sativa' removed — handled by cafe-sativa-wing.js
 ];
 
 var StoreRoomSystem = {
