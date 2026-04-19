@@ -62,9 +62,9 @@
     <div id="hud-controls">
       <button id="btn-map" class="hud-btn" onclick="toggleMap()" title="Mall Map">🗺</button>
       <button id="btn-directory" class="hud-btn" onclick="toggleDirectory()" title="Store Directory">🏪</button>
-      <button id="btn-music" class="hud-btn active" onclick="toggleMusic()" title="Background Music">🎵</button>
+      <button id="btn-music" class="hud-btn" onclick="toggleMusic()" title="Background Music">🎵</button>
       <button id="btn-voice" class="hud-btn" onclick="toggleVoice()" title="Voice Guide">🔊</button>
-      <button id="btn-chat" class="hud-btn active" onclick="toggleChat()" title="Chat with Guide">💬</button>
+      <button id="btn-chat" class="hud-btn" onclick="toggleChat()" title="Chat with Guide">💬</button>
       <button id="btn-help" class="hud-btn" onclick="toggleHelp()" title="Controls Help">❓</button>
       <button id="btn-mode" class="hud-btn" onclick="showModeSelector()" title="Switch Mode">⚙</button>
     </div>
@@ -203,8 +203,8 @@
     </div>
   </div>
 
-  <!-- Chat panel -->
-  <div id="chat-panel" class="chat-open">
+  <!-- Chat panel (hidden by default — user clicks 💬 to open) -->
+  <div id="chat-panel">
     <div id="chat-header">
       <div class="chat-persona">
         <div class="persona-avatar laviche"></div>

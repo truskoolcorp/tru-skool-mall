@@ -105,7 +105,14 @@ Keep responses concise (2-3 sentences max for in-mall chat). Guide visitors, rec
 
     this._currentGuide = guideId;
     this.updateChatPersona(guideId);
-    this.greet(zoneId);
+
+    // Only greet when chat is already open. If the user hasn't opened chat,
+    // respect that and stay silent — they can open chat any time and get
+    // a fresh greeting then.
+    var chatOpen = window.MallState && window.MallState.chatOpen;
+    if (chatOpen) {
+      this.greet(zoneId);
+    }
   },
 
   updateChatPersona(guideId) {

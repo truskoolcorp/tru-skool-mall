@@ -8,8 +8,8 @@ const MallState = {
   mode: null,          // 'virtual' | 'ar' | 'vr'
   currentZone: 'Grand Entrance',
   currentGuide: 'laviche',
-  voiceEnabled: true,
-  chatOpen: true,
+  voiceEnabled: false,   // opt-in — user clicks 🔊 to enable
+  chatOpen: false,       // opt-in — user clicks 💬 to open
   mapOpen: false,
 };
 
@@ -259,6 +259,16 @@ function toggleChat() {
   MallState.chatOpen = !MallState.chatOpen;
   panel.classList.toggle('chat-open', MallState.chatOpen);
   document.getElementById('btn-chat').classList.toggle('active', MallState.chatOpen);
+
+  // When the user opens chat for the first time, greet them from the
+  // current zone's guide so the panel isn't empty.
+  if (MallState.chatOpen && typeof GuideSystem !== 'undefined') {
+    var zone = null;
+    for (const z of ZONES) {
+      if (z.label === MallState.currentZone) { zone = z; break; }
+    }
+    if (zone) GuideSystem.greet(zone.id);
+  }
 }
 
 function toggleMap() {
@@ -470,6 +480,11 @@ window.teleportToStore = teleportToStore;
 function showWelcome() {
   var tooltip = document.getElementById('welcome-tooltip');
   if (!tooltip) return;
+  // Only show welcome to first-time visitors. Once dismissed (or auto-hidden),
+  // remember so subsequent visits don't re-open the tooltip.
+  try {
+    if (localStorage.getItem('mall_welcome_seen') === '1') return;
+  } catch (e) { /* localStorage unavailable — fall through and show */ }
   tooltip.classList.remove('hidden');
   // Auto-dismiss after 8 seconds
   setTimeout(function() { dismissWelcome(); }, 8000);
@@ -478,6 +493,7 @@ function showWelcome() {
 function dismissWelcome() {
   var tooltip = document.getElementById('welcome-tooltip');
   if (tooltip) tooltip.classList.add('hidden');
+  try { localStorage.setItem('mall_welcome_seen', '1'); } catch (e) {}
 }
 window.dismissWelcome = dismissWelcome;
 
