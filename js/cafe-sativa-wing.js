@@ -179,6 +179,15 @@
     return e;
   }
 
+  // Same as makeBox but additionally marks the entity as a solid wall
+  // for the mall collision system. Used for wall segments only — not for
+  // furniture or stage platforms.
+  function makeSolidBox(x, y, z, w, h, d, material) {
+    const e = makeBox(x, y, z, w, h, d, material);
+    e.setAttribute('solid-wall', '');
+    return e;
+  }
+
   function makePlane(x, y, z, w, d, rotX, material) {
     const e = document.createElement('a-plane');
     e.setAttribute('position', `${x} ${y} ${z}`);
@@ -201,8 +210,8 @@
     if (openings.length === 0) {
       parts.push(
         axis === 'x'
-          ? makeBox(wallX, wallH / 2, wallZ, wallW, wallH, thickness, material)
-          : makeBox(wallX, wallH / 2, wallZ, thickness, wallH, wallW, material)
+          ? makeSolidBox(wallX, wallH / 2, wallZ, wallW, wallH, thickness, material)
+          : makeSolidBox(wallX, wallH / 2, wallZ, thickness, wallH, wallW, material)
       );
       return parts;
     }
@@ -221,12 +230,13 @@
         const segCenter = (cursor + dStart) / 2;
         parts.push(
           axis === 'x'
-            ? makeBox(wallX + segCenter, wallH / 2, wallZ, segW, wallH, thickness, material)
-            : makeBox(wallX, wallH / 2, wallZ + segCenter, thickness, wallH, segW, material)
+            ? makeSolidBox(wallX + segCenter, wallH / 2, wallZ, segW, wallH, thickness, material)
+            : makeSolidBox(wallX, wallH / 2, wallZ + segCenter, thickness, wallH, segW, material)
         );
       }
 
       // Lintel above door (door opening ~2.1m tall, lintel fills from 2.1 to wallH)
+      // Lintels are NOT solid — player walks under them, not through them.
       const lintelY = 2.1 + (wallH - 2.1) / 2;
       const lintelH = wallH - 2.1;
       if (lintelH > 0.05) {
@@ -247,8 +257,8 @@
       const segCenter = (cursor + half) / 2;
       parts.push(
         axis === 'x'
-          ? makeBox(wallX + segCenter, wallH / 2, wallZ, segW, wallH, thickness, material)
-          : makeBox(wallX, wallH / 2, wallZ + segCenter, thickness, wallH, segW, material)
+          ? makeSolidBox(wallX + segCenter, wallH / 2, wallZ, segW, wallH, thickness, material)
+          : makeSolidBox(wallX, wallH / 2, wallZ + segCenter, thickness, wallH, segW, material)
       );
     }
 
