@@ -145,9 +145,17 @@
         return;
       }
 
-      // Find any AABB we're inside (horizontal projection)
+      // Find any AABB we're inside (horizontal projection).
+      // Also check vertical: if the wall is entirely above the player's
+      // head (minY > player head height), treat as overhead structure
+      // (lintel, awning, etc.) and skip. Player head is py + ~1.6m.
+      const PLAYER_HEIGHT = 1.8;  // meters — approximate head height above rig origin
       let hit = null;
       for (const aabb of REGISTRY.values()) {
+        // Skip walls that start above the player's head — these are
+        // lintels above door openings, ceiling beams, etc. that the
+        // player walks under, not into.
+        if (aabb.minY > PLAYER_HEIGHT) continue;
         if (px >= aabb.minX && px <= aabb.maxX &&
             pz >= aabb.minZ && pz <= aabb.maxZ) {
           hit = aabb;
