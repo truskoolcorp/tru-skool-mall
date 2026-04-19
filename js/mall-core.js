@@ -21,7 +21,7 @@ const TELEPORT_POSITIONS = {
   'faithfully-faded': { x: -7,   y: 0,   z: -22, label: 'Faithfully Faded' },
   'hoe':              { x: 7,    y: 0,   z: -22, label: 'H.O.E.' },
   'wanderlust':       { x: -7,   y: 0,   z: -38, label: 'Wanderlust' },
-  'cafe-sativa':      { x: 22,   y: 0,   z: -16, label: 'Cafe Sativa' },
+  'cafe-sativa':      { x: 13,   y: 0,   z: -18, label: 'Cafe Sativa' },
   'verse-alkemist':   { x: 0,    y: 0,   z: -55, label: 'The Verse Alkemist' },
 };
 
