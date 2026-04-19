@@ -42,7 +42,11 @@
     origin: { x: 13, z: -35 },
 
     // CEILING height (uniform across wing)
-    ceilingY: 3.2,
+    // 2.8m = ~9.2ft — realistic hospitality interior ceiling, reads as
+    // intimate without feeling cramped. Was 3.2m originally but that
+    // made the rooms feel cavernous once walls went dark. Door openings
+    // stay at 2.1m so the 0.7m lintel band above each door still works.
+    ceilingY: 2.8,
 
     // WALL thickness
     wallT: 0.15,
@@ -279,14 +283,20 @@
 
     const wallMat = `color: ${room.wall}; roughness: 0.85; metalness: 0.0`;
     const floorMat = `color: ${room.floor}; roughness: 0.6; metalness: 0.1`;
-    const ceilMat  = `color: #15110c; roughness: 0.95`;
+    // Ceiling — a warm dark-neutral that's distinct from the black scene
+    // background. Low enough to feel interior but bright enough to read
+    // as a surface rather than void.
+    const ceilMat  = `color: #2a2420; roughness: 0.9`;
 
     // Floor
     const floor = makePlane(0, 0.01, 0, w, d, -90, floorMat);
     g.appendChild(floor);
 
-    // Ceiling (light source side down)
-    const ceil = makePlane(0, h, 0, w, d, 90, ceilMat);
+    // Ceiling (light source side down). Use double-sided material so
+    // the ceiling always renders regardless of which side the camera
+    // happens to be on — A-Frame planes are single-sided by default,
+    // which is what caused the void-above-walls look.
+    const ceil = makePlane(0, h, 0, w, d, 90, ceilMat + '; side: double');
     g.appendChild(ceil);
 
     // Walls — collect door specs per wall

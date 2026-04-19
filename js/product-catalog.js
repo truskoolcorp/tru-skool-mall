@@ -209,7 +209,7 @@ const ProductCatalog = {
       'faithfully-faded': { base: [-10, 0, -22], facing: 'right', offset: [1, 0, 0] },
       'hoe':              { base: [10, 0, -22],  facing: 'left',  offset: [-1, 0, 0] },
       'wanderlust':       { base: [-10, 0, -38], facing: 'right', offset: [1, 0, 0] },
-      'cafe-sativa':      { base: [10, 0, -38],  facing: 'left',  offset: [-1, 0, 0] },
+      'cafe-sativa':      { base: [9, 0, -32],   facing: 'left',  offset: [-1, 0, 0], y: 2.1 },
       'verse-alkemist':   { base: [0, 0, -58],   facing: 'front', offset: [0, 0, 2] },
     };
 
@@ -225,7 +225,11 @@ const ProductCatalog = {
 
       var sign = document.createElement('a-entity');
       var sx = config.base[0] + config.offset[0] * 3;
-      var sy = 3.5;
+      // Default height 3.5m suits the primitive-shell stores. The new
+      // CS wing has a 2.8m ceiling, so CS overrides to 2.1m to sit just
+      // below the door lintel — outside the Foyer, visible from the
+      // main corridor as a "this is the entrance" marker.
+      var sy = (typeof config.y === 'number') ? config.y : 3.5;
       var sz = config.base[2] + config.offset[2];
 
       sign.setAttribute('position', sx + ' ' + sy + ' ' + sz);
