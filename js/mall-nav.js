@@ -14,19 +14,18 @@
   //
   // The mall has two zones:
   //   - Main corridor: x=-14 to x=14 (between corridor walls at ±15)
-  //   - CS wing: extends east of the main corridor, x=16 to x=38
+  //   - CS wing V3: x=15 to x=41.7, z=-51 to -18 (entry arcade + 10 rooms)
   //
-  // The CS wing's physical walls + the mall-collision system handle
-  // fine-grained wall blocking inside the wing. This clamp only sets
-  // the OUTER bounds of the whole mall footprint so players can't
-  // walk off into the void beyond the east edge of the wing.
+  // The mall-collision system handles fine-grained wall blocking inside
+  // rooms. This clamp only sets the OUTER bounds of the whole mall
+  // footprint so players can't walk off into the void.
   //
-  // zMax is +18 to accommodate the front plaza courtyard added in PR 5.
+  // zMax is +18 to accommodate the front plaza courtyard (PR 5).
   var BOUNDS = {
     xMin: -14,   // Inside left corridor wall (wall at x=-15)
-    xMax: 40,    // Just past east edge of CS wing (wing extends to x=38)
-    zMin: -65,   // Just before back wall (wall at z=-70)
-    zMax: 18,    // Past the plaza courtyard (courtyard extends to z=+18)
+    xMax: 43,    // Just past east edge of CS wing (extends to x=41.7)
+    zMin: -68,   // Just before main-mall back wall at z=-70 (covers CS Culinary at z=-51 too)
+    zMax: 18,    // Past the plaza courtyard (extends to z=+18)
   };
 
   AFRAME.registerComponent('mall-nav', {
