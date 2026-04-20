@@ -1,0 +1,295 @@
+{
+  "$schema": "./venue-config.schema.json",
+  "version": "2026.06.01",
+  "updated_at": "2026-04-20T12:00:00Z",
+
+  "_comment_location": [
+    "This file is the single source of truth for venue metadata consumed",
+    "by both surfaces (cafe-sativa.com and mall.truskool.net). It lives in",
+    "the mall repo for now; cafe-sativa.com should fetch it from",
+    "https://mall.truskool.net/shared/venue-config.json at build time",
+    "or via a sync script. Bump `version` whenever the file changes; both",
+    "apps should cache-bust on version change."
+  ],
+
+  "venue": {
+    "slug": "cafe-sativa-virtual",
+    "name": "Café Sativa",
+    "tagline": "Sip · Smoke · Vibe",
+    "launch_date": "2026-06-15T19:00:00-05:00",
+    "timezone": "America/Chicago",
+    "mall_url": "https://mall.truskool.net",
+    "site_url": "https://cafe-sativa.com",
+    "supabase": {
+      "project_ref": "nwfxvhqbjtfvoopcadff",
+      "url_env": "NEXT_PUBLIC_SUPABASE_URL",
+      "anon_key_env": "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+    }
+  },
+
+  "tiers": [
+    {
+      "id": "explorer",
+      "name": "Explorer",
+      "price_cents": 0,
+      "billing_period": "free",
+      "stripe_price_id": null,
+      "tagline": "Walk in, look around.",
+      "description": "Full access to the venue, host chat with Laviche, browse events and merch. Pay per event at walk-up price.",
+      "entitlements": [
+        "venue_access",
+        "host_chat_basic",
+        "event_browse"
+      ],
+      "host_memory_days": 0,
+      "merch_discount_pct": 0
+    },
+    {
+      "id": "regular",
+      "name": "Regular",
+      "price_cents": 999,
+      "billing_period": "monthly",
+      "stripe_price_id": "price_REGULAR_MONTHLY",
+      "tagline": "Make it yours.",
+      "description": "All events free. 10% off merch. Event recordings kept forever. Host remembers you across visits.",
+      "entitlements": [
+        "venue_access",
+        "host_chat_extended",
+        "event_browse",
+        "event_free_attendance",
+        "event_recordings",
+        "merch_discount_10",
+        "host_memory_90_days"
+      ],
+      "host_memory_days": 90,
+      "merch_discount_pct": 10
+    },
+    {
+      "id": "vip",
+      "name": "VIP",
+      "price_cents": 2499,
+      "billing_period": "monthly",
+      "stripe_price_id": "price_VIP_MONTHLY",
+      "tagline": "The inner circle.",
+      "description": "Everything in Regular plus Cigar Lounge access, 20% off merch, priority ticketing, and first dibs on the Tenerife physical venue when it opens.",
+      "entitlements": [
+        "venue_access",
+        "host_chat_unlimited",
+        "event_browse",
+        "event_free_attendance",
+        "event_recordings",
+        "merch_discount_20",
+        "cigar_lounge_access",
+        "priority_ticketing",
+        "tenerife_priority_list",
+        "host_memory_365_days"
+      ],
+      "host_memory_days": 365,
+      "merch_discount_pct": 20
+    }
+  ],
+
+  "rooms": [
+    {
+      "id": "foyer",
+      "label": "Entrance Foyer",
+      "short_description": "Warm oak, cream walls, a host stand to your right.",
+      "ceiling_m": 4,
+      "bounds": { "xMin": 23, "xMax": 27, "zMin": -21.5, "zMax": -18 },
+      "capacity": 20,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["foyer"],
+      "default_mode": "foyer",
+      "street_facing": false
+    },
+    {
+      "id": "gallery",
+      "label": "Gallery Atrium",
+      "short_description": "Double-height travertine atrium. Art and NFTs on the walls.",
+      "ceiling_m": 10,
+      "bounds": { "xMin": 22, "xMax": 28, "zMin": -29.5, "zMax": -21.5 },
+      "capacity": 40,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["gallery"],
+      "default_mode": "gallery",
+      "street_facing": false
+    },
+    {
+      "id": "bar",
+      "label": "Cocktail Bar",
+      "short_description": "Horseshoe bar, bottle wall, charcoal walls, amber light.",
+      "ceiling_m": 4.5,
+      "bounds": { "xMin": 20, "xMax": 30, "zMin": -37.5, "zMax": -29.5 },
+      "capacity": 50,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["bar"],
+      "default_mode": "bar",
+      "street_facing": false
+    },
+    {
+      "id": "main-lounge",
+      "label": "Main Lounge",
+      "short_description": "Sage walls, 6m ceiling. Scattered seating by day, stage by night.",
+      "ceiling_m": 6,
+      "bounds": { "xMin": 17.5, "xMax": 32.5, "zMin": -46, "zMax": -37.5 },
+      "capacity": 150,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["lounge", "stage"],
+      "default_mode": "lounge",
+      "street_facing": false
+    },
+    {
+      "id": "cold-stoned",
+      "label": "Cold Stoned",
+      "short_description": "Bright white tile, gelato case, natural daylight.",
+      "ceiling_m": 4,
+      "bounds": { "xMin": 28, "xMax": 32, "zMin": -26, "zMax": -21.5 },
+      "capacity": 15,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["cafe"],
+      "default_mode": "cafe",
+      "street_facing": true
+    },
+    {
+      "id": "courtyard",
+      "label": "Courtyard",
+      "short_description": "Open-air stone pavers, palms, string lights overhead.",
+      "ceiling_m": 12,
+      "bounds": { "xMin": 30, "xMax": 37, "zMin": -31, "zMax": -26 },
+      "capacity": 30,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["courtyard"],
+      "default_mode": "courtyard",
+      "street_facing": true,
+      "open_air": true
+    },
+    {
+      "id": "cigar-airlock",
+      "label": "Cigar Airlock",
+      "short_description": "Narrow dark vestibule. Velvet rope. Members only past here.",
+      "ceiling_m": 3,
+      "bounds": { "xMin": 32.5, "xMax": 35.7, "zMin": -44.5, "zMax": -43 },
+      "capacity": 2,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["airlock"],
+      "default_mode": "airlock",
+      "street_facing": false
+    },
+    {
+      "id": "cigar",
+      "label": "Cigar Lounge",
+      "short_description": "Dark walnut, forest-green leather, low 3m ceiling. Intimate.",
+      "ceiling_m": 3,
+      "bounds": { "xMin": 35.7, "xMax": 41.7, "zMin": -46, "zMax": -37.5 },
+      "capacity": 30,
+      "host": "laviche",
+      "tier_required": "vip",
+      "modes": ["lounge"],
+      "default_mode": "lounge",
+      "street_facing": false,
+      "vip_gated": true
+    },
+    {
+      "id": "boh",
+      "label": "Back of House",
+      "short_description": "Staff corridor. Industrial gray walls. Not for guests.",
+      "ceiling_m": 3,
+      "bounds": { "xMin": 15, "xMax": 20, "zMin": -34.5, "zMax": -29.5 },
+      "capacity": 8,
+      "host": null,
+      "tier_required": "explorer",
+      "modes": ["boh"],
+      "default_mode": "boh",
+      "street_facing": false,
+      "staff_only": true
+    },
+    {
+      "id": "culinary",
+      "label": "Culinary Theater",
+      "short_description": "Behind the stage. Demo kitchen with subway tile and copper hood.",
+      "ceiling_m": 5,
+      "bounds": { "xMin": 22.5, "xMax": 27.5, "zMin": -51, "zMax": -46 },
+      "capacity": 12,
+      "host": "laviche",
+      "tier_required": "explorer",
+      "modes": ["culinary"],
+      "default_mode": "culinary",
+      "street_facing": false
+    }
+  ],
+
+  "hosts": {
+    "laviche": {
+      "display_name": "Laviche Cárdenas",
+      "role": "Maître d'",
+      "persona_summary": "Luxury lifestyle host. Warm, knowing, remembers faces. Speaks in soft confidence, not over-polished — reads the room. Laviche runs the Café Sativa floor.",
+      "voice_id_hume_primary": "cb46ab2d-1606-45e5-b7db-633636e53c84",
+      "voice_id_hume_secondary": "9ab35d50-0ca1-461f-af4a-2a1978f7db26",
+      "hedra_portrait_id": "3ecf2b43",
+      "rooms": ["foyer", "gallery", "bar", "main-lounge", "cigar-airlock", "cigar", "cold-stoned", "courtyard", "culinary"],
+      "default_on_web": ["/ask", "/"],
+      "agent_endpoint": "https://agents.truskool.net/laviche/chat"
+    },
+    "ginger": {
+      "display_name": "Ginger Pelirroja",
+      "role": "Travel concierge",
+      "persona_summary": "Adventure traveler. Knowing, slightly mischievous. Talks about places like she's been there — because the persona has been. Ginger covers Wanderlust (travel brand) and is the backup host for travel-adjacent questions on Café Sativa.",
+      "voice_engine": "minimax_chatterzoe",
+      "voice_settings": { "speed": 0.9 },
+      "rooms": ["wanderlust"],
+      "default_on_web": [],
+      "agent_endpoint": "https://agents.truskool.net/ginger/chat"
+    },
+    "ahnika": {
+      "display_name": "Ahnika Merlot",
+      "role": "Style + merch guide",
+      "persona_summary": "Alignment coach meets stylist. Thoughtful, grounded, tasteful. Handles Faithfully Faded and H.O.E. Speaks to intention behind a purchase, not just the item.",
+      "rooms": ["faithfully-faded", "hoe"],
+      "default_on_web": [],
+      "agent_endpoint": "https://agents.truskool.net/ahnika/chat"
+    }
+  },
+
+  "stripe": {
+    "publishable_key_env": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+    "secret_key_env": "STRIPE_SECRET_KEY",
+    "webhook_secret_env": "STRIPE_WEBHOOK_SECRET",
+    "customer_portal_url": null,
+    "_note": "customer_portal_url populated after Stripe Customer Portal is configured in Stripe Dashboard"
+  },
+
+  "event_platform": {
+    "primary": "zoom",
+    "_zoom_note": "Episode 1 uses Zoom for simplicity. events.zoom_join_url is populated ~24h before each event and included in the ticket confirmation email. Revisit LiveKit after Ep 1.",
+    "_livekit_deferred": {
+      "url_env": "LIVEKIT_URL",
+      "api_key_env": "LIVEKIT_API_KEY",
+      "api_secret_env": "LIVEKIT_API_SECRET",
+      "room_naming_pattern": "cs-event-{event_id}"
+    }
+  },
+
+  "rate_limits": {
+    "host_chat_anonymous_per_hour": 10,
+    "host_chat_anonymous_per_day": 30,
+    "host_chat_explorer_per_day": 50,
+    "host_chat_regular_per_day": 200,
+    "host_chat_vip_per_day": 1000,
+    "_note": "Enforced in the mint-agent-call Edge Function before forwarding to Railway orchestrator. Hitting limit returns a polite close-out message, not a hard 429."
+  },
+
+  "cross_surface_memory": {
+    "_description": "How far back a host agent can reference past conversations when building prompt context. Only surfaced when contextually relevant — never unprompted.",
+    "explorer_days": 0,
+    "regular_days": 90,
+    "vip_days": 365,
+    "_creepy_rule": "Agents reference past context only when the current question is relevant. 'You mentioned jazz last time; Friday works?' = OK. 'I notice you didn't finish checkout' = NOT OK."
+  }
+}
