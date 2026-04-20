@@ -1,109 +1,158 @@
 # Café Sativa Virtual Venue — Architecture
 
-**Status:** Draft v1 — April 2026
-**Target launch:** June 2026 (10-week plan from April 19)
+**Status:** v1.1 — April 2026 (supersedes v1)
+**Target launch:** June 2026 — "At The Table" Episode 1 live event
 **Owner:** Keith Ingram / Tru Skool Entertainment
-**Scope of this document:** Everything needed to ship the inaugural "At The Table" episode in June as a paid event inside a functional 3D virtual venue, plus the schema and systems that keep working after launch.
+**Repo:** github.com/truskoolcorp/tru-skool-mall (3D) + existing cafe-sativa.com Next.js repo
+**Supabase project:** cafe-sativa-prod (ref `nwfxvhqbjtfvoopcadff`)
 
 ---
 
-## 1. Vision & product layers
+## 0. Changes from v1
 
-Café Sativa is planned as three layers, phased over two years. This document covers only layer 1 in detail; layers 2 and 3 are noted so layer 1's schema choices don't paint us into a corner.
+This version incorporates three structural decisions made after v1 circulated:
 
-**Layer 1 — Virtual venue (April–June 2026, this doc).**
-Members sign up at cafe-sativa.com, walk the 3D venue at mall.truskool.net, attend ticketed events in the Main Lounge, buy merch, browse the Gallery. Explorer tier free, Regular $9.99/mo, VIP $24.99/mo. Revenue from subscriptions, ticket sales, merch, and Gallery listing fees. Single inaugural event target: "At The Table" episode 1, June 2026.
-
-**Layer 2 — Hybrid AI+human programming (late 2026).**
-AI-hosted shows (Ginger, Laviche, Ahnika as guides and MCs), human guest episodes, persistent "always-on" Lounge presence where members hang out between events. Simli real-time avatars on the guide side, LiveKit for human-to-human.
-
-**Layer 3 — Physical Tenerife venue (2027+).**
-Real Café Sativa location, Canary Islands ZEC tax structure, J-1 sponsorship pipeline for operations staff. Virtual venue becomes the always-on companion to the physical space (remote attendance of physical events, gallery listings bridge to in-store retail).
-
-Layer 1 is what pays for layer 2 and 3. The schema and APIs below are designed so layer 2 can drop in without a rewrite.
+- **Dual-surface product model.** The 2D site at cafe-sativa.com is the primary interface; the 3D mall at mall.truskool.net is a digital twin rendering the same data. Not "3D with a marketing site attached." Most customers use 2D; the 3D layer is value-add for those who want immersion.
+- **Hosts ARE concierge.** The Railway-based AI agents (Laviche, Ginger, Ahnika, Echo, Anya) are the customer-facing concierge layer. No separate "concierge feature" to build. Same agents serve both surfaces with a single backend, with cross-surface memory (last 30 days, context-triggered only).
+- **Cost-and-scope cuts.** Target $0 fixed monthly cost at launch. Zoom for Episode 1 instead of LiveKit native integration. Five routes instead of ten. Five tables that ship in week 1 instead of nine. Lovable dropped; stay on existing Next.js.
 
 ---
 
-## 2. What ships in June 2026 — scope lock
+## 1. Product model
+
+Café Sativa is a **digital hospitality platform with two rendering surfaces** sitting on one shared backend:
+
+- **cafe-sativa.com** — Next.js on Vercel. Primary interface. Brand discovery, subscriptions, event tickets, host chat, account management. This is where 90%+ of users will enter the product.
+- **mall.truskool.net** — A-Frame 3D venue. The same data rendered as walkable space. Hosts appear as avatars, events happen in rooms, membership gates physical access. This is the premium/immersive layer for users who want it.
+
+Both surfaces:
+- Authenticate against the same Supabase project
+- Render room state, event state, and membership state from the same tables
+- Route chat to the same agent orchestrator
+- Take actions (reservations, ticket purchases, tier upgrades) that write to the same database
+
+**Principle: the 3D mall never has data the 2D site doesn't have.** Anything Laviche says in the 3D Bar should be sayable at `/ask` on cafe-sativa.com. Anything you can buy in the 3D Cold Stoned should be buyable at `/shop`. The 3D layer is UX, not a separate product.
+
+### Three-layer business context
+
+Documented only so layer-1 schema doesn't paint layer-2 into a corner:
+
+- **Layer 1 (this document):** Virtual venue. April-June 2026. Revenue from subscriptions + event tickets + merch.
+- **Layer 2 (late 2026):** Persistent always-on presence. User-to-user voice, real-time avatar concierge, recurring programming. Requires more LiveKit investment and real-time avatar (Simli) integration.
+- **Layer 3 (2027+):** Physical Tenerife venue. Virtual becomes the companion to physical (remote attendance, Gallery → in-store bridge).
+
+---
+
+## 2. June 2026 scope — what ships, what doesn't
 
 ### In scope
-- Member auth (Supabase Auth on cafe-sativa.com, SSO to mall.truskool.net)
-- Three paid tiers with Stripe subscriptions: Explorer (free), Regular ($9.99/mo), VIP ($24.99/mo)
-- 10-room 3D venue (current v3 geometry — already shipped)
-- Event listings, ticketing, and live attendance for a scheduled event
-- Main Lounge mode-flip (Stage during events, Lounge otherwise)
-- Live audio/video for events via LiveKit (speakers + attendees listen-only by default, optional Q&A mic)
-- Gallery product listings with buy links (merch catalog)
-- VIP-gated Cigar Lounge access (hard enforcement, not cosmetic)
-- "At The Table" episode 1 as the inaugural paid event
+
+**On cafe-sativa.com (2D):**
+- `/` — Homepage with hero, "enter the venue" CTA, three pillars (Sip/Smoke/Vibe), upcoming event teaser, membership teaser
+- `/membership` — Three tiers (Explorer free, Regular $9.99/mo, VIP $24.99/mo), Stripe Checkout to upgrade
+- `/events` — List of upcoming events + individual event pages with Stripe Checkout
+- `/account` — Logged-in user's dashboard (subscription status, ticket history, Stripe Customer Portal link)
+- `/ask` — Chat with Laviche (default host), same agent that appears in the 3D Bar
+- `/experiences` — Single page describing all zones with a "walk the venue" CTA linking to mall.truskool.net
+
+**On mall.truskool.net (3D):**
+- Current v3 geometry (already shipped)
+- Furniture pass 1 for the spine (Foyer, Gallery, Bar, Main Lounge default mode)
+- Hosts render as avatars in their assigned rooms, clicking them opens chat
+- VIP gate enforcement at Cigar Lounge (hard block)
+- Cross-domain auth recognizes membership tier
+- Merch appears as browsable items in Cold Stoned / Gallery (checkout bounces to 2D)
+
+**Shared backend:**
+- Auth (Supabase), single session recognized by both surfaces
+- Stripe subscriptions (monthly billing) + one-time ticket purchases
+- Agent orchestrator (existing Railway service) exposed via HTTP to both surfaces
+- Event: "At The Table" Episode 1 on **June 15, 2026, 7:00 PM CDT** (placeholder — needs confirmation)
 
 ### Out of scope for June
-- Non-Lounge live events (Gallery openings, Bar DJ sets — all later)
-- AI avatars in real-time (Simli, Hedra, etc. — layer 2)
-- User-to-user voice chat in the always-on Lounge (layer 2)
-- Gallery-as-marketplace for user listings (only brand merch at launch)
-- Physical venue integration
-- Event recordings library (can record to S3, playback UI is later)
 
-### Explicitly deferred
-- Unreal Engine premium tier (28-week roadmap, starts post-launch)
-- Non-flagship brands (BiJaDi, H.O.E., etc.) inside the mall get no backend hookups yet — they're visual only
+- **Native LiveKit integration.** Ep 1 uses Zoom. LiveKit gets re-evaluated for Ep 2 based on what Ep 1 teaches us.
+- **Stage/Lounge mode flip in 3D.** Deferred. Ep 1 is on Zoom, nobody's in the 3D Main Lounge during the event, so the flip doesn't matter yet.
+- **Real-time avatar concierge** (Simli, animated Hedra portraits). Text chat only at launch. Avatars come in layer 2.
+- **User-to-user voice chat** in the always-on Lounge.
+- **Full merch fulfillment** (Shopify, Shipstation, physical shipping). Digital goods and subscription-bundled items only at launch.
+- **Gallery marketplace** (users listing their own art). Only Tru Skool / Café Sativa / Verse Alkemist products at launch.
+- **Admin dashboard features beyond what Command Center already has.**
+- **Journal / Partners / Investors pages.** All deferred to post-launch (likely July).
+
+### Deferred post-launch
+- Unreal Engine premium tier
+- Non-flagship brand backends (BiJaDi, H.O.E., Faithfully Faded etc.) — visual-only in the mall for now
+- Physical Tenerife operations
 
 ---
 
 ## 3. System components
 
 ```
-┌────────────────────────────┐       ┌────────────────────────────┐
-│  cafe-sativa.com           │       │  mall.truskool.net         │
-│  (Next.js, Vercel)         │       │  (static A-Frame site)     │
-│                            │       │                            │
-│  - Marketing landing       │       │  - 3D venue walkthrough    │
-│  - Signup / signin         │◄──────┤  - MallAuth reads session  │
-│  - Billing (Stripe portal) │  SSO  │  - Event attendance UI     │
-│  - Event listings          │       │  - LiveKit room join       │
-│  - Merch + Gallery browse  │       │  - VIP gate enforcement    │
-│  - Profile / tier mgmt     │       │  - Presence + chat         │
-└────────────┬───────────────┘       └────────────┬───────────────┘
-             │                                    │
-             ▼                                    ▼
-┌──────────────────────────────────────────────────────────────────┐
-│  Supabase (project: cafe-sativa-prod / nwfxvhqbjtfvoopcadff)     │
-│                                                                   │
-│  - Auth (shared session across *.truskool.net + cafe-sativa.com)  │
-│  - Postgres (schema defined §5)                                   │
-│  - Realtime (presence, chat, room_state mode flips)               │
-│  - Edge Functions (Stripe webhooks, ticket redemption, LK tokens) │
-│  - Storage (event recordings, member avatars, gallery images)     │
-└──┬────────────────┬──────────────────┬────────────────┬──────────┘
-   │                │                  │                │
-   ▼                ▼                  ▼                ▼
-┌──────────┐  ┌──────────────┐  ┌─────────────┐  ┌─────────────┐
-│  Stripe  │  │  LiveKit     │  │  Shopify /  │  │  Command    │
-│          │  │  Cloud       │  │  Shipstation│  │  Center     │
-│ Billing, │  │              │  │             │  │ (existing,  │
-│ ticket   │  │ Audio/video  │  │ Merch fulf. │  │ admin app   │
-│ checkout │  │ for events   │  │ (optional)  │  │ for ops)    │
-└──────────┘  └──────────────┘  └─────────────┘  └─────────────┘
+┌──────────────────────────────────┐     ┌──────────────────────────────────┐
+│  cafe-sativa.com (Next.js)       │     │  mall.truskool.net (A-Frame)     │
+│  PRIMARY SURFACE                 │     │  DIGITAL TWIN                    │
+│                                  │     │                                  │
+│  Routes:                         │     │  - 3D venue (v3 geometry)        │
+│  /                               │     │  - Same host chat as /ask        │
+│  /events + /events/[slug]        │◄────┤  - Same ticket list as /events   │
+│  /membership                     │ SSO │  - Same merch as /shop           │
+│  /account                        │     │  - VIP gate checks memberships   │
+│  /ask  (chat with hosts)         │     │  - Minimap, teleport, presence   │
+│  /experiences                    │     │                                  │
+└─────────┬────────────────────────┘     └─────────┬────────────────────────┘
+          │                                        │
+          │       ┌───────────────────────┐        │
+          ├──────►│  Agent Orchestrator   │◄───────┤
+          │       │  (existing, Railway)  │        │
+          │       │  MiniMAX M2.7 +       │        │
+          │       │  persona routing      │        │
+          │       └───────────┬───────────┘        │
+          │                   │                    │
+          ▼                   ▼                    ▼
+┌────────────────────────────────────────────────────────────────────────────┐
+│  Supabase (cafe-sativa-prod / nwfxvhqbjtfvoopcadff)                        │
+│                                                                             │
+│  Auth · Postgres · Realtime · Edge Functions · Storage                     │
+│                                                                             │
+│  Tables (June launch, see §5):                                             │
+│    profiles, memberships, events, tickets, room_state,                     │
+│    host_conversations, host_messages                                       │
+│                                                                             │
+│  Shared session cookies via auth bridge (see §7) — user signs in once,     │
+│  recognized on both surfaces.                                              │
+└──┬────────────────────────────────────┬────────────────────────────────────┘
+   │                                    │
+   ▼                                    ▼
+┌────────────────┐              ┌────────────────┐
+│  Stripe        │              │  Zoom          │
+│                │              │                │
+│  Subscriptions │              │  Ep 1 live     │
+│  Ticket        │              │  event hosting │
+│  checkout      │              │  (replace with │
+│                │              │  LiveKit for   │
+│                │              │  Ep 2+ if worth│
+│                │              │  the work)     │
+└────────────────┘              └────────────────┘
 ```
 
-**Runtime surfaces:**
-- `cafe-sativa.com` — Next.js on Vercel, public marketing + account + commerce
-- `mall.truskool.net` — Static A-Frame on Vercel (current repo), 3D venue
-- `command.truskool.net` — existing ops dashboard (Command Center). Gets new tabs for event runbook, live attendee dashboard, merch sales, membership stats
-- Supabase `cafe-sativa-prod` — single source of truth for everything backend
+**Runtime costs at launch:**
+- Vercel hobby tier: $0
+- Supabase free tier: $0 (under 50k MAU)
+- Stripe: $0 monthly, 2.9% + $0.30 per transaction
+- Zoom: $0 if using existing account, $15/mo Pro if needed
+- Resend (transactional email): $0 (3k emails/mo free tier)
+- Agent orchestrator on Railway: existing, no new cost
+- MiniMAX M2.7 API: variable, small compared to revenue
 
-**Why one Supabase project for everything:** cross-domain session sharing only works when both sites hit the same auth instance. Splitting would mean building a federation layer we don't have time for. The `dallasite-crm` project (`ugdaqdhthleyhvsubxis`) stays separate for lead/CRM data unrelated to the Café Sativa product.
+**Total fixed monthly cost: $0.** Only variable costs are Stripe fees on actual sales and LLM usage on actual chats.
 
 ---
 
 ## 4. `venue-config.json` — single source of truth for the venue
 
-The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine for the geometry itself. But membership tiers, event schedule, merch listings, and room metadata should not live in JS. They live in a versioned config file read at build time (for the static mall) and at request time (for the Next.js site).
-
-**Location:** `shared/venue-config.json` (new package, consumed by both repos as a git submodule OR published to a private npm registry — TBD; git submodule is simpler).
-
-**Schema:**
+Shared config file consumed by both surfaces as a git submodule at `shared/venue-config.json`. Versioned independently so either app can ship without breaking the other.
 
 ```json
 {
@@ -121,7 +170,7 @@ The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine f
       "name": "Explorer",
       "price_cents": 0,
       "stripe_price_id": null,
-      "entitlements": ["venue_access", "gallery_view", "event_browse"]
+      "entitlements": ["venue_access", "host_chat", "event_browse"]
     },
     {
       "id": "regular",
@@ -129,8 +178,9 @@ The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine f
       "price_cents": 999,
       "stripe_price_id": "price_REGULAR_MONTHLY",
       "entitlements": [
-        "venue_access", "gallery_view", "gallery_buy", "event_browse",
-        "event_free_attendance", "event_recordings", "merch_discount_10"
+        "venue_access", "host_chat", "event_browse",
+        "event_free_attendance", "event_recordings",
+        "merch_discount_10", "reserved_host_memory_90_days"
       ]
     },
     {
@@ -139,10 +189,11 @@ The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine f
       "price_cents": 2499,
       "stripe_price_id": "price_VIP_MONTHLY",
       "entitlements": [
-        "venue_access", "gallery_view", "gallery_buy", "event_browse",
-        "event_free_attendance", "event_recordings", "merch_discount_20",
-        "cigar_lounge_access", "priority_ticketing",
-        "tenerife_priority_list"
+        "venue_access", "host_chat", "event_browse",
+        "event_free_attendance", "event_recordings",
+        "merch_discount_20", "cigar_lounge_access",
+        "priority_ticketing", "tenerife_priority_list",
+        "reserved_host_memory_365_days"
       ]
     }
   ],
@@ -153,8 +204,7 @@ The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine f
       "label": "Entrance Foyer",
       "ceiling_m": 4,
       "capacity": 20,
-      "modes": ["foyer"],
-      "default_mode": "foyer",
+      "host": "laviche",
       "tier_required": "explorer",
       "bounds": { "xMin": 23, "xMax": 27, "zMin": -21.5, "zMax": -18 }
     },
@@ -163,8 +213,7 @@ The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine f
       "label": "Main Lounge",
       "ceiling_m": 6,
       "capacity": 150,
-      "modes": ["lounge", "stage"],
-      "default_mode": "lounge",
+      "host": "laviche",
       "tier_required": "explorer",
       "bounds": { "xMin": 17.5, "xMax": 32.5, "zMin": -46, "zMax": -37.5 }
     },
@@ -173,57 +222,62 @@ The current 3D geometry is hard-coded in `js/cafe-sativa-wing.js`. That's fine f
       "label": "Cigar Lounge",
       "ceiling_m": 3,
       "capacity": 30,
-      "modes": ["lounge"],
-      "default_mode": "lounge",
+      "host": "laviche",
       "tier_required": "vip",
       "bounds": { "xMin": 35.7, "xMax": 41.7, "zMin": -46, "zMax": -37.5 }
     }
-    /* ...remaining 7 rooms... */
+    /* ...remaining 7 rooms — same shape... */
   ],
+
+  "hosts": {
+    "laviche": {
+      "display_name": "Laviche Cárdenas",
+      "rooms": ["foyer", "gallery", "bar", "main-lounge", "cigar", "cigar-airlock", "cold-stoned", "courtyard"],
+      "default_on": ["/ask", "/"],
+      "agent_endpoint": "https://agents.truskool.net/laviche"
+    },
+    "ginger": {
+      "display_name": "Ginger Pelirroja",
+      "rooms": ["wanderlust"],
+      "default_on": [],
+      "agent_endpoint": "https://agents.truskool.net/ginger"
+    },
+    "ahnika": {
+      "display_name": "Ahnika Merlot",
+      "rooms": ["faithfully-faded", "hoe"],
+      "default_on": [],
+      "agent_endpoint": "https://agents.truskool.net/ahnika"
+    }
+  },
 
   "stripe": {
     "publishable_key_env": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     "webhook_secret_env": "STRIPE_WEBHOOK_SECRET",
     "customer_portal_url": "https://billing.stripe.com/p/login/..."
-  },
-
-  "livekit": {
-    "url_env": "LIVEKIT_URL",
-    "api_key_env": "LIVEKIT_API_KEY",
-    "api_secret_env": "LIVEKIT_API_SECRET",
-    "room_naming_pattern": "cs-event-{event_id}"
   }
 }
 ```
 
-**Consumers:**
-- Mall renderer reads `rooms[].tier_required` to enforce VIP gates. Reads `rooms[].default_mode` and subscribes to Realtime updates on `room_state` table for live mode flips.
-- Next.js site reads `tiers[]` to render the pricing page, compares against a user's active subscription to determine available entitlements.
-- Command Center admin tools read this too so there's one place to update pricing.
-
-**Versioning:** `version` string is the source-of-truth for cache-busting. Bumped whenever the file changes. Both apps watch it and refetch config when it changes.
+LiveKit config is intentionally not in the v1.1 config — Ep 1 uses Zoom, and LiveKit config gets added when we commit to it.
 
 ---
 
-## 5. Supabase schema
+## 5. Supabase schema — the June 7 tables
 
-One schema to support the June launch plus layer-2 growth without a rewrite. RLS policies are inline on each table.
+Seven tables that ship in week 1. Everything else (products, orders, journal_posts, partner_applications) added post-launch when actually needed.
 
 ### 5.1 `profiles`
 
-Mirrors Supabase Auth users with app-specific fields. Populated by a trigger on `auth.users` insert.
-
 ```sql
 create table public.profiles (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  email       text not null,
-  display_name text,
-  avatar_url  text,
-  created_at  timestamptz default now() not null,
-  updated_at  timestamptz default now() not null,
-  -- Internal
-  is_admin    boolean default false not null,
-  is_staff    boolean default false not null  -- unlocks BOH staff-only area
+  id            uuid primary key references auth.users(id) on delete cascade,
+  email         text not null,
+  display_name  text,
+  avatar_url    text,
+  is_admin      boolean default false not null,
+  is_staff      boolean default false not null,   -- unlocks BOH + command center ops
+  created_at    timestamptz default now() not null,
+  updated_at    timestamptz default now() not null
 );
 
 alter table public.profiles enable row level security;
@@ -234,224 +288,191 @@ create policy "profiles_self_update" on public.profiles
   for update using (auth.uid() = id);
 create policy "profiles_admin_all" on public.profiles
   for all using ((select is_admin from public.profiles where id = auth.uid()));
+
+-- Trigger: create profile on new auth.users insert
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer as $$
+begin
+  insert into public.profiles (id, email)
+  values (new.id, new.email)
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
 ```
 
 ### 5.2 `memberships`
-
-Current subscription tier per user. Updated by Stripe webhook.
 
 ```sql
 create type membership_tier as enum ('explorer', 'regular', 'vip');
 create type membership_status as enum ('active', 'canceled', 'past_due', 'incomplete');
 
 create table public.memberships (
-  user_id              uuid primary key references public.profiles(id) on delete cascade,
-  tier                 membership_tier not null default 'explorer',
-  status               membership_status not null default 'active',
-  stripe_customer_id   text unique,
+  user_id                uuid primary key references public.profiles(id) on delete cascade,
+  tier                   membership_tier not null default 'explorer',
+  status                 membership_status not null default 'active',
+  stripe_customer_id     text unique,
   stripe_subscription_id text unique,
-  current_period_end   timestamptz,
-  created_at           timestamptz default now() not null,
-  updated_at           timestamptz default now() not null
+  current_period_end     timestamptz,
+  created_at             timestamptz default now() not null,
+  updated_at             timestamptz default now() not null
 );
 
 alter table public.memberships enable row level security;
-
 create policy "memberships_self_read" on public.memberships
   for select using (auth.uid() = user_id);
--- No direct writes; all writes via Stripe webhook through service-role key
+-- Writes: Stripe webhook via service role only
 ```
 
 ### 5.3 `events`
-
-Scheduled events. "At The Table" episode 1 is row 1.
 
 ```sql
 create type event_status as enum ('draft', 'scheduled', 'live', 'ended', 'canceled');
 
 create table public.events (
-  id              uuid primary key default gen_random_uuid(),
-  slug            text unique not null,
-  title           text not null,
-  description     text,
-  series          text,                  -- 'at-the-table', 'cipher-sessions', etc.
-  room_id         text not null,         -- references venue-config rooms[].id
-  starts_at       timestamptz not null,
-  ends_at         timestamptz,           -- may be null while live (close on end_event)
-  status          event_status not null default 'draft',
-  -- Ticketing
-  ticket_price_cents integer default 0 not null,
-  stripe_product_id  text,
-  stripe_price_id    text,
-  capacity           integer,            -- null = unlimited
-  free_for_tiers     membership_tier[] default '{}',  -- e.g. {regular, vip}
-  -- LiveKit
-  livekit_room_name  text,                -- set when event goes live
+  id                  uuid primary key default gen_random_uuid(),
+  slug                text unique not null,
+  title               text not null,
+  description         text,
+  series              text,
+  room_id             text not null,
+  starts_at           timestamptz not null,
+  ends_at             timestamptz,
+  status              event_status not null default 'draft',
+  ticket_price_cents  integer default 0 not null,
+  stripe_product_id   text,
+  stripe_price_id     text,
+  capacity            integer,
+  free_for_tiers      membership_tier[] default '{}',
+  -- Event hosting
+  zoom_join_url       text,           -- set close to event time
+  zoom_meeting_id     text,
+  -- Post-event
+  recording_url       text,
   -- Metadata
-  hero_image_url     text,
-  host_user_ids      uuid[] default '{}',  -- references profiles(id)
-  created_at         timestamptz default now() not null,
-  updated_at         timestamptz default now() not null
+  hero_image_url      text,
+  host_user_ids       uuid[] default '{}',
+  created_at          timestamptz default now() not null,
+  updated_at          timestamptz default now() not null
 );
 
 create index events_starts_at_idx on public.events (starts_at);
 create index events_status_idx on public.events (status) where status in ('scheduled', 'live');
 
 alter table public.events enable row level security;
-
 create policy "events_public_read" on public.events
   for select using (status != 'draft' or auth.uid() in (select unnest(host_user_ids)));
--- Writes via admin only (service role)
 ```
 
 ### 5.4 `tickets`
 
-A record of "user X has a ticket for event Y."
-
 ```sql
 create type ticket_source as enum ('purchased', 'comp', 'tier_included');
-create type ticket_state as enum ('valid', 'used', 'refunded');
+create type ticket_state as enum ('pending', 'valid', 'used', 'refunded');
 
 create table public.tickets (
-  id                uuid primary key default gen_random_uuid(),
-  event_id          uuid not null references public.events(id) on delete cascade,
-  user_id           uuid not null references public.profiles(id) on delete cascade,
-  source            ticket_source not null,
-  state             ticket_state not null default 'valid',
-  stripe_payment_intent_id text,           -- null for comps and tier-included
-  amount_paid_cents integer default 0 not null,
-  redemption_code   text unique not null default encode(gen_random_bytes(6), 'hex'),
-  redeemed_at       timestamptz,
-  created_at        timestamptz default now() not null,
-  unique (event_id, user_id)               -- one ticket per user per event
+  id                        uuid primary key default gen_random_uuid(),
+  event_id                  uuid not null references public.events(id) on delete cascade,
+  user_id                   uuid not null references public.profiles(id) on delete cascade,
+  source                    ticket_source not null,
+  state                     ticket_state not null default 'pending',
+  stripe_payment_intent_id  text,
+  amount_paid_cents         integer default 0 not null,
+  redemption_code           text unique not null default encode(gen_random_bytes(6), 'hex'),
+  redeemed_at               timestamptz,
+  created_at                timestamptz default now() not null,
+  unique (event_id, user_id)
 );
 
 create index tickets_event_id_idx on public.tickets (event_id);
 create index tickets_user_id_idx on public.tickets (user_id);
 
 alter table public.tickets enable row level security;
-
 create policy "tickets_self_read" on public.tickets
   for select using (auth.uid() = user_id);
--- Writes via Edge Functions (purchase handler, comp grant)
 ```
 
 ### 5.5 `room_state`
 
-The live mode of each mode-switchable room. Watched via Realtime. Main Lounge's row flips between `lounge` and `stage` around events.
-
 ```sql
 create table public.room_state (
-  room_id       text primary key,        -- 'main-lounge', 'bar', etc.
-  mode          text not null default 'default',
-  active_event_id uuid references public.events(id),
-  updated_at    timestamptz default now() not null,
-  updated_by    uuid references public.profiles(id)
+  room_id          text primary key,
+  mode             text not null default 'default',
+  active_event_id  uuid references public.events(id),
+  updated_at       timestamptz default now() not null,
+  updated_by       uuid references public.profiles(id)
 );
 
 alter table public.room_state enable row level security;
-
 create policy "room_state_public_read" on public.room_state
   for select using (true);
--- Writes by staff only (via Command Center or Edge Function)
 create policy "room_state_staff_write" on public.room_state
   for all using ((select is_staff from public.profiles where id = auth.uid()));
 ```
 
-### 5.6 `presence`
+### 5.6 `host_conversations` and `host_messages`
 
-Who's in the venue right now and where. Updated client-side via Supabase Realtime Presence channels (no table insert needed); included here as a logical table for reference. Realtime Presence lives in-memory on the Supabase channel, not in Postgres.
-
-Logical shape per presence entry:
-```
-{
-  user_id: uuid,
-  display_name: string,
-  avatar_url: string | null,
-  room_id: string,
-  joined_at: timestamptz
-}
-```
-
-### 5.7 `products` & `orders`
-
-Minimal merch catalog for launch. Full Shopify integration is a later option; for June, products are a flat table with Stripe price IDs.
+The core of the agent-native concierge. Same tables serve chat happening on `/ask`, in the 3D Bar, or anywhere else.
 
 ```sql
-create table public.products (
+create table public.host_conversations (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid references public.profiles(id) on delete cascade,
+  session_id     text,                    -- for anonymous users (client-generated UUID)
+  host_agent     text not null,           -- 'laviche', 'ginger', 'ahnika', etc.
+  surface        text not null,           -- 'mall-3d', 'web-chat', 'email'
+  room_id        text,                    -- null if not in 3D
+  started_at     timestamptz default now() not null,
+  ended_at       timestamptz,
+  message_count  integer default 0,
+  last_intent    text                     -- 'reserve', 'recommend', 'upgrade', 'support', 'browse'
+);
+
+create index host_conv_user_idx on public.host_conversations (user_id, started_at desc);
+create index host_conv_session_idx on public.host_conversations (session_id, started_at desc);
+
+create table public.host_messages (
   id              uuid primary key default gen_random_uuid(),
-  slug            text unique not null,
-  title           text not null,
-  description     text,
-  brand           text,                  -- 'cafe-sativa', 'tru-skool', etc.
-  image_urls      text[] default '{}',
-  price_cents     integer not null,
-  stripe_price_id text,
-  stock           integer,               -- null = unlimited/digital
-  active          boolean default true not null,
+  conversation_id uuid not null references public.host_conversations(id) on delete cascade,
+  role            text not null check (role in ('user', 'assistant', 'system')),
+  content         text not null,
+  action_taken    text,                    -- 'reservation_created', 'ticket_purchased', etc.
+  action_ref_id   uuid,                    -- FK to reservations/tickets/etc. if applicable
   created_at      timestamptz default now() not null
 );
 
-alter table public.products enable row level security;
-create policy "products_public_read" on public.products
-  for select using (active = true);
+create index host_msg_conv_idx on public.host_messages (conversation_id, created_at);
 
-create type order_status as enum ('pending', 'paid', 'fulfilled', 'canceled', 'refunded');
+alter table public.host_conversations enable row level security;
+alter table public.host_messages enable row level security;
 
-create table public.orders (
-  id                uuid primary key default gen_random_uuid(),
-  user_id           uuid not null references public.profiles(id),
-  product_id        uuid not null references public.products(id),
-  quantity          integer not null default 1,
-  unit_price_cents  integer not null,    -- snapshot at time of order
-  total_cents       integer not null,
-  status            order_status not null default 'pending',
-  stripe_session_id text unique,
-  shipping_address  jsonb,
-  created_at        timestamptz default now() not null,
-  updated_at        timestamptz default now() not null
-);
-
-alter table public.orders enable row level security;
-create policy "orders_self_read" on public.orders
+-- Users see their own conversations + messages
+create policy "conv_self_read" on public.host_conversations
   for select using (auth.uid() = user_id);
+create policy "msg_self_read" on public.host_messages
+  for select using (
+    conversation_id in (select id from public.host_conversations where user_id = auth.uid())
+  );
+
+-- Anonymous session access: client passes session_id header, Edge Function
+-- validates and returns conversations matching that session_id
+-- (no RLS policy needed — Edge Function uses service role)
 ```
 
-### 5.8 Helper views
+**Cross-surface memory rule (enforced in the agent prompt, not the DB):**
+- Regular tier: agent has access to user's last 90 days of `host_messages` as context
+- VIP tier: agent has access to last 365 days
+- Explorer tier: agent sees current conversation only (no cross-session memory)
+- Memory is **never surfaced unprompted** — the agent only references it when the user's current message is contextually relevant. "You mentioned liking jazz last time; the Friday trio would fit" ✓. "I see you didn't finish checkout" ✗.
+
+### 5.7 Seeds
 
 ```sql
--- Denormalized membership-with-profile for reads
-create view public.members_v as
-  select
-    p.id, p.email, p.display_name, p.avatar_url,
-    coalesce(m.tier, 'explorer'::membership_tier) as tier,
-    coalesce(m.status, 'active'::membership_status) as status,
-    m.current_period_end
-  from public.profiles p
-  left join public.memberships m on m.user_id = p.id;
-
--- Upcoming events a user has access to
-create view public.my_events_v as
-  select
-    e.*,
-    case
-      when t.id is not null then 'ticketed'
-      when e.ticket_price_cents = 0 then 'free'
-      when (select tier from public.memberships where user_id = auth.uid()) = any(e.free_for_tiers) then 'tier_included'
-      else 'purchase_required'
-    end as access
-  from public.events e
-  left join public.tickets t on t.event_id = e.id and t.user_id = auth.uid() and t.state = 'valid'
-  where e.status in ('scheduled', 'live')
-  order by e.starts_at;
-```
-
-### 5.9 Seeds
-
-Seed data for launch:
-
-```sql
--- Seed the 10 rooms (room_state rows only; full metadata in venue-config.json)
+-- Room state for all 10 wing rooms
 insert into public.room_state (room_id, mode) values
   ('foyer', 'foyer'),
   ('gallery', 'gallery'),
@@ -465,246 +486,256 @@ insert into public.room_state (room_id, mode) values
   ('culinary', 'culinary')
 on conflict (room_id) do nothing;
 
--- Seed the inaugural event
+-- Inaugural event
 insert into public.events (
-  slug, title, series, room_id,
-  starts_at, status,
-  ticket_price_cents, free_for_tiers,
-  description
+  slug, title, series, room_id, starts_at, status,
+  ticket_price_cents, free_for_tiers, description
 ) values (
   'at-the-table-ep-1',
   'At The Table — Episode 1',
   'at-the-table',
   'main-lounge',
-  '2026-06-15 19:00:00-05',           -- TBD, placeholder
+  '2026-06-15 19:00:00-05',
   'scheduled',
-  1500,                                  -- $15 general admission
+  1500,
   '{regular, vip}',
   'The inaugural At The Table episode. Intimate conversation over dinner.'
-);
+)
+on conflict (slug) do nothing;
 ```
 
 ---
 
-## 6. LiveKit integration
+## 6. Agent-native concierge architecture
 
-LiveKit handles the live audio/video for events. It sits alongside (not inside) the A-Frame mall.
+The concierge is the existing Railway-based agent orchestrator, exposed to both surfaces via HTTP.
 
-### 6.1 Room lifecycle
+### 6.1 Agent routing
 
-1. **Staff creates event** in Command Center → `events` row in `scheduled` state.
-2. **20 minutes before start** — LiveKit room is created via server API call (Supabase Edge Function). Room name = `cs-event-{event_id}`. Event row updated with `livekit_room_name`.
-3. **Doors open 5 minutes before start** — `room_state` for `main-lounge` flipped to `stage`. Ticketed users see a "Take your seat" CTA in the mall UI.
-4. **Attendee joins** — Mall client requests a LiveKit access token from an Edge Function (`/mint-lk-token`). The function verifies the user has a valid ticket and returns a signed token scoped to that room with role `listener` (unless the user is in `events.host_user_ids`, in which case `publisher`).
-5. **Event goes live** — Host publishes audio/video. Staff flips event status to `live`.
-6. **Q&A mic** — Explorer and Regular tickets are listener-only. A "Request to speak" UI allows attendees to raise hand; hosts approve, and that user is granted a temporary `publisher` token for 2 minutes via a second Edge Function.
-7. **Event ends** — Staff clicks End in Command Center. Event status → `ended`. LiveKit room scheduled for destruction 5 minutes later. Recording (if enabled) uploaded to Supabase Storage. `main-lounge` room_state flips back to `lounge`.
+The `venue-config.json` `hosts` object maps which agent responds where:
 
-### 6.2 Client-side mount point
+| Context | Agent | Notes |
+|---|---|---|
+| 3D rooms: foyer, gallery, bar, main-lounge, cigar, cigar-airlock, cold-stoned, courtyard | Laviche | Default Café Sativa host |
+| 3D room: wanderlust | Ginger | Travel-focused persona |
+| 3D rooms: faithfully-faded, hoe | Ahnika | Style/merch-focused persona |
+| `/ask` on cafe-sativa.com (default) | Laviche | Site-specific default |
+| `/ask?host=ginger` or `/ask?host=ahnika` | (as specified) | User can pick |
 
-Mall renderer adds an invisible DOM element near the Main Lounge stage area that holds the LiveKit `<audio>` / `<video>` elements when an event is live. Audio is spatialized using the `panner-component` in A-Frame — louder near the stage, softer at the back. Video renders on a plane placed at the stage wall, visible throughout Main Lounge.
+### 6.2 Message flow
 
-### 6.3 Pricing check
+```
+User (2D or 3D surface)
+      │
+      │ POST /api/host/chat { conversation_id?, message, context }
+      ▼
+Edge Function: mint-agent-call
+      │
+      │ 1. Create or resume host_conversations row
+      │ 2. Insert user's host_messages row
+      │ 3. Fetch user membership tier → memory window (0, 90, or 365 days)
+      │ 4. Fetch last N host_messages in this conversation
+      │ 5. Fetch last N host_messages from other conversations (within memory window)
+      │ 6. Build agent prompt with persona + memory + context + user message
+      │ 7. Forward to Railway agent orchestrator
+      │
+      ▼
+Agent orchestrator (existing Railway service)
+      │
+      │ - Routes to correct persona
+      │ - Calls MiniMAX M2.7 with prompt
+      │ - Parses response for structured action intents
+      │
+      ▼
+Edge Function receives response
+      │
+      │ 1. Insert assistant's host_messages row
+      │ 2. If response contains a structured action (reserve, buy_ticket, etc.)
+      │    → execute through appropriate table write (see §6.3)
+      │    → set host_messages.action_taken and action_ref_id
+      │ 3. Return response to client
+      │
+      ▼
+Client renders message (text bubble or avatar speech)
+```
 
-LiveKit Cloud pricing at launch volume (~100 concurrent for one 90-min event): roughly $0.004/participant-minute, so 100 × 90 × $0.004 = **$36/event**. Fits on the Build plan (pay-as-you-go). Monthly floor is $0 if no events that month.
+### 6.3 Actions agents can take
 
----
+Agents get a small, safe set of direct-write capabilities. Authorization enforced in the Edge Function, not the agent:
 
-## 7. Stage/Lounge mode flip
+**Allowed:**
+- Create a ticket for a free event or tier-included event (if user qualifies)
+- Generate a Stripe Checkout URL for a paid event or tier upgrade (doesn't complete the purchase — just creates the session)
+- Flag a support case (creates a pending row the user can review and confirm)
 
-Main Lounge has two modes. The geometry is identical; what changes is what's inside and who can do what.
+**Not allowed:**
+- Grant comp tickets unilaterally (staff-only flag required; agent can request, staff approves via Command Center)
+- Change membership tier directly (must route through Stripe)
+- Refund charges
+- Delete data
+- Send email on behalf of user
 
-### 7.1 Lounge mode (default, always-on)
+### 6.4 Rate limiting
 
-- Scattered seating clusters, ambient music playing
-- LiveKit room NOT active
-- Anyone in venue can enter (Explorer tier minimum)
-- Chat enabled, voice disabled (layer 2 feature)
+Cost controls — prevents a runaway bot from running up MiniMAX API bills:
 
-### 7.2 Stage mode (during a scheduled event)
+- Unauthenticated sessions: 10 messages per session per hour, 30 per day
+- Explorer tier users: 50 messages per day
+- Regular tier: 200 messages per day
+- VIP tier: unlimited (soft cap at 1000 for abuse detection)
 
-- Stage platform rendered (raised 0.3m, spotlit)
-- Runway extends from stage into room (for "At The Table" long-table format)
-- Seating rearranged as rows facing stage
-- LiveKit room active, spatial audio live
-- Access control: ticketed users only (valid ticket in `tickets` table for active event)
+Enforced in the `mint-agent-call` Edge Function before forwarding to the orchestrator. Hitting the limit returns a polite "Let's pick this up tomorrow" message, not a 429.
 
-### 7.3 Flip mechanism
+### 6.5 The existing Railway orchestrator — what changes
 
-The flip is driven by the `room_state.mode` column for `main-lounge`. Client subscribes to Realtime updates on this table. When `mode` changes to `stage`:
-1. Remove lounge furniture entities (scattered seats) from the Main Lounge a-entity group
-2. Add stage furniture entities (platform, runway, rows of chairs, LiveKit video plane)
-3. Activate LiveKit join flow
-4. Update minimap room color to indicate live event
+Currently the orchestrator is called internally by Command Center and by scheduled jobs. It needs one new change: an HTTP endpoint per agent, callable from Supabase Edge Functions with a shared secret for auth.
 
-Reverse on mode change back to `lounge`.
-
-Furniture entities are tagged `data-mode="lounge"` or `data-mode="stage"` in their render code; flip handler just hides/shows the matching group. No re-rendering of geometry needed.
-
-### 7.4 Who triggers the flip
-
-Manual by staff via Command Center (safer for launch) OR automatic via scheduled job 5 minutes before `events.starts_at` (post-launch once confident). Launch = manual.
-
----
-
-## 8. Auth & cross-domain SSO
-
-Goal: a user signs in once at cafe-sativa.com and is recognized automatically when they open mall.truskool.net.
-
-### 8.1 Mechanism
-
-Both sites point at the same Supabase project (`cafe-sativa-prod`). Supabase Auth sets a session cookie. The cookie domain is configured to `.truskool.net` so cafe-sativa.com (via `www.cafe-sativa.com`) CAN'T share cookies directly with mall.truskool.net — different root domains.
-
-**Two viable options:**
-
-- **Option A — Serve cafe-sativa.com under truskool.net.** e.g. `cafe.truskool.net` as the canonical domain, and `cafe-sativa.com` as a permanent redirect. Then both apps are on `*.truskool.net` and the Supabase cookie on `.truskool.net` shares cleanly.
-
-- **Option B — Auth redirect flow.** Mall detects no session, redirects user to `https://cafe-sativa.com/auth/bridge?redirect=<mall_url>`. Bridge page reads local session, sets a short-lived token in a URL fragment, redirects back. Mall reads token, swaps for a Supabase session via `setSession()`. Works across arbitrary domains but adds a round-trip.
-
-**Recommendation: Option A.** The marketing domain `cafe-sativa.com` still works (redirect), but the authenticated product lives on `cafe.truskool.net`. Keeps the architecture simple and avoids the bridge page. Current `js/supabase-client.js` already assumes cross-domain via cookies — Option A makes that actually true.
-
-### 8.2 Guest flow (no account)
-
-Explorer tier requires no signup for mall walkthrough. Users can explore the venue entirely anonymously. "Sign In" CTAs appear when they try to:
-- Attend a ticketed event
-- Enter the Cigar Lounge (VIP gate)
-- Buy from Gallery / Cold Stoned
-- Use chat (prevent anonymous spam)
-
-Anonymous users get a client-generated UUID stored in `localStorage` for presence; it's discarded if they later sign in (session migrates to real user_id).
-
----
-
-## 9. Ticketing flow
-
-### 9.1 Free events / tier-included attendance
-
-User browses events → clicks Attend → server creates a `tickets` row with `source = 'tier_included'`, `amount_paid_cents = 0`. Idempotent on `(event_id, user_id)` unique constraint.
-
-### 9.2 Paid events — Explorer tier
-
-1. User clicks **Buy Ticket — $15**
-2. Client calls `/edge/create-checkout-session` with `event_id`
-3. Edge Function creates Stripe Checkout session, stores `session_id` in a pending `tickets` row (state stays `valid` but ticket is unusable until payment)
-4. User completes checkout on Stripe
-5. Stripe webhook → `/edge/stripe-webhook` with `checkout.session.completed`
-6. Webhook validates signature, marks the ticket `valid`, sets `stripe_payment_intent_id`, sends confirmation email
-
-### 9.3 Paid events — Regular/VIP free attendance
-
-Tier includes event attendance. On click-Attend, Edge Function checks membership tier ∈ `events.free_for_tiers` and inserts `tickets` row with `source = 'tier_included'`, no Stripe.
-
-### 9.4 Redemption
-
-At event time, mall client checks `tickets` table for `{event_id: X, user_id: me, state: 'valid'}`. If found, LiveKit token minted and user is admitted to stage mode. Ticket state flips to `used` on join. Reuse OK within same event (they can leave and rejoin), but `used` state is used for analytics.
-
-### 9.5 Refunds
-
-Stripe webhook handles `charge.refunded`. Updates `tickets.state` to `refunded`. Future attendance denied. Refund window = 24h before event start.
+Ballpark: 1-2 days of work to add `/agents/laviche/chat`, `/agents/ginger/chat`, `/agents/ahnika/chat` endpoints that take a message + prompt context and return a response. The agent persona logic and MiniMAX wiring already exist.
 
 ---
 
-## 10. "At The Table" — inaugural episode runbook
+## 7. Auth & cross-domain SSO
 
-Bolted on later if you want a dedicated ops doc. For now:
+Target: zero infra cost, minimum complexity.
 
-### 10.1 Format
+### 7.1 Recommended: auth bridge flow
 
-- 90 minutes
-- Main Lounge in Stage mode
-- One host + 3-5 seated guests at a long runway-table format (stage extends as a table runway into the room)
-- Attendees watch from arranged seating facing the runway
-- Q&A in final 20 min via raise-hand
-- Recorded; published to Transistor + YouTube (Off the Map podcast network)
+User signs in on cafe-sativa.com (Supabase Auth, standard email/password + magic link). Session cookie is scoped to cafe-sativa.com (can't be read by mall.truskool.net — different root domains).
 
-### 10.2 Tech run-of-show
+When the user visits mall.truskool.net:
+1. Client checks for a Supabase session (none, because different domain)
+2. If the URL has `?bridge=1&token=<short-lived-token>`, client calls `supabase.auth.setSession(token)` and the session is now active on this domain too
+3. Otherwise, if user clicks "Sign In" from the mall, they get redirected to `cafe-sativa.com/bridge?return=<mall-url>`
+4. Bridge page on cafe-sativa.com: if user has a session, generates a one-time token (5-minute TTL) via Edge Function, redirects back to `mall.truskool.net?bridge=1&token=<token>`. If user doesn't have a session, shows login UI first, then bridges.
 
-- T-60 min: Staff verifies Main Lounge geometry, tests LiveKit room
-- T-30 min: Host + guests do tech check in the LiveKit room
-- T-20 min: `events.livekit_room_name` populated, Edge Function confirms room ready
-- T-5 min: Staff flips `main-lounge.room_state.mode` → `stage`. "Doors open" UI appears for ticket holders.
-- T-0: Host starts LiveKit stream, event status → `live`
-- T+85 min: Host wraps, final 5 min of Q&A ends
-- T+90 min: Staff clicks End. Recording uploads. `room_state.mode` → `lounge`.
-- T+120 min: Email to attendees with recording link (if applicable)
+Two redirects, no DNS work, no custom domain coordination, zero recurring cost. Slightly clunkier UX than same-domain cookies but works immediately.
 
-### 10.3 Unknowns for this specific event
+### 7.2 Alternative (deferred): same-domain via cafe.truskool.net
 
-- **Who is the inaugural guest / format partner?** (Not specified yet. Could be Keith solo, could be a real-world guest, could be AI-hosted with Laviche.)
-- **Date certain?** Doc assumes June 15 2026 as placeholder; needs lock-in for marketing runway.
-- **Music bed during lounge mode?** Needs licensed track or original score.
+Serve cafe-sativa.com's content under `cafe.truskool.net` as well. Supabase cookies on `.truskool.net` share between `cafe.truskool.net` and `mall.truskool.net` automatically — no bridge needed.
 
-Flagged in Open Questions §13.
+Not doing this at launch because: (a) DNS + Vercel domain swap is additional work, (b) cafe-sativa.com the domain is a brand asset worth keeping as primary, (c) redirect from cafe-sativa.com → cafe.truskool.net adds its own UX friction.
+
+Revisit post-launch if the bridge flow causes real user problems.
+
+### 7.3 Guest / anonymous flow
+
+Explorer tier requires no signup for venue walkthrough. Client generates a UUID stored in `localStorage` as anonymous `session_id`. Used for `host_conversations.session_id` and presence tracking.
+
+If the user signs up later, their anonymous conversations get back-filled with their new `user_id` via a migration call on first sign-in. This preserves continuity — Laviche still remembers what they were looking at before they signed up.
 
 ---
 
-## 11. 10-week build plan
+## 8. Ticketing flow
 
-Anchored to a June 15 launch. Weeks are calendar weeks starting Monday.
+### 8.1 Free events / tier-included attendance
 
-| Week | Dates | Goals | Key deliverables |
+User on `/events/at-the-table-ep-1` clicks **Claim Ticket**. Edge Function:
+1. Checks user membership tier ∈ `events.free_for_tiers`
+2. Inserts `tickets` row with `source = 'tier_included'`, `state = 'valid'`, `amount_paid_cents = 0`
+3. Sends confirmation email with Zoom join URL and event details
+
+Idempotent on `(event_id, user_id)` unique constraint.
+
+### 8.2 Paid events — Explorer tier
+
+1. Click **Buy Ticket — $15** → client calls `/api/ticket/create-checkout` Edge Function
+2. Function creates Stripe Checkout session, stores a `tickets` row with `state = 'pending'` and `stripe_payment_intent_id` set
+3. User redirected to Stripe-hosted checkout
+4. Stripe webhook on `checkout.session.completed` → Edge Function validates signature, flips ticket to `state = 'valid'`, sends confirmation email
+5. Ticket shows in user's `/account` page and as "You're in" on the event page
+
+### 8.3 Episode 1 specifics
+
+- Price: $15 for Explorer, free for Regular and VIP tier subscribers
+- Capacity cap: 150 (Main Lounge seated capacity; soft cap for Zoom)
+- Platform: Zoom (join URL populated into `events.zoom_join_url` ~24h before event)
+- Confirmation email includes: Zoom link, event details, reminder that joining requires a valid ticket
+- Refund window: up to 24h before event start (post-launch automation; for Ep 1 handle manually if needed)
+
+---
+
+## 9. "At The Table" Episode 1 — runbook
+
+### 9.1 Format
+
+- 90 minutes, **June 15 2026, 7:00 PM CDT**
+- On Zoom (user joins via personal email link, not through the mall)
+- Long-table format with host + 3-5 guests
+- Q&A in final 20 minutes via Zoom raise-hand
+- Recorded by Zoom (cloud or local), uploaded to Supabase Storage after event
+- Rebroadcast as an episode on the Off the Map podcast network + YouTube
+
+### 9.2 Run-of-show (simplified from v1)
+
+- **T-24h:** Zoom meeting created, URL populated into `events.zoom_join_url`, confirmation email blast to ticket holders
+- **T-2h:** Host tech check (internet, lighting, audio)
+- **T-30m:** Guests join Zoom for warmup
+- **T-15m:** Confirmation email reminder blast ("Starting in 15 minutes")
+- **T-0:** Event status → `live`. Host starts Zoom recording. Show begins.
+- **T+70m:** Q&A opens
+- **T+90m:** Event ends. Event status → `ended`. Zoom recording saved.
+- **T+24h:** Recording uploaded to Supabase Storage, `events.recording_url` populated, email to attendees with link. If Regular/VIP entitlement, recording is theirs permanently.
+
+### 9.3 Decisions still pending on Ep 1 (flagged from v1)
+
+- **Inaugural guest(s):** not yet identified. You solo, AI-hosted with Laviche, real-world guest, or hybrid?
+- **Music bed:** Verse Alkemist instrumental (self-licensed) recommended
+- **Theme / topic for episode 1:** needs a hook for marketing (What's the conversation?)
+
+These need answers by **May 15** for marketing runway. Not blocking development work before then.
+
+---
+
+## 10. 8-week build plan (revised)
+
+Anchored to June 15 launch. Shorter than v1's 10 weeks because LiveKit integration is dropped and the surface area is smaller.
+
+| Week | Dates | Focus | Deliverables |
 |---|---|---|---|
-| 1 | Apr 20–26 | Architecture doc (this), Supabase schema, venue-config.json | Schema migration applied, config file published, this doc reviewed and signed off |
-| 2 | Apr 27–May 3 | Auth + SSO, domain swap to cafe.truskool.net | Sign-in works from both surfaces, cookie propagation verified |
-| 3 | May 4–10 | Stripe subscriptions, tier enforcement, VIP gate at Cigar | Can upgrade Explorer → Regular → VIP, Cigar Lounge blocks non-VIP |
-| 4 | May 11–17 | Furniture pass 1 — spine (Foyer, Gallery, Bar, Main Lounge lounge-mode) | Rooms feel inhabited in always-on mode |
-| 5 | May 18–24 | Main Lounge stage-mode geometry + mode-flip plumbing | Flip works end-to-end from Command Center button |
-| 6 | May 25–31 | LiveKit integration, token minting, audio/video in stage mode | Test event: staff publishes, test attendee listens |
-| 7 | Jun 1–7 | Ticketing — Stripe Checkout, webhook, redemption | Can buy a ticket, redemption admits to stage mode |
-| 8 | Jun 8–14 | Furniture pass 2 — east/west branches (Cold Stoned, Cigar, Courtyard, Culinary), Gallery product listings | Merch appears, rooms styled |
-| 9 | Jun 15 | **LAUNCH: At The Table Episode 1.** All hands. | Live event runs successfully |
-| 10 | Jun 16–21 | Post-launch polish: recording playback, stability fixes, member feedback | Punch-list done, ready for Episode 2 planning |
+| 1 | Apr 20-26 | Schema + foundation | Fix Suspense error on cafe-sativa.com. Apply 7-table migration to `cafe-sativa-prod`. Create `shared/venue-config.json` repo. This doc reviewed/signed. |
+| 2 | Apr 27-May 3 | Auth + membership | Auth bridge flow working end-to-end. `/membership` page live with Stripe Checkout. Can upgrade tier, webhook updates `memberships` table. |
+| 3 | May 4-10 | Events + tickets | `/events` list + individual event page. Stripe ticket checkout for paid events. Tier-included ticket claim. Ep 1 seeded with placeholder Zoom URL. |
+| 4 | May 11-17 | Agent concierge plumbing | Railway orchestrator HTTP endpoints for Laviche/Ginger/Ahnika. `/ask` route on cafe-sativa.com. 3D mall chat wired to orchestrator (replaces canned greetings). Rate limiting live. |
+| 5 | May 18-24 | 3D furniture pass (spine) | Foyer, Gallery, Bar, Main Lounge furnished in default mode. VIP gate at Cigar enforces membership. Host avatars appear in their assigned rooms. |
+| 6 | May 25-31 | Homepage + experiences | `/` polished. `/experiences` single-page overview with "walk the venue" CTA. `/account` page complete. |
+| 7 | Jun 1-7 | End-to-end test + marketing | Full dry run with a friend: sign up → subscribe → buy ticket → get Zoom link → attend a test Zoom event → access recording. Email blast campaign to existing list. |
+| 8 | Jun 8-15 | **LAUNCH WEEK** | Final polish. Bug fixes. **June 15: Ep 1 runs live.** |
 
-**Critical path:** Weeks 1 (schema) → 2 (auth) → 6 (LiveKit) → 7 (tickets) → 9 (launch). If auth slips past week 2, everything after cascades. Buffer: weeks 4 and 8 (furniture) can compress if needed — rooms can look 80% at launch.
+**Post-launch (week 9+):**
+- Survey attendees, publish recording, plan Ep 2
+- Add deferred content: `/journal`, `/partners`, `/investors`
+- Evaluate whether to migrate from Zoom to LiveKit for Ep 2
 
-**Risks (ranked):**
-1. **LiveKit integration timing.** First time we're wiring it. Budget week 6 fully, and plan a contingency week 7 if token flow turns out to be finicky.
-2. **Cross-domain SSO.** Option A (cafe.truskool.net) is simple but requires DNS and Vercel domain swap. If that runs into issues, fallback to Option B (bridge page).
-3. **Stripe webhook reliability.** Test with `stripe trigger` extensively in week 3. Idempotency matters.
-4. **Event recording + playback.** If week 9 recording fails, acceptable — Episode 2 can include Ep 1 recap. Don't block launch on this.
+**Critical path:** Week 1 (schema + Suspense fix) → Week 2 (auth) → Week 3 (tickets) → Week 8 (launch). Weeks 4-7 are parallel / can compress if needed.
 
----
-
-## 12. Out of scope for this document (covered elsewhere)
-
-- Furniture specifications for each room (separate PR per area, weeks 4 & 8)
-- Unreal Engine premium tier architecture (separate doc, starts post-launch)
-- Non-flagship brand backends (BiJaDi, H.O.E., Faithfully Faded, etc.) — these live on their own Supabase projects when they need them
-- Physical Tenerife operations, J-1 sponsorship flow, ZEC structure
-- AI agent orchestration (Ginger, Laviche, Ahnika) — Railway lives separately
-- Podcast pipeline (Jellypod, Transistor, YouTube) — existing infrastructure
+**Biggest risk:** Week 1 — if the Suspense error takes longer than 3 lines, or schema design reveals a problem once it meets the code, the whole plan slips. Mitigation: I can apply the schema today (it's non-destructive, empty project) so we start week 1 with that already done.
 
 ---
 
-## 13. Open questions
+## 11. Open questions
 
-I've made calls on everything needed to start executing. These are the decisions that aren't mine to make:
+Down from 8 in v1 to 5 here — cost-cut decisions and the agent-as-concierge call resolved the rest.
 
-1. **Domain swap.** Option A (cafe.truskool.net as authenticated canonical, cafe-sativa.com as redirect) vs. Option B (bridge flow). My rec: A. Your call.
+1. **Apply the schema today?** I have MCP access to `cafe-sativa-prod`. Say go and I run the migration in the next message. Non-destructive, reversible.
 
-2. **Inaugural event — who + when.** Doc uses June 15 2026 placeholder. Need a real date to run marketing. Need to know: you solo, real guest, or AI-hosted with Laviche?
+2. **cafe-sativa.com repo — fix the Suspense error.** I need the GitHub repo URL and confirmation I should look at it. If it's in `glyph-protocol` Vercel team (same as the mall), I already have implicit access via Vercel MCP. If it's elsewhere, I need you to point me.
 
-3. **Merch fulfillment.** Stripe-only (digital-first, no shipping) vs. Shopify integration for physical goods (adds ~1 week). For launch I recommend digital/lightweight only (downloadable tracks, digital art prints, subscription upgrades) and defer physical merch until the Tenerife run launches.
+3. **Episode 1 guest + topic.** Need by May 15 for marketing. You solo? Real guest? Hybrid with Laviche as AI co-host? What's the conversation about?
 
-4. **Ticket price for At The Table Ep 1.** Doc has $15 placeholder. Options: free-for-all as a launch giveaway, $15 Explorer (free for Regular+/VIP), $25 to feel premium. My rec: free for Regular/VIP tier (gets people to sign up in advance), $15 for Explorer (low-enough barrier for the event-curious).
+4. **Staff flag assignments.** Who gets `is_staff = true` at launch — just you, or add Diana and Nicoleta?
 
-5. **Recording policy.** Is the event recording included with the ticket, or only available to Regular/VIP tiers? Doc's venue-config has `event_recordings` as a Regular+ entitlement. Confirm.
-
-6. **Music license.** Ambient music in Lounge mode needs licensing. Options: your own Verse Alkemist tracks (free, self-licensed, narratively consistent), or a third-party jazz library. Rec: Verse Alkemist.
-
-7. **BOH access.** Doc has `is_staff` flag. Who gets it at launch? Just you? Add Diana? Nicoleta?
-
-8. **Cigar Lounge enforcement strictness.** Full collision block (VIP can enter, others physically can't walk through the velvet rope)? Or softer — non-VIP can peek in but an overlay appears saying "VIP required"? My rec: soft for launch (accessibility + discovery), hard gate on interactive elements (can't use the humidor menu, can't chat with the attendant). People who want to upgrade will.
-
-Send me your answers on these eight and I'll fold them into a v1.1 of this doc. For items where you just want my rec, say "go with rec" and I'll lock them.
+5. **Cigar Lounge enforcement strictness.** Hard block (non-VIP can't walk in the door) or soft (can peek in but menu items don't work)? My rec: soft for discovery, hard on interactive elements (humidor menu, drink ordering).
 
 ---
 
-## 14. What happens after this doc is approved
+## 12. What happens after you approve this doc
 
-1. Apply schema migration to `cafe-sativa-prod` (Supabase) — 15 min
-2. Create `shared/venue-config.json` repo — 30 min
-3. Wire both mall.truskool.net and cafe-sativa.com to read from it — 1-2 days
-4. Start week 2 (auth + SSO)
+Assuming you say go and answer Q1:
 
-Week 1 tasks are mostly this doc + schema. Once you approve, I can apply the schema TODAY, which puts us technically one day ahead.
+1. **Today:** I apply the 7-table schema migration to `cafe-sativa-prod`. Adds profiles, memberships, events, tickets, room_state, host_conversations, host_messages. Seeds the 10 room_state rows and Ep 1 event. Idempotent — safe to re-run.
+2. **Today or tomorrow:** I create `shared/venue-config.json` and commit it (as a repo or as a file in both product repos — your call).
+3. **This week:** If you share the cafe-sativa.com repo, I look at the Suspense error and ship a fix PR.
+4. **Next week:** Start week 2 work (auth bridge + membership).
+
+Week 1 can be done in a few days of focused work if the Suspense error is what I think it is. That puts us ahead of the plan before we start.
