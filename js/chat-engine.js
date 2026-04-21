@@ -1,144 +1,168 @@
 /* ═══════════════════════════════════════════════════════════
    TRU SKOOL MALL — Chat Engine
-   Claude API integration for conversational AI guide
+   Wires the 3D mall chat panel to the shared concierge API at
+   cafe-sativa.com. Same endpoint powers /ask on the web surface,
+   so a visitor continues the same conversation across surfaces.
    ═══════════════════════════════════════════════════════════ */
 
 const ChatEngine = {
 
   // ─── Configuration ───
-  // Set your API key in environment or replace below for development
-  // For production, use a backend proxy to protect the key
-  apiEndpoint: '/api/chat',  // Proxy endpoint (recommended)
-  directEndpoint: 'https://api.anthropic.com/v1/messages',
+  // Single source of truth for the concierge API. If the Railway
+  // orchestrator at agents.truskool.net comes online, change this
+  // one URL and nothing else about the chat UI breaks.
+  conciergeEndpoint: 'https://www.cafe-sativa.com/api/concierge',
 
-  // Set to true to use direct API (dev only — exposes key in browser)
-  useDirectAPI: false,
-
-  // Conversation history (last N messages for context)
+  // Local UI history — used only for rendering recent turns in the
+  // chat panel if the page reloads. The server owns the real memory
+  // via host_conversations / host_messages keyed by conversation_id.
   history: [],
   maxHistory: 20,
+
+  // ─── localStorage keys (shared shape with /ask page) ───
+  // The mall and /ask use DIFFERENT keys on purpose: a logged-in
+  // user's server-side conversation is scoped by user_id and will
+  // merge both surfaces automatically. An anonymous user gets two
+  // separate threads until they sign in. That's correct — we don't
+  // want to tie a mall visit to /ask history for someone who hasn't
+  // consented to that level of tracking.
+  SESSION_KEY: 'mall:concierge:session-id',
+  CONV_KEY_PREFIX: 'mall:concierge:conv-id:',
+
+  // ─── Session/conversation persistence ───
+  ensureSessionId() {
+    let id = localStorage.getItem(this.SESSION_KEY);
+    if (!id) {
+      // Prefer crypto.randomUUID(); fall back to a timestamp+random
+      // shape on older browsers. UUID format isn't required by the
+      // API — any stable opaque string works.
+      id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `mall-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(this.SESSION_KEY, id);
+    }
+    return id;
+  },
+
+  getConversationId(hostId) {
+    return localStorage.getItem(this.CONV_KEY_PREFIX + hostId);
+  },
+
+  setConversationId(hostId, convId) {
+    if (convId) localStorage.setItem(this.CONV_KEY_PREFIX + hostId, convId);
+  },
 
   // ─── Send Message ───
   async send(userMessage) {
     if (!userMessage.trim()) return;
 
+    // Resolve current host BEFORE any async work so we render the
+    // correct avatar even if the user switches rooms mid-flight.
+    const hostId = GuideSystem._currentGuide;
+    const roomId = window.MallState && window.MallState.currentZone
+      ? window.MallState.currentZone
+      : null;
+
     // Add user message to UI
     addUserMessage(userMessage);
 
-    // Add to history
+    // Add to local UI history (server does its own server-side memory)
     this.history.push({ role: 'user', content: userMessage });
     if (this.history.length > this.maxHistory) {
       this.history = this.history.slice(-this.maxHistory);
     }
 
-    // Get current guide context
-    const systemPrompt = GuideSystem.getSystemPrompt();
-    const currentZone = window.MallState.currentZone;
-
-    // Build context-enriched system prompt
-    const enrichedPrompt = `${systemPrompt}
-
-Current location in mall: ${currentZone}
-Available stores: Concrete Rose, BiJaDi, Faithfully Faded, H.O.E., Wanderlust, Cafe Sativa, The Verse Alkemist.
-The visitor can teleport to any store by asking. If they ask to go somewhere, tell them to click the map icon (🗺) or press T.`;
-
     try {
-      // Show typing indicator
       this.showTyping();
+      const { text: responseText, conversationId } = await this.callConcierge({
+        hostId,
+        message: userMessage,
+        roomId,
+      });
 
-      let responseText;
-
-      if (this.useDirectAPI) {
-        responseText = await this.callDirectAPI(enrichedPrompt);
-      } else {
-        responseText = await this.callProxyAPI(enrichedPrompt);
-      }
-
-      // Remove typing indicator
       this.hideTyping();
+
+      if (conversationId) this.setConversationId(hostId, conversationId);
 
       if (responseText) {
-        const guide = GuideSystem._currentGuide;
-
-        // Add to UI
-        addChatMessage(guide, responseText);
-
-        // Add to history
+        addChatMessage(hostId, responseText);
         this.history.push({ role: 'assistant', content: responseText });
 
-        // Trigger voice
-        if (window.MallState.voiceEnabled && typeof VoiceNarration !== 'undefined') {
-          VoiceNarration.speak(responseText, guide);
+        if (window.MallState && window.MallState.voiceEnabled && typeof VoiceNarration !== 'undefined') {
+          VoiceNarration.speak(responseText, hostId);
         }
       }
-
     } catch (err) {
       this.hideTyping();
-      console.error('[Chat] API error:', err);
-
-      // Fallback response
+      console.error('[ChatEngine] Concierge call failed', err);
       this.fallbackResponse(userMessage);
     }
   },
 
-  // ─── Direct API Call (development only) ───
-  async callDirectAPI(systemPrompt) {
-    const response = await fetch(this.directEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.getAPIKey(),
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        system: systemPrompt,
-        messages: this.history,
-      }),
-    });
+  // ─── Concierge API Call ───
+  // POST to cafe-sativa.com/api/concierge. This is the same endpoint
+  // /ask on the web surface hits. Signed-in users get cross-surface
+  // memory (server joins on user_id); anonymous users stay scoped to
+  // their per-surface session_id, which is the right default.
+  async callConcierge({ hostId, message, roomId }) {
+    const sessionId = this.ensureSessionId();
+    const conversationId = this.getConversationId(hostId);
 
-    if (!response.ok) throw new Error(`API ${response.status}`);
-
-    const data = await response.json();
-    return data.content?.[0]?.text || '';
-  },
-
-  // ─── Proxy API Call (production) ───
-  async callProxyAPI(systemPrompt) {
-    const response = await fetch(this.apiEndpoint, {
+    const res = await fetch(this.conciergeEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      // No credentials: 'include'. The concierge doesn't use cookies
+      // for anonymous callers, so keeping this off lets the response
+      // echo a specific allow-origin without forcing credentials mode.
       body: JSON.stringify({
-        system: systemPrompt,
-        messages: this.history,
-        zone: window.MallState.currentZone,
-        guide: GuideSystem._currentGuide,
+        host: hostId,
+        message,
+        session_id: sessionId,
+        conversation_id: conversationId || undefined,
+        surface: 'mall-3d',
+        room_id: roomId || undefined,
       }),
     });
 
-    if (!response.ok) throw new Error(`Proxy ${response.status}`);
+    // Special cases the fallback handler should NOT swallow. We
+    // render the server's copy-edited message directly, then throw
+    // with a tagged error so send()'s catch block doesn't ALSO fire
+    // the keyword fallback on top of it.
+    if (res.status === 429) {
+      const data = await res.json().catch(() => ({}));
+      addChatMessage(hostId, data.error || 'Take a breath — try again in a bit.');
+      throw new Error('rate_limited');
+    }
+    if (res.status === 503) {
+      const data = await res.json().catch(() => ({}));
+      if (data.code === 'not_configured') {
+        addChatMessage(hostId, 'The host is stepping away for a moment. Try again in a bit.');
+        throw new Error('not_configured');
+      }
+    }
+    if (!res.ok) {
+      throw new Error(`concierge_${res.status}`);
+    }
 
-    const data = await response.json();
-    return data.response || data.content?.[0]?.text || '';
-  },
-
-  // ─── API Key (dev only — use env/proxy in production) ───
-  getAPIKey() {
-    // Check for key in localStorage (set via console for dev testing)
-    return localStorage.getItem('ANTHROPIC_API_KEY') || 'YOUR_KEY_HERE';
+    const data = await res.json();
+    return {
+      text: data.message || '',
+      conversationId: data.conversation_id || null,
+    };
   },
 
   // ─── Fallback Response (offline/error) ───
+  // When the concierge is unreachable or returns an error we haven't
+  // already handled (network drop, Vercel cold-start 502, etc), the
+  // chat panel still feels alive via keyword matching. Better to
+  // degrade gracefully than to show a spinner and then silence.
   fallbackResponse(userMessage) {
     const guide = GuideSystem._currentGuide;
-    const zone = window.MallState.currentZone;
+    const zone = (window.MallState && window.MallState.currentZone) || 'the mall';
     const msg = userMessage.toLowerCase();
 
     let response;
 
-    // Simple keyword matching for offline mode
     if (msg.includes('concrete rose') || msg.includes('streetwear')) {
       response = 'Concrete Rose is just ahead on the left, darling — luxury streetwear that speaks volumes. The Rose Emblem Bomber at $185 is the featured piece right now. Press T to teleport. 🌹';
     } else if (msg.includes('bijadi') || msg.includes('luxury') || msg.includes('family')) {
@@ -167,6 +191,8 @@ The visitor can teleport to any store by asking. If they ask to go somewhere, te
   // ─── Typing Indicator ───
   showTyping() {
     const container = document.getElementById('chat-messages');
+    if (!container) return;
+
     const indicator = document.createElement('div');
     indicator.id = 'typing-indicator';
     indicator.className = 'msg guide';
@@ -181,23 +207,22 @@ The visitor can teleport to any store by asking. If they ask to go somewhere, te
     container.appendChild(indicator);
     container.scrollTop = container.scrollHeight;
 
-    // Add typing dot animation
-    const style = document.createElement('style');
-    style.id = 'typing-style';
-    style.textContent = `
-      .typing-dot {
-        width: 6px; height: 6px; border-radius: 50%;
-        background: var(--gold); opacity: 0.4;
-        animation: typingBounce 1.2s ease-in-out infinite;
-      }
-      .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-      .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-      @keyframes typingBounce {
-        0%, 100% { opacity: 0.3; transform: translateY(0); }
-        50% { opacity: 1; transform: translateY(-4px); }
-      }
-    `;
     if (!document.getElementById('typing-style')) {
+      const style = document.createElement('style');
+      style.id = 'typing-style';
+      style.textContent = `
+        .typing-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: var(--gold); opacity: 0.4;
+          animation: typingBounce 1.2s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+          0%, 100% { opacity: 0.3; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-4px); }
+        }
+      `;
       document.head.appendChild(style);
     }
   },
