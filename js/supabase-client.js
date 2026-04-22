@@ -25,7 +25,7 @@
    API surface (all on window.MallAuth):
    - init()              Load the Supabase JS client from CDN.
    - getCurrentUser()    → Promise<User | null>
-   - getMembership()     → Promise<{ tier: 'none'|'insider'|'founder', active: bool }>
+   - getMembership()     → Promise<{ tier: 'explorer'|'regular'|'vip', active: bool }>
    - signInUrl(returnTo) → string (link to website's signin)
    - signOut()           → Promise
    - isReady()           → bool
@@ -133,33 +133,42 @@
       }
     },
 
-    // Reads memberships table (if present). Falls back to 'none' on any error
-    // so the UI never breaks when the backend schema isn't fully set up yet.
+    // Reads memberships table. Falls back to 'explorer' on any error
+    // so the UI never breaks when the backend schema isn't fully set
+    // up yet. Tier values mirror the cafe-sativa.com canonical enum:
+    // 'explorer' (default/free), 'regular' (paid tier 1), 'vip'
+    // (paid tier 2). Only status='active' memberships count — a
+    // past_due / canceled / incomplete row falls back to 'explorer'.
     getMembership: async function () {
       if (!this._ready) await this.init();
-      if (!this._client) return { tier: 'none', active: false };
+      if (!this._client) return { tier: 'explorer', active: false };
       try {
         const user = await this.getCurrentUser();
-        if (!user) return { tier: 'none', active: false };
+        if (!user) return { tier: 'explorer', active: false };
 
-        // Expected schema (to be created in cafe-sativa-prod):
-        //   public.memberships (user_id uuid, tier text, active bool, ...)
+        // public.memberships (user_id uuid, tier membership_tier,
+        // status membership_status, ...) — 'active' is what counts
+        // as a real subscription.
         const { data, error } = await this._client
           .from('memberships')
-          .select('tier, active')
+          .select('tier, status')
           .eq('user_id', user.id)
           .maybeSingle();
 
         if (error) {
-          // Table may not exist yet — that's fine, fall back to none
           console.debug('[MallAuth] memberships query returned error (table may not exist yet):', error.message);
-          return { tier: 'none', active: false };
+          return { tier: 'explorer', active: false };
         }
-        if (!data) return { tier: 'none', active: false };
-        return { tier: data.tier || 'none', active: !!data.active };
+        if (!data) return { tier: 'explorer', active: false };
+
+        const isActive = data.status === 'active';
+        // If the subscription isn't active, treat them as explorer
+        // regardless of what the row says the tier is.
+        const effectiveTier = isActive && data.tier ? data.tier : 'explorer';
+        return { tier: effectiveTier, active: isActive };
       } catch (err) {
         console.warn('[MallAuth] getMembership failed:', err);
-        return { tier: 'none', active: false };
+        return { tier: 'explorer', active: false };
       }
     },
 

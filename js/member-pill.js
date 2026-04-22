@@ -83,18 +83,18 @@
       },
       'Sign In'
     );
-    pill.appendChild(el('span', { style: { opacity: '0.5' } }, '☕'));
     pill.appendChild(link);
   }
 
   function renderMember(pill, user, membership) {
     pill.innerHTML = '';
 
-    // Tier dot
+    // Tier dot color. VIP = primary amber; Regular = muted amber;
+    // Explorer = dim cream. Matches the cafe-sativa palette.
     const tierColor = {
-      founder: '#c9a961',
-      insider: '#8B9D83',
-      none: 'rgba(245, 230, 211, 0.4)',
+      vip: '#c29355',      // primary — matches website tokens
+      regular: '#8B6F3E',  // muted amber
+      explorer: 'rgba(245, 230, 211, 0.4)',
     }[membership.tier] || 'rgba(245,230,211,0.4)';
 
     pill.appendChild(el('span', {
@@ -114,12 +114,10 @@
       : emailText;
     pill.appendChild(el('span', { style: { opacity: '0.85' } }, shortEmail));
 
-    // Tier label if active member
-    if (membership.active && membership.tier && membership.tier !== 'none') {
-      const tierLabel = {
-        founder: 'FOUNDER',
-        insider: 'INSIDER',
-      }[membership.tier] || membership.tier.toUpperCase();
+    // Tier label — only show for paid tiers (VIP, Regular).
+    // Explorer is the default so we don't brag about it.
+    if (membership.active && (membership.tier === 'vip' || membership.tier === 'regular')) {
+      const tierLabel = membership.tier === 'vip' ? 'VIP' : 'REGULAR';
       pill.appendChild(el('span', {
         style: {
           fontSize: '10px',

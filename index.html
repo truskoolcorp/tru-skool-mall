@@ -259,6 +259,7 @@
 <script src="js/music-player.js"></script>
 <script src="js/interactive-panels.js"></script>
 <script src="js/mall-nav.js"></script>
+<script src="js/vip-gate.js"></script>
 <script>
 // Fix FBX→GLB 100x scale and metallic materials
 AFRAME.registerComponent('fix-avatar', {
@@ -331,7 +332,8 @@ AFRAME.registerComponent('fix-avatar', {
   <!-- ─── Camera Rig (First Person) ─── -->
   <a-entity id="camera-rig" position="0 0 14"
     movement-controls="fly: false; speed: 0.22"
-    mall-nav>
+    mall-nav
+    vip-gate>
     <a-entity id="camera"
       camera
       look-controls="pointerLockEnabled: false"
