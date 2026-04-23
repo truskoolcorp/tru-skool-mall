@@ -13,9 +13,9 @@
 
    Actual numbers this file ships:
 
-     Primitives:  ~64
+     Primitives:  ~82
      Point lights: 0  (all glow is emissive materials)
-     Text:         3  (stage title, gallery wordmark, staff sign)
+     Text:         4  (stage title, gallery wordmark, staff sign, gelato menu)
 
    Why the cuts work
    ─────────────────
@@ -62,22 +62,30 @@
   // ─── Material palette ───────────────────────────────────────────────
   // Every piece uses one of these. Having a small palette reduces
   // shader uniform uploads and keeps the wing feeling cohesive.
+  //
+  // Textures (from index.html <a-assets>) are used as detail maps.
+  // The `color:` value acts as a multiplicative tint, so the hex
+  // controls the shade while the texture adds grain/pattern.
+  //
+  // `repeat: X Y` tiles the texture across the primitive. Without
+  // this a 3m-long counter would show one giant wood-grain blob.
+  // Values are eyeballed — more tiles = finer grain.
   const MAT = {
-    // Woods
-    oakWarm:    'color: #8b6f47; roughness: 0.7',
-    walnutDark: 'color: #3a2418; roughness: 0.6',
+    // Woods — now with grain
+    oakWarm:    'src: #tex-wood-light; repeat: 2 1; color: #a8885a; roughness: 0.7',
+    walnutDark: 'src: #tex-wood-dark;  repeat: 2 1; color: #5a3828; roughness: 0.6',
 
     // Metals
     brass:      'color: #c9a84c; metalness: 0.9; roughness: 0.2',
-    steel:      'color: #a8a8ac; metalness: 0.85; roughness: 0.4',
+    steel:      'src: #tex-metal; repeat: 1 1; color: #b8b8bc; metalness: 0.85; roughness: 0.4',
 
-    // Stones
-    marbleWarm: 'color: #efe6d2; roughness: 0.4',
-    travertine: 'color: #e8e0d0; roughness: 0.8',
+    // Stones — marble and travertine get their textures
+    marbleWarm: 'src: #tex-marble; repeat: 2 1; color: #f4ecd8; roughness: 0.3; metalness: 0.05',
+    travertine: 'src: #tex-plaster; repeat: 2 2; color: #e8e0d0; roughness: 0.8',
 
-    // Upholstery
-    leather:    'color: #4a1a1f; roughness: 0.65',
-    velvetSage: 'color: #3a4a38; roughness: 0.9',
+    // Upholstery — leather benefits hugely from the leather texture
+    leather:    'src: #tex-leather; repeat: 2 2; color: #5a2528; roughness: 0.65',
+    velvetSage: 'color: #3a4a38; roughness: 0.95',
     linen:      'color: #d9cfba; roughness: 0.95',
 
     // Glows (emissive — NO associated point light, just bright color)
@@ -91,9 +99,11 @@
     art2:       'color: #5a7c5c; roughness: 0.85',
     art3:       'color: #3a4a6a; roughness: 0.85',
     matteBlack: 'color: #1a1a1a; metalness: 0.3; roughness: 0.7',
-    ruby:       'color: #6a0d1a; roughness: 0.6',
+    ruby:       'src: #tex-leather; repeat: 3 2; color: #7a1525; roughness: 0.6',
     slate:      'color: #1a1a1a; roughness: 0.95',
-    rug:        'color: #6a3a28; roughness: 0.95',
+    rug:        'src: #tex-carpet; repeat: 3 2; color: #8a4a38; roughness: 0.95',
+    // Dark glass / ceramics for small detail pieces
+    ceramic:    'color: #2a2a2e; roughness: 0.35; metalness: 0.1',
   };
 
   // ─── Primitive factories (no wrappers, one mesh each) ───────────────
@@ -169,12 +179,14 @@
     return g.length;
   }
 
-  // GALLERY (22..28, -29.5..-21.5, ceil 10) — 9 pieces
+  // GALLERY (22..28, -29.5..-21.5, ceil 10) — 12 pieces
   function roomGallery(root) {
     const g = [];
-    // 3 pedestals (skipping the 4th from the old version)
+    // 3 pedestals with sculpture discs on top — the disc turns each
+    // pedestal into 'art on display' rather than a white cube.
     [[24, -24], [26, -26], [24, -28]].forEach(([x, z]) => {
       g.push(box(x, 0.45, z, 0.5, 0.9, 0.5, MAT.travertine));
+      g.push(cyl(x, 1.05, z, 0.15, 0.3, MAT.brass)); // sculpture
     });
     // 3 wall art panels — alternating walls to balance the room
     g.push(wallArt(22.05, 3,   -24, 1.4, 1.8, 'x', 1,  MAT.art1));
@@ -182,33 +194,38 @@
     g.push(wallArt(22.05, 3,   -28, 1.4, 1.8, 'x', 1,  MAT.art3));
     // Central bench
     g.push(box(25, 0.25, -25.5, 2.4, 0.2, 0.5, MAT.walnutDark));
-    // Wordmark on the north wall (above the door, double-height room)
+    // Wordmark on the north wall
     g.push(textNode(25, 6.5, -29.3, 'GALLERY', '#c9a84c', 6));
     g.forEach((el) => root.appendChild(el));
     return g.length;
   }
 
-  // BAR (20..30, -37.5..-29.5) — 10 pieces
+  // BAR (20..30, -37.5..-29.5) — 13 pieces
   function roomBar(root) {
     const g = [];
     // L-shaped counter: west leg + north leg
     g.push(box(21.5, 0.55, -33.5, 0.9, 1.1, 5.0, MAT.walnutDark));
     g.push(box(23, 0.55, -30.2, 4.0, 1.1, 0.9, MAT.walnutDark));
-    // Marble counter top spanning the L
+    // Marble counter top spanning the L (slightly overhung = reads as bar)
     g.push(box(21.55, 1.12, -33.5, 1.0, 0.04, 5.1, MAT.marbleWarm));
     // Backbar glow strip (emissive plane tight to west wall)
     g.push(box(20.15, 2.2, -33.5, 0.02, 0.7, 4.5, MAT.amberGlow));
     // Back-bar mirror above
     g.push(wallArt(20.11, 3.4, -33.5, 4.5, 0.8, 'x', 1, MAT.mirror));
-    // 4 stools (single boxes) — at the west leg, spaced out
+    // 4 round stools (cylinders, not boxes — reads as actual bar stool)
     [-35, -34, -33, -32].forEach((z) => {
-      g.push(box(22.4, 0.4, z, 0.4, 0.8, 0.4, MAT.leather));
+      g.push(cyl(22.4, 0.4, z, 0.22, 0.8, MAT.leather));
+    });
+    // 3 pendant lamps over the counter — the #1 "this is a bar"
+    // signal. Short emissive cylinder with a tiny stem visible.
+    [-34.5, -33.5, -32.5].forEach((z) => {
+      g.push(cyl(21.55, 3.9, z, 0.12, 0.15, MAT.amberGlow));
     });
     g.forEach((el) => root.appendChild(el));
     return g.length;
   }
 
-  // MAIN LOUNGE (17.5..32.5, -46..-37.5, ceil 6) — 10 pieces
+  // MAIN LOUNGE (17.5..32.5, -46..-37.5, ceil 6) — 13 pieces
   // Event-critical room — Ep 1 "At The Table" lives here.
   function roomMainLounge(root) {
     const g = [];
@@ -218,10 +235,16 @@
     g.push(wallArt(25, 3.2, -45.95, 8.0, 3.5, 'z', 1, MAT.slate));
     // Stage title text
     g.push(textNode(25, 3.8, -45.9, 'AT THE TABLE', '#c9a84c', 10));
-    // Host table + 2 host chairs on stage
+    // Host table
     g.push(box(25, 0.7, -44.6, 2.2, 0.05, 0.9, MAT.walnutDark));
-    g.push(box(24.2, 0.55, -44.2, 0.5, 1.1, 0.5, MAT.leather));
-    g.push(box(25.8, 0.55, -44.2, 0.5, 1.1, 0.5, MAT.leather));
+    // Microphone stand on the table — cylinder pair reads as 'broadcast'
+    g.push(cyl(25, 0.95, -44.6, 0.015, 0.45, MAT.matteBlack)); // stem
+    g.push(cyl(25, 1.22, -44.6, 0.05,  0.08, MAT.matteBlack)); // head
+    // 2 host chairs with backs (seat + back each)
+    g.push(box(24.2, 0.55, -44.15, 0.5, 0.5, 0.5, MAT.leather));  // seat W
+    g.push(box(24.2, 0.95, -43.9,  0.5, 0.9, 0.1, MAT.leather));  // back W
+    g.push(box(25.8, 0.55, -44.15, 0.5, 0.5, 0.5, MAT.leather));  // seat E
+    g.push(box(25.8, 0.95, -43.9,  0.5, 0.9, 0.1, MAT.leather));  // back E
     // 3 audience benches (simple sage-velvet boxes, facing stage)
     g.push(box(20,   0.3, -41, 3.0, 0.6, 0.7, MAT.velvetSage));
     g.push(box(25,   0.3, -41, 3.0, 0.6, 0.7, MAT.velvetSage));
@@ -232,7 +255,7 @@
     return g.length;
   }
 
-  // COLD STONED (28..32, -26..-21.5) — 3 pieces
+  // COLD STONED (28..32, -26..-21.5) — 5 pieces
   function roomColdStoned(root) {
     const g = [];
     // Serving counter (along north wall)
@@ -241,21 +264,28 @@
     g.push(box(30, 1.12, -25.3, 3.7, 0.04, 0.75, MAT.marbleWarm));
     // Chalk menu board (dark panel on back wall)
     g.push(wallArt(30, 2.5, -25.95, 2.4, 1.2, 'z', 1, MAT.slate));
+    // Menu wordmark on the board
+    g.push(textNode(30, 2.55, -25.9, 'GELATO', '#e8e0d0', 3));
+    // Glass display dome — small marble cylinder on counter hints at
+    // a gelato case even without sculpted tubs
+    g.push(cyl(30, 1.32, -25.3, 0.3, 0.35, MAT.marbleWarm));
     g.forEach((el) => root.appendChild(el));
     return g.length;
   }
 
-  // COURTYARD (30..37, -31..-26, ceil 12 open-air) — 6 pieces
+  // COURTYARD (30..37, -31..-26, ceil 12 open-air) — 8 pieces
   function roomCourtyard(root) {
     const g = [];
     // 2-stack fountain
     g.push(cyl(33.5, 0.15, -28.5, 1.1, 0.3,  MAT.travertine));
     g.push(cyl(33.5, 0.6,  -28.5, 0.35, 0.6, MAT.travertine));
     // 2 bistro tables (round disc on stalk = 2 primitives each)
-    // — reduced to 2 tables total, no separate chairs (patrons
-    //   would stand or use the fountain lip). Keeps budget at 6.
     g.push(cyl(31.5, 0.75, -27, 0.45, 0.04, MAT.marbleWarm));
     g.push(cyl(35.5, 0.75, -27, 0.45, 0.04, MAT.marbleWarm));
+    // Place settings — tiny dark discs read as plates/coasters,
+    // turns each "mushroom" into an occupied dining table
+    g.push(cyl(31.5, 0.78, -27, 0.16, 0.01, MAT.ceramic));
+    g.push(cyl(35.5, 0.78, -27, 0.16, 0.01, MAT.ceramic));
     // 2 bistro chairs at one of the tables (social)
     g.push(box(31.5, 0.25, -28, 0.4, 0.5, 0.4, MAT.steel));
     g.push(box(31.5, 0.25, -26, 0.4, 0.5, 0.4, MAT.steel));
@@ -277,12 +307,22 @@
   // CIGAR LOUNGE (35.7..41.7, -46..-37.5, VIP) — 8 pieces
   function roomCigarLounge(root) {
     const g = [];
-    // Hero cluster: round low table + 4 leather armchairs
+    // Hero cluster: round low table + 4 leather armchairs with backs
     g.push(cyl(37.5, 0.3, -41, 0.55, 0.04, MAT.walnutDark));
-    g.push(box(36.5, 0.55, -41, 0.7, 1.1, 0.7, MAT.leather));  // W
-    g.push(box(38.5, 0.55, -41, 0.7, 1.1, 0.7, MAT.leather));  // E
-    g.push(box(37.5, 0.55, -40, 0.7, 1.1, 0.7, MAT.leather));  // N
-    g.push(box(37.5, 0.55, -42, 0.7, 1.1, 0.7, MAT.leather));  // S
+    // W armchair: seat + back. Back is tall and thin, pushed to the west.
+    g.push(box(36.5, 0.35, -41, 0.7, 0.7, 0.7, MAT.leather));  // seat
+    g.push(box(36.15, 0.75, -41, 0.15, 0.9, 0.75, MAT.leather)); // back
+    // E armchair
+    g.push(box(38.5, 0.35, -41, 0.7, 0.7, 0.7, MAT.leather));
+    g.push(box(38.85, 0.75, -41, 0.15, 0.9, 0.75, MAT.leather));
+    // N armchair (facing south)
+    g.push(box(37.5, 0.35, -40, 0.7, 0.7, 0.7, MAT.leather));
+    g.push(box(37.5, 0.75, -39.65, 0.75, 0.9, 0.15, MAT.leather));
+    // S armchair (facing north)
+    g.push(box(37.5, 0.35, -42, 0.7, 0.7, 0.7, MAT.leather));
+    g.push(box(37.5, 0.75, -42.35, 0.75, 0.9, 0.15, MAT.leather));
+    // Ashtray — a black disc on the table, unambiguous cigar-lounge signal
+    g.push(cyl(37.5, 0.34, -41, 0.1, 0.025, MAT.ceramic));
     // Couples banquette on east wall
     g.push(box(41, 0.45, -43, 0.6, 0.9, 2.5, MAT.ruby));
     // Humidor cabinet + its glow
@@ -305,18 +345,20 @@
     return g.length;
   }
 
-  // CULINARY (22.5..27.5, -51..-46) — 9 pieces
+  // CULINARY (22.5..27.5, -51..-46) — 11 pieces
   function roomCulinary(root) {
     const g = [];
     // Demo kitchen island
     g.push(box(25, 0.45, -49, 3.0, 0.9, 1.0, MAT.oakWarm));
     g.push(box(25, 0.92, -49, 3.05, 0.04, 1.05, MAT.marbleWarm));
-    // Induction hob (red glow plane on the island top, audience side)
-    g.push(box(25, 0.95, -49.3, 0.8, 0.02, 0.4, MAT.redGlow));
+    // Two circular induction hobs — reads unambiguously as cooktop
+    g.push(cyl(24.5, 0.945, -49.2, 0.13, 0.01, MAT.redGlow));
+    g.push(cyl(25.5, 0.945, -49.2, 0.13, 0.01, MAT.redGlow));
+    // Stainless mixing bowl — tiny prep signal on the chef's side
+    g.push(cyl(25, 0.98, -48.85, 0.12, 0.08, MAT.steel));
     // Monitor on north wall
     g.push(wallArt(25, 2.3, -50.95, 1.5, 0.9, 'z', 1, MAT.matteBlack));
-    // 4 audience chairs (front row of 4 instead of 2 rows of 3 =
-    // still reads as an audience setup, 2 fewer primitives)
+    // 4 audience chairs (front row of 4)
     g.push(box(23.5, 0.3, -47.3, 0.5, 0.6, 0.5, MAT.linen));
     g.push(box(24.5, 0.3, -47.3, 0.5, 0.6, 0.5, MAT.linen));
     g.push(box(25.5, 0.3, -47.3, 0.5, 0.6, 0.5, MAT.linen));

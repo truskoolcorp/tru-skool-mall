@@ -396,7 +396,7 @@
       rotation: '0 -90 0',
     });
     const text = document.createElement('a-text');
-    text.setAttribute('value', 'CAFÉ SATIVA');
+    text.setAttribute('value', 'CAFE SATIVA');
     text.setAttribute('color', '#c9a84c');
     text.setAttribute('align', 'center');
     text.setAttribute('width', 6);
