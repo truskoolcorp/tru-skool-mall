@@ -83,13 +83,22 @@
       window.addEventListener('blur', () => { this.keys = Object.create(null); });
       this._forward = new THREE.Vector3();
 
-      // Reset camera's local rotation so yaw comes from rig only.
-      // (look-controls is disabled but may have left the camera at a
-      // non-zero rotation from a prior frame.)
+      var rig = this.el.object3D;
+
+      // Deterministic spawn: position (0, 0, 0) facing -Z (north, into the
+      // mall toward the CS wing entry at z=-18). Overrides any stale state
+      // from a previous movement-controls install or reload.
+      rig.position.set(0, 0, 0);
+      rig.rotation.set(0, 0, 0);
+
+      // Reset camera's local rotation too — look-controls is disabled but
+      // may have left a non-zero rotation in the camera object3D.
       var cam = this.el.querySelector('[camera]');
       if (cam) cam.object3D.rotation.set(0, 0, 0);
 
-      console.log('[TankControls] active — W/S walk, A/D turn');
+      console.log('[TankControls] active — W/S walk, A/D turn. Spawn:',
+        rig.position.x.toFixed(2), rig.position.y.toFixed(2), rig.position.z.toFixed(2),
+        'yaw:', (rig.rotation.y * 180 / Math.PI).toFixed(1) + '°');
     },
 
     remove: function () {
