@@ -49,13 +49,13 @@
     {
       id: 'foyer',
       label: 'Entrance Foyer',
-      xMin: 23, xMax: 27, zMin: -21.5, zMax: -18,
+      xMin: 23, xMax: 27, zMin: -21.5, zMax: -17,
       ceilingY: 4,
       floor: '#8b6f47',   // warm oak
       wall:  '#f0e8da',   // cream plaster
       ambient: { color: '#e8c080', intensity: 0.7 },
       doors: [
-        { wall: 'west',  at: -18, width: 2.0 },   // entry from arcade (arcade runs z=-19..-17, center z=-18)
+        { wall: 'west',  at: -18, width: 2.0 },   // entry from arcade (arcade runs z=-19..-17, spans full foyer west)
         { wall: 'north', at: 25, width: 2.4 },    // into Gallery
       ],
     },
@@ -389,15 +389,15 @@
     parent.appendChild(makePlane(cx, A.ceilingY, cz, w, d, 90, ceilMat));
 
     // SOLID side walls — eliminates open-to-sky visual, gives a real "hall"
-    // Arcade is 8m × 2m, so side walls run x=15..23 on both z=-17 and z=-19.
-    // North (z=-19) wall is shared with nothing (wing boundary).
-    // South (z=-17) wall is shared with nothing (wing boundary).
-    parent.appendChild(makeSolidBox(cx, A.ceilingY/2, A.zMin, w, A.ceilingY, 0.2, wallMat));
-    parent.appendChild(makeSolidBox(cx, A.ceilingY/2, A.zMax, w, A.ceilingY, 0.2, wallMat));
+    // Walls pulled back 0.3m from the Foyer boundary (end at x=22.7 instead
+    // of x=23) so the approach to the Foyer west door isn't a hard corner.
+    const wallW   = (A.xMax - 0.3) - A.xMin;                  // 7.7m
+    const wallCx  = A.xMin + wallW / 2;                       // centered on new length
+    parent.appendChild(makeSolidBox(wallCx, A.ceilingY/2, A.zMin, wallW, A.ceilingY, 0.2, wallMat));
+    parent.appendChild(makeSolidBox(wallCx, A.ceilingY/2, A.zMax, wallW, A.ceilingY, 0.2, wallMat));
 
-    // Decorative pilasters (half-columns) standing proud of the walls
-    // 3 per side instead of 4 — less visual noise against a solid wall
-    const pilasterPositions = [A.xMin + 1.5, A.xMin + 4, A.xMax - 1.5];
+    // Decorative pilasters — 3 per side along the new wall length
+    const pilasterPositions = [A.xMin + 1.5, A.xMin + 4, A.xMax - 1.8];
     for (const x of pilasterPositions) {
       parent.appendChild(makeBox(x, A.ceilingY/2, A.zMin + 0.2, 0.4, A.ceilingY, 0.25, colMat));
       parent.appendChild(makeBox(x, A.ceilingY/2, A.zMax - 0.2, 0.4, A.ceilingY, 0.25, colMat));

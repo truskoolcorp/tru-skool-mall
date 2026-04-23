@@ -336,12 +336,12 @@ AFRAME.registerComponent('fix-avatar', {
 
   <!-- ─── Camera Rig (First Person) ─── -->
   <a-entity id="camera-rig" position="0 0 14"
-    movement-controls="fly: false; speed: 0.22"
+    tank-controls
     mall-nav
     vip-gate>
     <a-entity id="camera"
       camera
-      look-controls="pointerLockEnabled: false"
+      look-controls="enabled: false; pointerLockEnabled: false"
       position="0 1.6 0"
     >
       <!-- Cursor for click interactions -->
