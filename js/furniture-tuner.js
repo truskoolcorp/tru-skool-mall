@@ -91,7 +91,17 @@
   }
 
   // Serialize a tuner entity into a plain record we can JSON-dump
+  // or paste back into source code.
+  //
+  // A-Frame parses HTML attributes into component objects on the
+  // element (el.getAttribute('material') returns a big object with
+  // every possible property including defaults). We don't want any
+  // of that bloat in the export — we just want what the builder
+  // actually set. Strategy: cache the builder's original strings in
+  // data-* attributes, and serialize those.
   function serialize(el) {
+    // Positions: A-Frame gives us {x,y,z} objects which JSON-serialize
+    // cleanly — no trap here.
     const pos = el.getAttribute('position') || { x: 0, y: 0, z: 0 };
     const rot = el.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
     const scl = el.getAttribute('scale')    || { x: 1, y: 1, z: 1 };
@@ -99,29 +109,30 @@
     const rec = {
       tag: el.tagName.toLowerCase(),
       name: el.dataset.tunerName || '',
-      position: { x: pos.x, y: pos.y, z: pos.z },
-      rotation: { x: rot.x, y: rot.y, z: rot.z },
-      scale:    { x: scl.x, y: scl.y, z: scl.z },
+      position: { x: Number(pos.x) || 0, y: Number(pos.y) || 0, z: Number(pos.z) || 0 },
+      rotation: { x: Number(rot.x) || 0, y: Number(rot.y) || 0, z: Number(rot.z) || 0 },
+      scale:    { x: Number(scl.x) || 1, y: Number(scl.y) || 1, z: Number(scl.z) || 1 },
     };
 
-    // Shape attrs
+    // Shape attrs — read from the DOM attribute string directly via
+    // getAttributeNode().value to bypass A-Frame's parsed form.
     ['width', 'height', 'depth', 'radius'].forEach((attr) => {
-      const v = el.getAttribute(attr);
-      if (v !== null && v !== undefined && v !== '') rec[attr] = Number(v);
+      const node = el.getAttributeNode(attr);
+      if (!node) return;
+      const n = Number(node.value);
+      if (!Number.isNaN(n)) rec[attr] = n;
     });
 
-    // Material (just store the raw attribute string — it might be a
-    // full A-Frame material string like 'color: #..; roughness: ..')
-    const mat = el.getAttribute('material');
-    if (mat) {
-      // Ensure we serialize as a string (A-Frame parses attributes into
-      // objects sometimes). If it's an object, re-format it.
-      if (typeof mat === 'string') {
-        rec.material = mat;
-      } else {
-        rec.material = Object.entries(mat)
-          .map(([k, v]) => `${k}: ${v}`).join('; ');
-      }
+    // Material: prefer the user-authored string we cached when
+    // setting it. If that's missing (e.g. entity existed before the
+    // tuner ran), fall back to reading the DOM attribute directly,
+    // which is still the raw string — NOT A-Frame's parsed object.
+    const cached = el.dataset.tunerMaterial;
+    if (cached) {
+      rec.material = cached;
+    } else {
+      const matNode = el.getAttributeNode('material');
+      if (matNode && matNode.value) rec.material = matNode.value;
     }
 
     return rec;
@@ -305,7 +316,10 @@
     ['width', 'height', 'depth', 'radius'].forEach((k) => {
       if (rec[k] !== undefined) el.setAttribute(k, rec[k]);
     });
-    if (rec.material) el.setAttribute('material', rec.material);
+    if (rec.material) {
+      el.setAttribute('material', rec.material);
+      el.dataset.tunerMaterial = rec.material;
+    }
 
     document.querySelector('a-scene').appendChild(el);
     state.entities.push(el);
@@ -353,16 +367,16 @@
     el.id = 'tuner-panel';
     Object.assign(el.style, {
       position: 'fixed',
-      top: '56px',
+      top: '100px',               // below the top-bar icons
       right: '14px',
-      width: '320px',
-      maxHeight: 'calc(100vh - 80px)',
+      width: '300px',
+      maxHeight: 'calc(100vh - 140px)',
       overflow: 'auto',
       zIndex: '15000',
       background: 'rgba(18, 13, 9, 0.95)',
       border: '1px solid rgba(194, 147, 85, 0.4)',
       borderRadius: '12px',
-      padding: '14px 16px',
+      padding: '12px 14px',
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
       fontSize: '12px',
       color: '#f1e5d1',
@@ -519,6 +533,7 @@
     }
     if (field === 'material') {
       state.selected.setAttribute('material', t.value);
+      state.selected.dataset.tunerMaterial = t.value;
       persist();
       return;
     }
@@ -623,6 +638,49 @@
     },
   ];
 
+  // ─── Room teleport (?room=<id>) ───────────────────────────────────
+  // Drops the camera at the center of the named CS wing room so the
+  // builder doesn't have to hike from the Grand Entrance every reload.
+  // Room centers are derived from the same bounds in cafe-sativa-wing.js
+  // ROOMS[], duplicated here as a small lookup table because we want
+  // zero runtime coupling to that file.
+  const ROOM_CENTERS = {
+    foyer:          { x: 25,   y: 0, z: -19.75, yaw: 0    },  // facing Gallery
+    gallery:        { x: 25,   y: 0, z: -25.5,  yaw: 180  },  // facing north wall
+    bar:            { x: 25,   y: 0, z: -33.5,  yaw: -90  },  // facing west bar
+    'main-lounge':  { x: 25,   y: 0, z: -40,    yaw: 0    },  // facing stage
+    'cold-stoned':  { x: 30,   y: 0, z: -23.5,  yaw: 0    },  // facing counter
+    courtyard:      { x: 33.5, y: 0, z: -28.5,  yaw: 90   },  // facing fountain
+    'cigar-airlock':{ x: 34.1, y: 0, z: -43.75, yaw: 90   },
+    cigar:          { x: 37.5, y: 0, z: -41,    yaw: -90  },  // facing east booth
+    boh:            { x: 17.5, y: 0, z: -32,    yaw: 0    },
+    culinary:       { x: 25,   y: 0, z: -48,    yaw: 0    },  // facing demo kitchen
+    // Also useful starting points outside the CS wing:
+    entrance:       { x: 0,    y: 0, z: 14,     yaw: 180  },  // default spawn
+  };
+
+  function teleportToRoom(roomId) {
+    const target = ROOM_CENTERS[roomId];
+    if (!target) {
+      console.warn(`[FurnitureTuner] Unknown room: ${roomId}. Valid rooms:`,
+        Object.keys(ROOM_CENTERS).join(', '));
+      return false;
+    }
+    const rig = document.querySelector('#camera-rig');
+    const cam = document.querySelector('#camera');
+    if (!rig || !cam) return false;
+
+    rig.object3D.position.set(target.x, target.y, target.z);
+    rig.object3D.rotation.set(0, (target.yaw * Math.PI) / 180, 0);
+    // A-Frame's look-controls tracks yaw/pitch independently. We
+    // can't reliably reset it without digging into its private state,
+    // so we just set the rig rotation and let the user's next mouse-
+    // move snap to wherever they're looking. Good enough.
+
+    console.log(`[FurnitureTuner] Teleported to ${roomId} (${target.x}, ${target.z})`);
+    return true;
+  }
+
   // ─── Export ───────────────────────────────────────────────────────
   function exportJSON() {
     const payload = {
@@ -699,6 +757,19 @@
       // Starter set (only if no prior session)
       if (prior.length === 0) loadStarter();
 
+      // Teleport support: explicit ?room=<id> wins; if absent but
+      // starter=cs is on, default to the Foyer so the starter pieces
+      // are right in front of the user.
+      const roomParam = params.get('room');
+      if (roomParam) {
+        // Small delay so the wing shell has finished building — the
+        // teleport target is inside a room whose floor/walls must
+        // exist before we position the rig there.
+        setTimeout(() => teleportToRoom(roomParam), 600);
+      } else if (params.has('starter')) {
+        setTimeout(() => teleportToRoom('foyer'), 600);
+      }
+
       // Click listener on scene (captures cursor-ray hits)
       document.addEventListener('click', onSceneClick, true);
       // Keyboard
@@ -714,6 +785,8 @@
       }, 250);
 
       console.log('[FurnitureTuner] Ready. Click entities or press spawn buttons.');
+      console.log('[FurnitureTuner] Quick-jump: ?room=<id>  Valid:',
+        Object.keys(ROOM_CENTERS).join(', '));
     };
 
     if (scene.hasLoaded) onReady();
@@ -728,6 +801,8 @@
     select,
     export: exportJSON,
     spawn: spawnFromRecord,
+    teleport: teleportToRoom,
+    rooms: Object.keys(ROOM_CENTERS),
     clear: () => {
       state.entities.forEach((el) => el.remove());
       state.entities = [];
