@@ -33,7 +33,7 @@
     { label: 'Faithfully Faded',    pos: [-10, 0, -22],  side: 'left',  color: '#FFADED', sub: 'Just be Blunt.',     name: 'FAITHFULLY FADED' },
     { label: 'H.O.E.',              pos: [10, 0, -22],   side: 'right', color: '#e8c060', sub: 'Crown Culture',      name: 'H.O.E.' },
     { label: 'Wanderlust',          pos: [-10, 0, -38],  side: 'left',  color: '#60c890', sub: 'Travel · Adventure', name: 'WANDERLUST' },
-    { label: 'Cafe Sativa',         pos: [10, 0, -38],   side: 'right', color: '#c09060', sub: 'Sip. Smoke. Vibe.',  name: 'CAFÉ SATIVA' },
+    { label: 'Cafe Sativa',         pos: [10, 0, -38],   side: 'right', color: '#c09060', sub: 'Sip. Smoke. Vibe.',  name: 'CAFE SATIVA' },
     { label: 'The Verse Alkemist',  pos: [0, 0, -58],    side: 'back',  color: '#a060e0', sub: 'Walls of the World', name: 'THE VERSE ALKEMIST' },
   ];
 
