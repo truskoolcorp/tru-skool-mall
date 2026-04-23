@@ -55,8 +55,8 @@
       wall:  '#f0e8da',   // cream plaster
       ambient: { color: '#e8c080', intensity: 0.7 },
       doors: [
-        { wall: 'south', at: 25, width: 2.0 },   // entry from arcade
-        { wall: 'north', at: 25, width: 2.4 },   // into Gallery
+        { wall: 'west',  at: -18, width: 2.0 },   // entry from arcade (arcade runs z=-19..-17, center z=-18)
+        { wall: 'north', at: 25, width: 2.4 },    // into Gallery
       ],
     },
     {
