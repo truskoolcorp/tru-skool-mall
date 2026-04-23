@@ -298,7 +298,7 @@
   }
 
   // ─── Single room builder ──────────────────────────────────────────────
-  function buildRoom(parent, room) {
+  function buildRoom(parent, room, builtWalls) {
     const g = makeEntity({
       id: `cs-room-${room.id}`,
       'data-room-label': room.label,
@@ -324,10 +324,25 @@
 
     // Walls: north @ zMin (axis x), south @ zMax (axis x),
     //        east  @ xMax (axis z), west  @ xMin (axis z)
-    buildWall(g, 'x', room.zMin, room.xMin, room.xMax, h, wallMat, byWall.north);
-    buildWall(g, 'x', room.zMax, room.xMin, room.xMax, h, wallMat, byWall.south);
-    buildWall(g, 'z', room.xMax, room.zMin, room.zMax, h, wallMat, byWall.east);
-    buildWall(g, 'z', room.xMin, room.zMin, room.zMax, h, wallMat, byWall.west);
+    //
+    // Shared walls (between two adjacent rooms) were previously built
+    // twice — once by each room — which caused z-fighting pixelation
+    // on wall surfaces. Dedupe via `builtWalls` Set keyed by
+    // "axis@fixedCoord" (e.g. "x@-21.5"). First room to claim a wall
+    // line builds it; subsequent rooms skip. Wall heights between
+    // adjacent rooms with different ceilings are reconciled by the
+    // taller room claiming the wall first (we sort rooms descending
+    // by height in buildAll).
+    const tryWall = (axis, fixed, p0, p1, doors) => {
+      const key = `${axis}@${fixed.toFixed(2)}`;
+      if (builtWalls.has(key)) return;
+      builtWalls.add(key);
+      buildWall(g, axis, fixed, p0, p1, h, wallMat, doors);
+    };
+    tryWall('x', room.zMin, room.xMin, room.xMax, byWall.north);
+    tryWall('x', room.zMax, room.xMin, room.xMax, byWall.south);
+    tryWall('z', room.xMax, room.zMin, room.zMax, byWall.east);
+    tryWall('z', room.xMin, room.zMin, room.zMax, byWall.west);
 
     if (room.ambient) {
       const maxDim = Math.max(w, d);
@@ -437,7 +452,15 @@
     const root = makeEntity({ id: 'cs-wing-root' });
 
     buildArcade(root);
-    ROOMS.forEach((room) => buildRoom(root, room));
+    // Shared-wall dedupe. See buildRoom for full explanation.
+    // Sort rooms by ceiling height descending so tall-ceiling rooms
+    // claim shared wall lines first — the shared wall then rises to
+    // the tall ceiling, which is correct (short-ceiling room just has
+    // its ceiling plane + a portion of the shared wall is "above
+    // ceiling" in its view, invisible).
+    const builtWalls = new Set();
+    const roomsByHeight = ROOMS.slice().sort((a, b) => b.ceilingY - a.ceilingY);
+    roomsByHeight.forEach((room) => buildRoom(root, room, builtWalls));
     buildCorridorEntry(root);
 
     scene.appendChild(root);
