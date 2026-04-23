@@ -382,21 +382,27 @@ function drawMinimap() {
 // ═══════════════════════════════════════════════════
 
 document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT') return; // Don't capture when typing in chat
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+
+  // Require Shift-modifier so WASD movement keys (and arrow keys)
+  // don't double-fire UI panels. Ignore ctrl/alt/meta entirely so
+  // the browser's own shortcuts (Cmd-D bookmark, etc.) pass through.
+  if (!e.shiftKey) return;
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
 
   switch(e.key.toLowerCase()) {
-    // Option B nav model:
-    //   T or M → toggle minimap ("where am I")
-    //   D     → toggle store directory ("take me somewhere")
-    //   C     → toggle chat
-    //   V     → toggle voice
-    //   N     → toggle music
-    case 't': toggleMap(); break;
-    case 'm': toggleMap(); break;
-    case 'd': toggleDirectory(); break;
-    case 'c': toggleChat(); break;
-    case 'v': toggleVoice(); break;
-    case 'n': toggleMusic(); break;
+    // Option B nav model (Shift-modified):
+    //   Shift+T or Shift+M → toggle minimap ("where am I")
+    //   Shift+D            → toggle store directory ("take me somewhere")
+    //   Shift+C            → toggle chat
+    //   Shift+V            → toggle voice
+    //   Shift+N            → toggle music
+    case 't': toggleMap(); e.preventDefault(); break;
+    case 'm': toggleMap(); e.preventDefault(); break;
+    case 'd': toggleDirectory(); e.preventDefault(); break;
+    case 'c': toggleChat(); e.preventDefault(); break;
+    case 'v': toggleVoice(); e.preventDefault(); break;
+    case 'n': toggleMusic(); e.preventDefault(); break;
   }
 });
 

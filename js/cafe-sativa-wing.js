@@ -50,7 +50,7 @@
       id: 'foyer',
       label: 'Entrance Foyer',
       xMin: 23, xMax: 27, zMin: -21.5, zMax: -17,
-      ceilingY: 4,
+      ceilingY: 6,        // matches Gallery — eliminates see-through-ceiling
       floor: '#8b6f47',   // warm oak
       wall:  '#f0e8da',   // cream plaster
       ambient: { color: '#e8c080', intensity: 0.7 },
