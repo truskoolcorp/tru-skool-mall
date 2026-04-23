@@ -309,6 +309,11 @@ AFRAME.registerComponent('fix-avatar', {
     <img id="tex-plaster" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCACAAIADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDz2ikPWlzWgBRmjFAxnpQAc0c0AEmjvQAdqKM0dKACjvR3ooADmgZxzRQKAFIpKKBQAUUUZFAC0Hig57UhNABRQM5xS0AIaAaCaKACgUmcGlpAKaQ0uKSmAdKO9GRSE8cUAKaKQc0p4pAFAFFLTAM0nWlpKAAkUZox3ooAOKMYGaOlGaADqM0UUmaAFxRR/OgUAFAoooADQBSA0uaADpSZpSM0maQCmj60UCmAUUUUABooPSkHPWgBaKO9JQAuOc0UZxRnigAoNGaKAAUUUtAB2pKCe1A5oADRjNB4ooAMUo60maKAA0lKelIBSAXHFFHWimAGjHFFGaADvSGj2pRQAYoFApaAEpO9LQOKACl7U3oaXvQAUh4pc80vFACdaSlzg8UUAIDS0HNFAAOlHeigUAHegYoFHagAox3pO9LQAUcUEik79aAFNANBoFABRig0dqAAdaKMUtACdaMUUAcUAAoNHajvQAgzS0delGe1ACcmlAxQBzS0ANNGOaWigApO9LRQAZoxxSe1LikAmQeKWgY7UCmAGgCiigBM84paKBQABaKM4pDmgBaOaOlFAB70AZpTSUAf/9k=">
   </a-assets>
 
+  <!-- ─── Sky dome ─── -->
+  <!-- Dark warm backdrop so any glimpse of "outside" reads as ambient night,
+       not blown-out white void. Color matches scene background / fog. -->
+  <a-sky color="#0a0a0f" radius="500"></a-sky>
+
   <!-- ─── Lighting ─── -->
   <!-- Ambient — base illumination so nothing is pitch black -->
   <a-entity light="type: ambient; color: #4a4a5a; intensity: 1.0"></a-entity>

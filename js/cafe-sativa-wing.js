@@ -371,7 +371,7 @@
     parent.appendChild(g);
   }
 
-  // ─── Entry arcade: covered walkway (colonnade) from corridor to Foyer ─
+  // ─── Entry arcade: enclosed colonnade gallery from corridor to Foyer ───
   function buildArcade(parent) {
     const A = WING.arcade;
     const w = A.xMax - A.xMin;
@@ -381,24 +381,34 @@
 
     const floorMat = 'color: #6a5438; roughness: 0.7; metalness: 0.1';
     const ceilMat  = 'color: #2a2420; roughness: 0.9; side: double';
+    const wallMat  = 'color: #3a2a20; roughness: 0.85; metalness: 0.1';   // deep walnut
+    const colMat   = 'color: #2a1d14; roughness: 0.8; metalness: 0.25';   // darker pilaster
 
+    // Floor + ceiling
     parent.appendChild(makePlane(cx, 0.01, cz, w, d, -90, floorMat));
     parent.appendChild(makePlane(cx, A.ceilingY, cz, w, d, 90, ceilMat));
 
-    // Colonnade (columns instead of solid walls — open feel)
-    const colSpacing = 2;
-    const colMat = 'color: #3a2a20; roughness: 0.8; metalness: 0.2';
-    for (let x = A.xMin + 1; x < A.xMax; x += colSpacing) {
-      parent.appendChild(makeSolidBox(x, A.ceilingY/2, A.zMin, 0.3, A.ceilingY, 0.3, colMat));
-      parent.appendChild(makeSolidBox(x, A.ceilingY/2, A.zMax, 0.3, A.ceilingY, 0.3, colMat));
-      // Up-lights on each column
+    // SOLID side walls — eliminates open-to-sky visual, gives a real "hall"
+    // Arcade is 8m × 2m, so side walls run x=15..23 on both z=-17 and z=-19.
+    // North (z=-19) wall is shared with nothing (wing boundary).
+    // South (z=-17) wall is shared with nothing (wing boundary).
+    parent.appendChild(makeSolidBox(cx, A.ceilingY/2, A.zMin, w, A.ceilingY, 0.2, wallMat));
+    parent.appendChild(makeSolidBox(cx, A.ceilingY/2, A.zMax, w, A.ceilingY, 0.2, wallMat));
+
+    // Decorative pilasters (half-columns) standing proud of the walls
+    // 3 per side instead of 4 — less visual noise against a solid wall
+    const pilasterPositions = [A.xMin + 1.5, A.xMin + 4, A.xMax - 1.5];
+    for (const x of pilasterPositions) {
+      parent.appendChild(makeBox(x, A.ceilingY/2, A.zMin + 0.2, 0.4, A.ceilingY, 0.25, colMat));
+      parent.appendChild(makeBox(x, A.ceilingY/2, A.zMax - 0.2, 0.4, A.ceilingY, 0.25, colMat));
+      // Warm up-lights on each pilaster
       parent.appendChild(makeEntity({
-        light: 'type: point; color: #e8a050; intensity: 0.3; distance: 3; decay: 2',
-        position: `${x} ${A.ceilingY - 0.2} ${A.zMin}`,
+        light: 'type: point; color: #e8a050; intensity: 0.35; distance: 3.5; decay: 2',
+        position: `${x} ${A.ceilingY - 0.25} ${A.zMin + 0.3}`,
       }));
       parent.appendChild(makeEntity({
-        light: 'type: point; color: #e8a050; intensity: 0.3; distance: 3; decay: 2',
-        position: `${x} ${A.ceilingY - 0.2} ${A.zMax}`,
+        light: 'type: point; color: #e8a050; intensity: 0.35; distance: 3.5; decay: 2',
+        position: `${x} ${A.ceilingY - 0.25} ${A.zMax - 0.3}`,
       }));
     }
   }
