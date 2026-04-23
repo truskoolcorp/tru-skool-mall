@@ -66,6 +66,25 @@ const StoreInteriors = {
       // Skip transparent elements
       if (matStr.indexOf('opacity') !== -1 && matStr.indexOf('opacity: 1') === -1) return;
 
+      // Skip the Café Sativa wing — it manages its own materials via
+      // cafe-sativa-wing.js (walls, floors, ceilings, arcade) and
+      // cafe-sativa-interiors.js (furniture). Walk the parent chain
+      // looking for either wing ancestor. Without this, the auto-
+      // texturer was painting wing walls with concrete/wood textures
+      // based on color heuristics, causing pixelated artifacts on
+      // the wall surfaces.
+      var p = el.parentElement;
+      var inCSWing = false;
+      while (p && p !== scene) {
+        var pid = p.id || '';
+        if (pid === 'cs-wing-root' || pid === 'cafe-sativa-interiors') {
+          inCSWing = true;
+          break;
+        }
+        p = p.parentElement;
+      }
+      if (inCSWing) return;
+
       var color = typeof mat === 'object' ? mat.color : '';
       if (!color && typeof mat === 'string') {
         var cm = mat.match(/color:\s*(#[a-fA-F0-9]+)/);

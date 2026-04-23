@@ -194,8 +194,9 @@
     g.push(wallArt(22.05, 3,   -28, 1.4, 1.8, 'x', 1,  MAT.art3));
     // Central bench
     g.push(box(25, 0.25, -25.5, 2.4, 0.2, 0.5, MAT.walnutDark));
-    // Wordmark on the north wall
-    g.push(textNode(25, 6.5, -29.3, 'GALLERY', '#c9a84c', 6));
+    // Wordmark on the north wall — positioned near the top of the
+    // room, sized for the 6m ceiling
+    g.push(textNode(25, 4.2, -29.3, 'GALLERY', '#c9a84c', 5));
     g.forEach((el) => root.appendChild(el));
     return g.length;
   }
@@ -225,26 +226,32 @@
     return g.length;
   }
 
-  // MAIN LOUNGE (17.5..32.5, -46..-37.5, ceil 6) — 13 pieces
+  // MAIN LOUNGE (17.5..32.5, -46..-37.5, ceil 4.5) — 13 pieces
   // Event-critical room — Ep 1 "At The Table" lives here.
   function roomMainLounge(root) {
     const g = [];
     // Stage platform (raised 0.35m, 10m wide × 2m deep)
     g.push(box(25, 0.175, -44.5, 10.0, 0.35, 2.0, MAT.walnutDark));
-    // Stage backdrop banner (dark, on the north wall)
-    g.push(wallArt(25, 3.2, -45.95, 8.0, 3.5, 'z', 1, MAT.slate));
-    // Stage title text
-    g.push(textNode(25, 3.8, -45.9, 'AT THE TABLE', '#c9a84c', 10));
-    // Host table
-    g.push(box(25, 0.7, -44.6, 2.2, 0.05, 0.9, MAT.walnutDark));
-    // Microphone stand on the table — cylinder pair reads as 'broadcast'
-    g.push(cyl(25, 0.95, -44.6, 0.015, 0.45, MAT.matteBlack)); // stem
-    g.push(cyl(25, 1.22, -44.6, 0.05,  0.08, MAT.matteBlack)); // head
-    // 2 host chairs with backs (seat + back each)
-    g.push(box(24.2, 0.55, -44.15, 0.5, 0.5, 0.5, MAT.leather));  // seat W
-    g.push(box(24.2, 0.95, -43.9,  0.5, 0.9, 0.1, MAT.leather));  // back W
-    g.push(box(25.8, 0.55, -44.15, 0.5, 0.5, 0.5, MAT.leather));  // seat E
-    g.push(box(25.8, 0.95, -43.9,  0.5, 0.9, 0.1, MAT.leather));  // back E
+    // Stage backdrop banner (dark, on the north wall) — height
+    // capped so top stays under 4.5m ceiling
+    g.push(wallArt(25, 2.2, -45.95, 8.0, 3.0, 'z', 1, MAT.slate));
+    // Stage title text — centered on the backdrop
+    g.push(textNode(25, 3.1, -45.9, 'AT THE TABLE', '#c9a84c', 8));
+    // Host table — raised so it sits properly above the stage.
+    // Stage top is at y=0.35. Table top needs to be ~0.7m above
+    // the stage so seated chairs fit under it.
+    g.push(box(25, 1.0, -44.6, 2.2, 0.05, 0.9, MAT.walnutDark));
+    // Microphone stand on the table (y shifted to match new table top)
+    g.push(cyl(25, 1.25, -44.6, 0.015, 0.45, MAT.matteBlack)); // stem
+    g.push(cyl(25, 1.52, -44.6, 0.05,  0.08, MAT.matteBlack)); // head
+    // 2 host chairs with backs — seat and back positioned so the
+    // chair sits ON the stage top (y=0.35) not sunken into it.
+    // Seat 0.5m tall centered at y=0.65 → bottom=0.40 (on stage),
+    // top=0.90 (passes under table top at 1.03).
+    g.push(box(24.2, 0.65, -44.15, 0.5, 0.5, 0.5, MAT.leather));  // seat W
+    g.push(box(24.2, 1.15, -43.9,  0.5, 0.9, 0.1, MAT.leather));  // back W (top at 1.60)
+    g.push(box(25.8, 0.65, -44.15, 0.5, 0.5, 0.5, MAT.leather));  // seat E
+    g.push(box(25.8, 1.15, -43.9,  0.5, 0.9, 0.1, MAT.leather));  // back E
     // 3 audience benches (simple sage-velvet boxes, facing stage)
     g.push(box(20,   0.3, -41, 3.0, 0.6, 0.7, MAT.velvetSage));
     g.push(box(25,   0.3, -41, 3.0, 0.6, 0.7, MAT.velvetSage));
@@ -363,8 +370,8 @@
     g.push(box(24.5, 0.3, -47.3, 0.5, 0.6, 0.5, MAT.linen));
     g.push(box(25.5, 0.3, -47.3, 0.5, 0.6, 0.5, MAT.linen));
     g.push(box(26.5, 0.3, -47.3, 0.5, 0.6, 0.5, MAT.linen));
-    // Warm ceiling glow strip (emissive, not a light)
-    g.push(box(25, 4.8, -48.5, 2.0, 0.06, 0.2, MAT.warmGlow));
+    // Warm ceiling glow strip (emissive, not a light) — under 4m ceiling
+    g.push(box(25, 3.8, -48.5, 2.0, 0.06, 0.2, MAT.warmGlow));
     g.forEach((el) => root.appendChild(el));
     return g.length;
   }

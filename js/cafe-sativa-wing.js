@@ -63,7 +63,7 @@
       id: 'gallery',
       label: 'Gallery Atrium',
       xMin: 22, xMax: 28, zMin: -29.5, zMax: -21.5,
-      ceilingY: 10,       // DOUBLE HEIGHT — dramatic reveal
+      ceilingY: 6,        // was 10 — dropped to reduce door-lintel mass
       floor: '#e8e0d0',   // travertine
       wall:  '#fbf6eb',   // warm cream white
       ambient: { color: '#ffffff', intensity: 1.0 },
@@ -92,7 +92,7 @@
       id: 'main-lounge',
       label: 'Main Lounge',
       xMin: 17.5, xMax: 32.5, zMin: -46, zMax: -37.5,
-      ceilingY: 6,
+      ceilingY: 4.5,      // was 6 — dropped to reduce door-lintel mass
       floor: '#2a1a10',
       wall:  '#3a4a38',   // sage
       ambient: { color: '#c08850', intensity: 0.6 },
@@ -176,7 +176,7 @@
       id: 'culinary',
       label: 'Culinary Theater',
       xMin: 22.5, xMax: 27.5, zMin: -51, zMax: -46,
-      ceilingY: 5,
+      ceilingY: 4,        // was 5
       floor: '#c8c0b0',
       wall:  '#f4f0e8',
       ambient: { color: '#e8a050', intensity: 0.7 },
@@ -269,7 +269,10 @@
         }
       }
 
-      // Lintel above door (non-solid)
+      // Lintel above door (fills the wall-above-door to the ceiling
+      // so adjacent rooms stay visually separated). This is a single
+      // wall-thick slab — looks dark from some angles but that's
+      // correct architectural geometry.
       const lintelY = WING.doorHeight + (wallH - WING.doorHeight) / 2;
       const lintelH = wallH - WING.doorHeight;
       if (lintelH > 0.05) {
@@ -334,15 +337,11 @@
       }));
     }
 
-    // Floor-level room label (for orientation)
-    const label = document.createElement('a-text');
-    label.setAttribute('value', room.label.toUpperCase());
-    label.setAttribute('position', `${cx} 0.03 ${cz}`);
-    label.setAttribute('rotation', '-90 0 0');
-    label.setAttribute('color', '#555555');
-    label.setAttribute('align', 'center');
-    label.setAttribute('width', Math.min(w, d) * 0.9);
-    g.appendChild(label);
+    // Floor-level room labels intentionally NOT rendered — they
+    // read backwards from player POV (image 4 showed 'CIGAR L'
+    // upside-down on the floor, confusing). Rooms are identified
+    // instead by wall signage (cafe-sativa-interiors.js wordmarks)
+    // and doorway signs (doorway-signs.js).
 
     if (room.vipGated) {
       const rope = makeEntity({ position: `${room.xMin + 0.4} 0.5 ${cz}` });
