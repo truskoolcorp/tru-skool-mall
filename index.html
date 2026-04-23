@@ -298,7 +298,7 @@ AFRAME.registerComponent('fix-avatar', {
 <a-scene
   id="mall-scene"
   vr-mode-ui="enabled: true"
-  renderer="antialias: true; colorManagement: true"
+  renderer="antialias: true; colorManagement: true; anisotropy: 16"
   fog="type: exponential; color: #0a0a0f; density: 0.005"
   background="color: #0a0a0f"
   loading-screen="enabled: false"
@@ -341,7 +341,7 @@ AFRAME.registerComponent('fix-avatar', {
   <a-entity light="type: point; color: #e8d0a0; intensity: 0.6; distance: 15; decay: 1.5" position="0 2 -38"></a-entity>
 
   <!-- ─── Camera Rig (First Person) ─── -->
-  <a-entity id="camera-rig" position="0 0 14"
+  <a-entity id="camera-rig" position="0 0 0"
     tank-controls
     mall-nav
     vip-gate>

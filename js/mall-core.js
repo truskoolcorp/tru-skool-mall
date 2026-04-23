@@ -517,3 +517,44 @@ window.enterMall = function(mode) {
   _origEnterMall(mode);
   setTimeout(showWelcome, 2000);
 };
+
+// ═══════════════════════════════════════════════════
+// TEXTURE QUALITY — patch anisotropy on existing textures
+// ═══════════════════════════════════════════════════
+// A-Frame's renderer="anisotropy: 16" sets the default for new
+// textures but doesn't retroactively fix ones loaded from
+// <a-assets>. After the scene loads, walk the whole object graph
+// and boost every texture's anisotropy to the GPU max.
+// Eliminates the heavy moiré/pixelation on long floor planes
+// (corridor, arcade) viewed at grazing angles.
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var scene = document.querySelector('a-scene');
+    if (!scene) return;
+    scene.addEventListener('loaded', function () {
+      try {
+        var renderer = scene.renderer;
+        if (!renderer) return;
+        var maxAniso = renderer.capabilities.getMaxAnisotropy();
+        var count = 0;
+        scene.object3D.traverse(function (obj) {
+          if (obj.material) {
+            var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            mats.forEach(function (m) {
+              ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'].forEach(function (prop) {
+                if (m[prop] && m[prop].anisotropy !== maxAniso) {
+                  m[prop].anisotropy = maxAniso;
+                  m[prop].needsUpdate = true;
+                  count++;
+                }
+              });
+            });
+          }
+        });
+        console.log('[TextureQuality] boosted anisotropy to', maxAniso, 'on', count, 'textures');
+      } catch (e) {
+        console.warn('[TextureQuality] patch failed:', e);
+      }
+    });
+  });
+})();
