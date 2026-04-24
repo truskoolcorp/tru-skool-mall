@@ -108,7 +108,7 @@
       id: 'cold-stoned',
       label: 'Cold Stoned Window',
       xMin: 28, xMax: 32, zMin: -26, zMax: -21.5,
-      ceilingY: 4,
+      ceilingY: 6,        // matches Gallery — eliminates see-through-ceiling gap
       floor: '#f0ece0',
       wall:  '#fdfaf0',
       ambient: { color: '#ffffff', intensity: 1.2 },

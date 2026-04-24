@@ -104,6 +104,8 @@
     rug:        'src: #tex-carpet; repeat: 3 2; color: #8a4a38; roughness: 0.95',
     // Dark glass / ceramics for small detail pieces
     ceramic:    'color: #2a2a2e; roughness: 0.35; metalness: 0.1',
+    // Clear glass — display cases, dome covers. Transparent with subtle sheen.
+    glassClear: 'color: #d0e4f0; opacity: 0.35; transparent: true; side: double; metalness: 0.2; roughness: 0.1',
   };
 
   // ─── Primitive factories (no wrappers, one mesh each) ───────────────
@@ -265,17 +267,56 @@
   // COLD STONED (28..32, -26..-21.5) — 5 pieces
   function roomColdStoned(root) {
     const g = [];
-    // Serving counter (along north wall)
-    g.push(box(30, 0.55, -25.3, 3.6, 1.1, 0.7, MAT.oakWarm));
-    // Marble counter top
-    g.push(box(30, 1.12, -25.3, 3.7, 0.04, 0.75, MAT.marbleWarm));
-    // Chalk menu board (dark panel on back wall)
-    g.push(wallArt(30, 2.5, -25.95, 2.4, 1.2, 'z', 1, MAT.slate));
-    // Menu wordmark on the board
-    g.push(textNode(30, 2.55, -25.9, 'GELATO', '#e8e0d0', 3));
-    // Glass display dome — small marble cylinder on counter hints at
-    // a gelato case even without sculpted tubs
-    g.push(cyl(30, 1.32, -25.3, 0.3, 0.35, MAT.marbleWarm));
+    // Wood counter base (walnut for richness)
+    g.push(box(30, 0.55, -25.3, 3.6, 1.1, 0.7, MAT.walnutDark));
+    // White marble countertop
+    g.push(box(30, 1.12, -25.3, 3.65, 0.04, 0.75, MAT.marbleWarm));
+
+    // Gelato display case — glass-walled cabinet on the counter.
+    // Four low side panels (20cm tall) + a glass top panel.
+    // Case footprint 3.0m × 0.55m, centered on counter at (30, ?, -25.3)
+    const caseXMin = 30 - 1.5, caseXMax = 30 + 1.5;
+    const caseZMin = -25.3 - 0.25, caseZMax = -25.3 + 0.25;
+    const caseBaseY = 1.14, caseTopY = 1.46;
+    // Front (south-facing) glass panel
+    g.push(box(30, (caseBaseY + caseTopY)/2, caseZMax, 3.0, 0.32, 0.02, MAT.glassClear));
+    // Back (north-facing) glass panel
+    g.push(box(30, (caseBaseY + caseTopY)/2, caseZMin, 3.0, 0.32, 0.02, MAT.glassClear));
+    // Left + right end caps
+    g.push(box(caseXMin, (caseBaseY + caseTopY)/2, -25.3, 0.02, 0.32, 0.5, MAT.glassClear));
+    g.push(box(caseXMax, (caseBaseY + caseTopY)/2, -25.3, 0.02, 0.32, 0.5, MAT.glassClear));
+    // Glass top (slightly tinted)
+    g.push(box(30, caseTopY, -25.3, 3.02, 0.02, 0.52, MAT.glassClear));
+
+    // Gelato tubs inside the case — 5 flavors in a row
+    const tubY = caseBaseY + 0.1;
+    const tubFlavors = [
+      { x: 28.7, color: '#a8c088' },   // pistachio
+      { x: 29.35, color: '#e8a8b0' },  // strawberry
+      { x: 30,   color: '#6a4428' },   // chocolate
+      { x: 30.65, color: '#f0e4c8' },  // coconut
+      { x: 31.3, color: '#e8a048' },   // mango
+    ];
+    tubFlavors.forEach((f) => {
+      g.push(cyl(f.x, tubY, -25.3, 0.22, 0.18, `color: ${f.color}; roughness: 0.6`));
+    });
+
+    // Menu board: slate panel on brass pole (not floating)
+    // Pole at x=30, z=-25.85 (behind counter), rising to panel
+    g.push(cyl(30, 1.9, -25.88, 0.02, 1.4, MAT.brass));
+    // Board (slate)
+    g.push(wallArt(30, 2.9, -25.95, 2.4, 0.9, 'z', 1, MAT.slate));
+    // Wordmark
+    g.push(textNode(30, 2.95, -25.9, 'GELATO', '#e8e0d0', 2.8));
+    g.push(textNode(30, 2.55, -25.9, 'Pistachio · Chocolate · Mango', '#c9a84c', 2.2));
+
+    // Small brass bell on counter (register substitute)
+    g.push(cyl(31.5, 1.18, -25.3, 0.06, 0.08, MAT.brass));
+
+    // Pendant lamp hanging above counter
+    g.push(cyl(30, 3.4, -25.3, 0.12, 0.1, MAT.brass));
+    g.push(cyl(30, 3.05, -25.3, 0.08, 0.6, MAT.warmGlow));
+
     g.forEach((el) => root.appendChild(el));
     return g.length;
   }
