@@ -22,10 +22,10 @@
   //
   // zMax is +18 to accommodate the front plaza courtyard (PR 5).
   var BOUNDS = {
-    xMin: -14,   // Inside left corridor wall (wall at x=-15)
-    xMax: 43,    // Just past east edge of CS wing (extends to x=41.7)
-    zMin: -68,   // Just before main-mall back wall at z=-70 (covers CS Culinary at z=-51 too)
-    zMax: 18,    // Past the plaza courtyard (extends to z=+18)
+    xMin: -14,    // Inside left corridor wall (wall at x=-15)
+    xMax: 41.5,   // Inside CS wing's east edge (wing xMax=41.7, leaves 0.2m buffer)
+    zMin: -50.8,  // Inside CS wing's south edge (Culinary zMin=-51, leaves buffer)
+    zMax: 18,     // Past the plaza courtyard (extends to z=+18)
   };
 
   AFRAME.registerComponent('mall-nav', {

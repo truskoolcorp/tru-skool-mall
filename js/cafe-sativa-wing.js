@@ -451,6 +451,34 @@
     }));
   }
 
+  // ─── Wing perimeter safety fence ──────────────────────────────────────
+  // Invisible solid walls around the wing's bounding box. Backup against
+  // rig-collider race conditions, player clipping, etc. The only opening
+  // is at the arcade entry (x=15, z=-19..-17) where the player entered.
+  //
+  // Wing footprint: x=15..41.7, z=-51..-17 (arcade northmost at z=-17)
+  // Fence height 10m — high enough that no look-up camera angle sees over.
+  function buildPerimeterFence(parent) {
+    const fMat = 'color: #000000; opacity: 0; transparent: true';
+    const h = 10, hy = h / 2;
+    const t = 0.3;
+    // West fence — split around arcade opening (z=-19..-17)
+    // South segment: z=-51 to -19, length 32, center z=-35
+    parent.appendChild(makeSolidBox(15 - t/2, hy, -35, t, h, 32, fMat));
+    // (No north segment — wing ends at z=-17 which IS the arcade opening)
+
+    // East fence — x=41.7, z=-51 to -17, length 34, center z=-34
+    parent.appendChild(makeSolidBox(41.7 + t/2, hy, -34, t, h, 34, fMat));
+
+    // South fence — z=-17, x=15 to 41.7, length 26.7, center x=28.35
+    // This closes the arcade's south side and Foyer/Cold Stoned's south
+    // beyond where their own walls already exist.
+    parent.appendChild(makeSolidBox(28.35, hy, -17 + t/2, 26.7, h, t, fMat));
+
+    // North fence — z=-51, x=15 to 41.7, length 26.7, center x=28.35
+    parent.appendChild(makeSolidBox(28.35, hy, -51 - t/2, 26.7, h, t, fMat));
+  }
+
   // ─── Main render ──────────────────────────────────────────────────────
   function render() {
     const scene = document.querySelector('a-scene');
@@ -472,6 +500,7 @@
     const roomsByHeight = ROOMS.slice().sort((a, b) => b.ceilingY - a.ceilingY);
     roomsByHeight.forEach((room) => buildRoom(root, room, builtWalls));
     buildCorridorEntry(root);
+    buildPerimeterFence(root);
 
     scene.appendChild(root);
 
