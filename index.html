@@ -365,19 +365,21 @@ AFRAME.registerComponent('fix-avatar', {
        ═══════════════════════════════════════════════════════════ -->
 
   <!-- ─── Floor ─── -->
+  <!-- repeat 3x8 = 10m per tile (was 4.4m) — less moiré at grazing angle -->
   <a-plane id="corridor-floor"
     position="0 0 -30"
     rotation="-90 0 0"
     width="30" height="80"
-    material="src: #tex-marble; repeat: 6 18; roughness: 0.25; metalness: 0.15; color: #ffffff"
+    material="src: #tex-marble; repeat: 3 8; roughness: 0.25; metalness: 0.15"
   ></a-plane>
 
   <!-- ─── Ceiling ─── -->
+  <!-- repeat 2x5 = 16m per tile (was 8m) -->
   <a-plane id="corridor-ceiling"
     position="0 12 -30"
     rotation="90 0 0"
     width="30" height="80"
-    material="src: #tex-plaster; repeat: 4 10; roughness: 0.9; metalness: 0.05; color: #ffffff"
+    material="src: #tex-plaster; repeat: 2 5; roughness: 0.9; metalness: 0.05"
   ></a-plane>
 
   <!-- ─── Left Wall (full corridor) ─── -->
