@@ -48,31 +48,44 @@
   const PROPS = {
 
     // ─── FOYER (x=22..28, z=-24..-17, ceil 6) ──────────────────
-    // The only walked space in CS now. Patrons enter, meet Laviche
-    // at the desk, use a directory to pick a room, teleport away.
     'foyer': [
       {
-        // Reception desk — Meshy-generated GLB. Came back at 150m
-        // wide native (auto_size wasn't enabled), so scale 0.02 to
-        // bring to ~3m wide. Y bbox is centered (not floor-anchored),
-        // so origin lifted to y=0.48 puts base on floor. Z bbox runs
-        // from -1.18 to 0 post-scale, so origin at z=-22 places back
-        // of desk at z=-23.18 (1m south of north wall, leaving room
-        // for Laviche to stand behind it).
+        // Reception desk — Concierge_Desk.glb from Meshy.
+        //
+        // CRITICAL: GLB has a baked-in scale matrix on its root
+        // node (0.01 on all axes), so the 'native' bbox of
+        // [-75..75, -24..24, -59..0] actually renders as
+        // [-0.75..0.75, -0.24..0.24, -0.59..0] — a 1.5m × 0.5m
+        // × 0.6m model. To get a 3m × 1m × 1.18m desk, manifest
+        // scale needs to be 2 (NOT 0.02).
+        //
+        // (My first attempt scaled 0.02, which combined with the
+        // baked 0.01 → 0.0002 effective scale → desk was a
+        // 0.03m speck, invisible to the eye. Took two GLB
+        // inspection rounds to spot the baked matrix.)
+        //
+        // Also stripped: 'Rectangle' backdrop mesh, Directional
+        // Light, Default Ambient Light, orphan camera node — all
+        // were Meshy render-scene artifacts that came along for
+        // the ride in the export.
+        //
+        // Y bbox post-final-scale: [-0.48, 0.48] → origin at
+        // y=0.48 puts base on floor.
+        // Z bbox post-final-scale: [-1.18, 0] → origin at z=-22
+        // puts back of desk at z=-23.18.
         src: 'assets/models/props/foyer-reception-desk.glb',
         instances: [
-          { pos: '25 0.48 -22', rot: '0 0 0', scale: '0.02 0.02 0.02' },
+          { pos: '25 0.48 -22', rot: '0 0 0', scale: '2 2 2' },
         ],
       },
       {
-        // Laviche — the real avatar GLB (was assets/models/laviche.glb,
-        // copied to props folder so the loader finds it). 1.70m tall,
-        // floor-anchored origin, 0.84m wide. Native size is correct.
-        // Stands ~1m behind the desk facing south (toward incoming
-        // patrons).
+        // Laviche the concierge — assets/models/laviche.glb copied
+        // to props/. 1.70m tall, floor-anchored. Native size correct.
+        // Moved from z=-23.2 to z=-23.6 — was touching the back face
+        // of the desk, now has 0.4m gap.
         src: 'assets/models/props/concierge-laviche.glb',
         instances: [
-          { pos: '25 0 -23.2', rot: '0 0 0' },
+          { pos: '25 0 -23.6', rot: '0 0 0' },
         ],
       },
     ],
