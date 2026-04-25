@@ -1,0 +1,5 @@
+# Runtime checkpoint state — don't commit (contains in-progress task IDs)
+meshy-state.json
+
+# Web-UI fallback list is regenerated each run — don't commit
+meshy-failed-fallback.md

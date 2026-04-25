@@ -1,0 +1,120 @@
+{
+  "_meta": {
+    "comment": "Prompt manifest for the Meshy batch generator. Mirror of docs/meshy-prompts.md but machine-readable. Each entry = one Meshy text-to-3D job (preview ~20 + refine ~10 credits = ~30 each).",
+    "credits_per_job": 30,
+    "art_style": "realistic",
+    "ai_model": "meshy-5",
+    "topology": "triangle",
+    "target_polycount": 30000,
+    "format": "glb"
+  },
+
+  "jobs": [
+    {
+      "filename": "bar-backbar-shelf.glb",
+      "room": "bar",
+      "prompt": "Backbar shelf wall unit, dark walnut wood frame with three horizontal shelves, 12 colored liquor bottles in two rows on the shelves (mixed amber, green, clear, blue), brass shelf-edge LED strip lights underneath each shelf, stylized realism. Dimensions: 4m wide x 2m tall x 0.4m deep."
+    },
+    {
+      "filename": "bar-stool-leather.glb",
+      "room": "bar",
+      "prompt": "Bar stool, brushed steel cylindrical pedestal base with wide circular brass foot ring at bottom, oxblood red leather seat cushion with subtle button tufting, no backrest, single chair only, stylized realism. Dimensions: 0.4m diameter x 0.85m tall."
+    },
+
+    {
+      "filename": "lounge-stage-platform.glb",
+      "room": "main-lounge",
+      "prompt": "Small intimate performance stage, dark wood platform raised 0.3m high with a single wooden barstool centered on it, a vocal microphone on a chrome floor stand in front, two small black PA speakers on stands flanking the sides, a dark velvet curtain backdrop behind, stylized realism. Dimensions: 4m wide x 2m deep x 2.5m tall total."
+    },
+    {
+      "filename": "lounge-host-table.glb",
+      "room": "main-lounge",
+      "prompt": "Round dining table with crisp white tablecloth draped to the floor, dark wood top showing through the center, three crystal wine glasses, one bottle of red wine, no chairs, single piece, stylized realism. Dimensions: 1.2m diameter x 0.75m tall."
+    },
+    {
+      "filename": "lounge-dining-chair.glb",
+      "room": "main-lounge",
+      "prompt": "Single upholstered dining chair with curved back, deep emerald green velvet seat and back cushion, dark walnut wood legs, classic restaurant style, stylized realism. Dimensions: 0.5m wide x 1m tall."
+    },
+
+    {
+      "filename": "smoke-armchair-cognac.glb",
+      "room": "smoke-lounge",
+      "prompt": "Deep-seated lounge armchair, cognac brown distressed leather with rolled arms and a high curved back, low wide seat for relaxed posture, brushed brass nailhead trim along the edges, dark wood legs, single chair only, stylized realism. Dimensions: 0.95m wide x 1m tall x 1m deep."
+    },
+    {
+      "filename": "smoke-hookah-brass.glb",
+      "room": "smoke-lounge",
+      "prompt": "Ornate brass hookah pipe, traditional Middle Eastern style, polished brass stem about 0.7m tall with a curved hose, decorative ruby red glass base, single ceremonial mouthpiece, sitting on its own without table, stylized realism. Dimensions: 0.3m diameter x 0.8m tall."
+    },
+    {
+      "filename": "smoke-low-table-marble.glb",
+      "room": "smoke-lounge",
+      "prompt": "Low rectangular coffee table, dark walnut wood frame with a green veined marble top, single hammered brass ashtray and a small whiskey glass on top, stylized realism. Dimensions: 1.2m wide x 0.45m tall x 0.6m deep."
+    },
+
+    {
+      "filename": "cigar-armchair-oxblood.glb",
+      "room": "cigar",
+      "prompt": "Classic gentleman's club armchair, oxblood red leather with deep button-tufted backrest, rolled padded armrests, wooden legs visible at base, single chair only, stylized realism. Dimensions: 0.85m wide x 1m tall x 0.85m deep."
+    },
+    {
+      "filename": "cigar-side-table-walnut.glb",
+      "room": "cigar",
+      "prompt": "Round side table, dark walnut wood with brass-trim edge, single small glass ashtray on top, stylized realism. Dimensions: 0.5m diameter x 0.55m tall."
+    },
+    {
+      "filename": "cigar-humidor.glb",
+      "room": "cigar",
+      "prompt": "Tall standing humidor cabinet, dark walnut wood with brass corners and small brass handle, glass front panel with cigars visible inside in rows, freestanding furniture piece, stylized realism. Dimensions: 0.6m wide x 1.6m tall x 0.4m deep."
+    },
+
+    {
+      "filename": "culinary-chef-station.glb",
+      "room": "culinary",
+      "prompt": "Professional chef's cooking station, brushed stainless steel counter with a built-in flat top grill on the left and gas range with copper pots on the right, white tile backsplash, brass utensil rack overhead with hanging ladles and whisks, no chef figure, single hero piece, stylized realism. Dimensions: 3m wide x 2.2m tall x 0.9m deep."
+    },
+    {
+      "filename": "culinary-tiered-seating.glb",
+      "room": "culinary",
+      "prompt": "Three-row tiered theater bench seating, deep red velvet cushioned benches rising in steps, brass safety rails between rows, dark wood frame, no people sitting, single freestanding piece, stylized realism. Dimensions: 4m wide x 1.5m tall x 2m deep."
+    },
+    {
+      "filename": "culinary-display-counter.glb",
+      "room": "culinary",
+      "prompt": "Glass-front display counter, dark walnut base with curved tempered glass top, six small ceramic plates with stylized food items inside (a steak, a pasta dish, a salad, a tart, a sushi roll, a colorful dessert), brass trim, stylized realism. Dimensions: 2m wide x 1.1m tall x 0.6m deep."
+    },
+
+    {
+      "filename": "courtyard-olive-tree.glb",
+      "room": "courtyard",
+      "prompt": "Mature olive tree with twisted gnarled trunk and silvery-green leaves, rooted in a large terracotta pot with brass banding, full canopy, single tree only, stylized realism. Dimensions: 2.5m wide canopy x 3.5m tall x 2.5m deep including pot."
+    },
+    {
+      "filename": "courtyard-fire-pit.glb",
+      "room": "courtyard",
+      "prompt": "Round fire pit, dark stacked-stone circular base with a copper fire bowl on top, glowing orange flames and amber embers visible inside, no logs visible, freestanding outdoor fixture, stylized realism. Dimensions: 1.2m diameter x 0.6m tall."
+    },
+    {
+      "filename": "courtyard-bistro-set.glb",
+      "room": "courtyard",
+      "prompt": "Outdoor bistro furniture set, single round wrought-iron cafe table with mosaic tile top in cream and terracotta colors, two matching wrought-iron chairs with curved backs flanking it, Mediterranean style, stylized realism. Dimensions: 1.5m wide x 0.95m tall x 1.5m deep."
+    },
+
+    {
+      "filename": "cold-stoned-display-case.glb",
+      "room": "cold-stoned",
+      "prompt": "Gelato display case, dark walnut wood base with curved tinted glass dome on top, 8 round metal tubs of colorful gelato visible inside (mint green, strawberry pink, chocolate brown, coconut cream, mango orange, pistachio sage, vanilla, dark chocolate), small ice cream scoop visible, stylized realism. Dimensions: 2.5m wide x 1.4m tall x 0.7m deep."
+    },
+    {
+      "filename": "cold-stoned-prep-station.glb",
+      "room": "cold-stoned",
+      "prompt": "Frozen granite prep slab on a stainless steel base, rectangular polished granite top in dark grey marbled stone for hand-folding gelato, two metal mixing spades resting on the slab, brass utensil holder on the side, single freestanding piece, stylized realism. Dimensions: 1.8m wide x 1m tall x 0.8m deep."
+    },
+    {
+      "filename": "cold-stoned-menu-board.glb",
+      "room": "cold-stoned",
+      "prompt": "Vintage hanging menu board, dark walnut wood frame with brass corner trim, chalkboard surface with handwritten gelato flavor names in white chalk and price marks, single small flourish at the top, freestanding board on a pedestal base, stylized realism. Dimensions: 0.9m wide x 1.6m tall x 0.3m deep."
+    }
+  ]
+}

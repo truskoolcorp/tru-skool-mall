@@ -10,13 +10,35 @@ The prop loader (`js/cafe-sativa-props.js`) already references these exact
 filenames — drop the GLB in, reload the page, the prop appears.
 
 **Credit budget:** Meshy text-to-3D = 25 credits per generation.
-Total for full set = ~325 credits of your ~1710 available.
+- Full set (22 props) = ~550 credits of your ~909 available.
+- Bar minimum (3 props) = 75 credits to prove pipeline.
 
 ---
 
-## TIER 1 — Bar (highest impact, 4 prompts, 100 credits)
+## STRATEGY: All 7 rooms in parallel
 
-### bar-counter-walnut.glb
+Each room gets 2-3 hero props. Mall-wide progress visible immediately
+instead of one perfect room at a time.
+
+| Room          | Props | Credits | Priority |
+|---------------|-------|---------|----------|
+| Bar           | 3     | 75      | High (anchor) |
+| Main Lounge   | 3     | 75      | High (Verse Alkemist sessions) |
+| Smoke Lounge  | 3     | 75      | Med |
+| Cigar Lounge  | 3     | 75      | Med (VIP) |
+| Culinary      | 3     | 75      | High (live cooking shows) |
+| Courtyard     | 3     | 75      | Low (transition space) |
+| Cold Stoned   | 3     | 75      | Med |
+| **Total**     | **21**| **525** | |
+
+Plus already-generated foyer (desk + Laviche). Bar-counter-walnut.glb is
+archived from previous round and can be reused.
+
+---
+
+## ROOM 1 — BAR (3 prompts, 75 credits)
+
+### bar-counter-walnut.glb [ALREADY GENERATED — in _archive/]
 > Luxury cocktail bar counter, dark walnut wood front with vertical paneling
 > and a thin brass horizontal trim line, 4-meter long polished marble top in
 > warm cream color, art deco style, no objects on top, single hero piece,
@@ -34,15 +56,9 @@ Total for full set = ~325 credits of your ~1710 available.
 > tufting, no backrest, single chair only, stylized realism.
 > Dimensions: 0.4m diameter × 0.85m tall.
 
-### pendant-cone-brass.glb
-> Hanging pendant lamp, brass cup-shape shade pointing downward with a warm
-> glowing bulb visible inside, thin black cord hanging from above 0.6m long,
-> single fixture, stylized realism. Dimensions: 0.3m shade diameter, total
-> height with cord 0.8m.
-
 ---
 
-## TIER 2 — Main Lounge (4 prompts, 100 credits)
+## ROOM 2 — MAIN LOUNGE (3 prompts, 75 credits)
 
 ### lounge-stage-platform.glb
 > Small intimate performance stage, dark wood platform raised 0.3m high with
@@ -62,23 +78,38 @@ Total for full set = ~325 credits of your ~1710 available.
 > seat and back cushion, dark walnut wood legs, classic restaurant style,
 > stylized realism. Dimensions: 0.5m wide × 1m tall.
 
-### wall-sconce-brass.glb
-> Wall-mounted sconce light, brass arm extending 0.3m from a small mounting
-> plate, frosted glass tulip-shape shade pointing upward, warm bulb visible
-> through the frosted glass, single fixture, stylized realism.
-> Dimensions: 0.3m wide × 0.4m tall × 0.3m deep.
+---
+
+## ROOM 3 — SMOKE LOUNGE (3 prompts, 75 credits)
+
+### smoke-armchair-cognac.glb
+> Deep-seated lounge armchair, cognac brown distressed leather with rolled
+> arms and a high curved back, low wide seat for relaxed posture, brushed
+> brass nailhead trim along the edges, dark wood legs, single chair only,
+> stylized realism. Dimensions: 0.95m wide × 1m tall × 1m deep.
+
+### smoke-hookah-brass.glb
+> Ornate brass hookah pipe, traditional Middle Eastern style, polished brass
+> stem about 0.7m tall with a curved hose, decorative ruby red glass base,
+> single ceremonial mouthpiece, sitting on its own without table, stylized
+> realism. Dimensions: 0.3m diameter × 0.8m tall.
+
+### smoke-low-table-marble.glb
+> Low rectangular coffee table, dark walnut wood frame with a green veined
+> marble top, single hammered brass ashtray and a small whiskey glass on
+> top, stylized realism. Dimensions: 1.2m wide × 0.45m tall × 0.6m deep.
 
 ---
 
-## TIER 3 — Cigar Lounge (3 prompts, 75 credits)
+## ROOM 4 — CIGAR LOUNGE (3 prompts, 75 credits)
 
-### lounge-armchair-oxblood.glb
+### cigar-armchair-oxblood.glb
 > Classic gentleman's club armchair, oxblood red leather with deep button-
 > tufted backrest, rolled padded armrests, wooden legs visible at base,
 > single chair only, stylized realism. Dimensions: 0.85m wide × 1m tall ×
 > 0.85m deep.
 
-### lounge-side-table-walnut.glb
+### cigar-side-table-walnut.glb
 > Round side table, dark walnut wood with brass-trim edge, single small
 > glass ashtray on top, stylized realism. Dimensions: 0.5m diameter × 0.55m
 > tall.
@@ -91,73 +122,108 @@ Total for full set = ~325 credits of your ~1710 available.
 
 ---
 
-## TIER 4 — Foyer & Gallery (2 prompts, 50 credits)
+## ROOM 5 — CULINARY THEATER (3 prompts, 75 credits)
 
-### foyer-reception-desk.glb
-> Hotel lobby reception desk, dark walnut wood front with subtle brass
-> inlay detail along the top edge, marble top, small brass desk lamp on
-> the right side with warm glowing shade, single freestanding piece,
-> stylized realism. Dimensions: 2m wide × 1.1m tall × 0.7m deep.
+The kitchen-as-stage. Tiered velvet seating faces the chef's line. Live
+cooking shows broadcast as podcast/video content.
 
-### gallery-plinth.glb
-> Museum sculpture display plinth, white marble base with subtle warm
-> beige veining, no object on top of it (bare plinth), single piece,
-> stylized realism. Dimensions: 0.5m × 0.5m × 1.2m tall.
+### culinary-chef-station.glb
+> Professional chef's cooking station, brushed stainless steel counter with
+> a built-in flat top grill on the left and gas range with copper pots on
+> the right, white tile backsplash, brass utensil rack overhead with hanging
+> ladles and whisks, no chef figure, single hero piece, stylized realism.
+> Dimensions: 3m wide × 2.2m tall × 0.9m deep.
+
+### culinary-tiered-seating.glb
+> Three-row tiered theater bench seating, deep red velvet cushioned benches
+> rising in steps, brass safety rails between rows, dark wood frame, no
+> people sitting, single freestanding piece, stylized realism.
+> Dimensions: 4m wide × 1.5m tall × 2m deep.
+
+### culinary-display-counter.glb
+> Glass-front display counter, dark walnut base with curved tempered glass
+> top, six small ceramic plates with stylized food items inside (a steak,
+> a pasta dish, a salad, a tart, a sushi roll, a colorful dessert), brass
+> trim, stylized realism. Dimensions: 2m wide × 1.1m tall × 0.6m deep.
 
 ---
 
-## TIER 5 — Cold Stoned (1 prompt, 25 credits)
+## ROOM 6 — COURTYARD (3 prompts, 75 credits)
 
-### gelato-display-case.glb
+Open-air sanctuary. Olive trees, warm stone pavers, a live fire pit, a
+strand of glowing lights overhead.
+
+### courtyard-olive-tree.glb
+> Mature olive tree with twisted gnarled trunk and silvery-green leaves,
+> rooted in a large terracotta pot with brass banding, full canopy, single
+> tree only, stylized realism. Dimensions: 2.5m wide canopy × 3.5m tall ×
+> 2.5m deep including pot.
+
+### courtyard-fire-pit.glb
+> Round fire pit, dark stacked-stone circular base with a copper fire bowl
+> on top, glowing orange flames and amber embers visible inside, no logs
+> visible, freestanding outdoor fixture, stylized realism. Dimensions:
+> 1.2m diameter × 0.6m tall.
+
+### courtyard-bistro-set.glb
+> Outdoor bistro furniture set, single round wrought-iron café table with
+> mosaic tile top in cream and terracotta colors, two matching wrought-iron
+> chairs with curved backs flanking it, Mediterranean style, stylized
+> realism. Dimensions: 1.5m wide × 0.95m tall × 1.5m deep.
+
+---
+
+## ROOM 7 — COLD STONED (3 prompts, 75 credits)
+
+Gelato pocket inside Café Sativa. Eight rotating flavors, hand-folded daily.
+
+### cold-stoned-display-case.glb
 > Gelato display case, dark walnut wood base with curved tinted glass
 > dome on top, 8 round metal tubs of colorful gelato visible inside (mint
 > green, strawberry pink, chocolate brown, coconut cream, mango orange,
 > pistachio sage, vanilla, dark chocolate), small ice cream scoop visible,
 > stylized realism. Dimensions: 2.5m wide × 1.4m tall × 0.7m deep.
 
----
+### cold-stoned-prep-station.glb
+> Frozen granite prep slab on a stainless steel base, rectangular polished
+> granite top in dark grey marbled stone for hand-folding gelato, two metal
+> mixing spades resting on the slab, brass utensil holder on the side,
+> single freestanding piece, stylized realism. Dimensions: 1.8m wide × 1m
+> tall × 0.8m deep.
 
-## TIER 6 — Concierge / Host (1 prompt, 25 credits)
-
-### concierge-laviche.glb
-> Stylized 3D character of an elegant Latin woman concierge in her early
-> 30s, wearing a tailored dark green velvet blazer over a cream silk
-> blouse, dark slim trousers, brass jewelry (small earrings, simple
-> pendant necklace), professional warm smile, A-pose with arms slightly
-> out for rigging, full body visible, stylized realism with smooth
-> shading. Dimensions: 1.7m tall.
-
-> NOTE: Meshy has a separate "Text to 3D Avatar" mode that produces
-> rigged humanoids — use that mode for this one, not the standard
-> text-to-3D. Output will be GLB with a skeleton ready for animation.
+### cold-stoned-menu-board.glb
+> Vintage hanging menu board, dark walnut wood frame with brass corner
+> trim, chalkboard surface with handwritten gelato flavor names in white
+> chalk and price marks, single small flourish at the top, freestanding
+> board on a pedestal base, stylized realism. Dimensions: 0.9m wide × 1.6m
+> tall × 0.3m deep.
 
 ---
 
 ## EXECUTION PLAN
 
-**Recommended order:**
+**Parallel mode (all 7 rooms at once):**
 
-1. **Start with TIER 1** (Bar). Generate 4 prompts. Drop GLBs in
-   `assets/models/props/`. Reload `mall.truskool.net`. The Bar
-   should now have a real cocktail bar, backbar shelf, 4 stools,
-   3 pendant lights. If it looks great, the prompt-style is right;
-   apply the same to the rest.
+1. Run the API generator script: `node tools/meshy-batch.js`
+   - Reads all prompts from this file
+   - Submits each as a separate Meshy text-to-3D job
+   - Polls every 30s; downloads finished GLBs to `assets/models/props/`
+   - Falls back to web UI prompts list if API returns "server is busy"
+   - Tracks credit spend in real time
 
-2. **Per generation, check before saving:**
-   - Does the model have proper PBR materials? (should look 3D, not
-     flat-shaded — Meshy auto-applies PBR in stylized mode)
-   - Roughly the right scale? (Meshy's ~1m default is usually fine; if
-     it comes back tiny, ?prop-tune scales it up)
-   - Single object, not a scene? (if you got a "bar with a guy
-     standing next to it," reroll with a more focused prompt)
+2. As each GLB lands, the prop loader auto-detects on next page reload
+   and places it via the manifest. Rooms light up one at a time.
 
-3. **Tune positions:** load `?prop-tune=bar/0` (first instance of first
-   prop in bar), use arrow keys to nudge, X to export the values, paste
-   into `cafe-sativa-props.js` PROPS map.
+3. Once all rooms have their hero props in place, use `?prop-tune=<room>`
+   to dial position/rotation per prop. Tuner already supports multi-prop
+   panels.
 
-4. **For any prop that comes back wrong:** keep the previous prompt as
-   reference, edit, regenerate. Meshy charges 25 credits per generation
-   regardless of result, so iterate efficiently.
+## CREDIT TRACKING
+
+- Starting: 909 credits
+- After foyer (desk + Laviche): ~860 credits
+- After full mall set (21 props × 25): ~335 credits remaining
+- Buffer for re-rolls: ~335 credits = 13 retries available
 
 ## DON'T-DO LIST
 
@@ -168,3 +234,5 @@ Total for full set = ~325 credits of your ~1710 available.
 - Don't include people in furniture prompts (a stool with a person
   sitting on it = Meshy renders the person too).
 - Don't include floor/walls in prop prompts — we have those procedurally.
+- If a generation comes back wrong, iterate the prompt by 1-2 specific
+  words at a time. Wholesale rewrites burn credits faster than tweaks.
