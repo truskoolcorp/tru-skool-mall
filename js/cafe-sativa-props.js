@@ -50,38 +50,35 @@
     // ─── BAR (x=20..30, z=-37.5..-29.5, ceil 4.5) ──────────────
     'bar': [
       {
+        // NOTE: Meshy generation came back as ONE combined piece —
+        // bar counter + backbar shelf with bottles all in a single
+        // GLB. Bounding box: 2m × 1.26m × 0.97m. We scale 3× on X
+        // to fill the 10m-wide room nicely while keeping the native
+        // height (which is correct for a bar at ~1.26m).
         src: 'assets/models/props/bar-counter-walnut.glb',
         instances: [
-          // L-shape: long counter along north wall (z=-33.5) + short
-          // return along east end (x=29.5). Counter footprint matches
-          // the previous primitive: 5m × 0.9m + 4m × 0.9m.
-          { pos: '23 0 -33.5',  rot: '0 0 0' },     // long section
-          { pos: '28.5 0 -32',  rot: '0 -90 0' },   // short return
-        ],
-      },
-      {
-        src: 'assets/models/props/bar-backbar-shelf.glb',
-        instances: [
-          // Mounted on the north wall behind the counter
-          { pos: '23 1.6 -34.4', rot: '0 0 0' },
+          { pos: '25 0.63 -34', rot: '0 0 0', scale: '3 1 1' },
         ],
       },
       {
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
-          // Four stools facing the long counter from the south
-          { pos: '21.5 0 -32.0', rot: '0 0 0' },
-          { pos: '23.0 0 -32.0', rot: '0 0 0' },
-          { pos: '24.5 0 -32.0', rot: '0 0 0' },
-          { pos: '26.0 0 -32.0', rot: '0 0 0' },
+          // Four stools facing the long counter from the south.
+          // Bar counter front face is at z ≈ -34 + 0.49 ≈ -33.5.
+          // Stools sit ~0.7m in front of that.
+          { pos: '21.5 0 -32.8', rot: '0 0 0' },
+          { pos: '23.5 0 -32.8', rot: '0 0 0' },
+          { pos: '26.5 0 -32.8', rot: '0 0 0' },
+          { pos: '28.5 0 -32.8', rot: '0 0 0' },
         ],
       },
       {
         src: 'assets/models/props/pendant-cone-brass.glb',
         instances: [
-          { pos: '22 4.4 -32.5', rot: '0 0 0' },
-          { pos: '24 4.4 -32.5', rot: '0 0 0' },
-          { pos: '26 4.4 -32.5', rot: '0 0 0' },
+          // Three pendants hanging above the counter in a row
+          { pos: '22 4.0 -33', rot: '0 0 0' },
+          { pos: '25 4.0 -33', rot: '0 0 0' },
+          { pos: '28 4.0 -33', rot: '0 0 0' },
         ],
       },
     ],

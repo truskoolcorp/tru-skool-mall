@@ -206,21 +206,30 @@
   // BAR (20..30, -37.5..-29.5) — 13 pieces
   function roomBar(root) {
     const g = [];
-    // L-shaped counter: west leg + north leg
-    g.push(box(21.5, 0.55, -33.5, 0.9, 1.1, 5.0, MAT.walnutDark));
-    g.push(box(23, 0.55, -30.2, 4.0, 1.1, 0.9, MAT.walnutDark));
-    // Marble counter top spanning the L (slightly overhung = reads as bar)
-    g.push(box(21.55, 1.12, -33.5, 1.0, 0.04, 5.1, MAT.marbleWarm));
-    // Backbar glow strip (emissive plane tight to west wall)
+    // ─── Primitive bar counter REMOVED ─────────────────────────
+    // The Meshy GLB at assets/models/props/bar-counter-walnut.glb
+    // now provides the counter + backbar shelf + bottles all as one
+    // hero piece (loaded via cafe-sativa-props.js).
+    //
+    // Remaining primitives below are FALLBACKS for stools and
+    // pendants — the props loader will replace them when their
+    // matching Meshy GLBs are generated.
+
+    // Backbar glow strip (emissive plane tight to west wall) — kept
+    // as primitive because it's a wall accent, not a hero object
     g.push(box(20.15, 2.2, -33.5, 0.02, 0.7, 4.5, MAT.amberGlow));
-    // Back-bar mirror above
+    // Back-bar mirror above — kept as primitive (architectural)
     g.push(wallArt(20.11, 3.4, -33.5, 4.5, 0.8, 'x', 1, MAT.mirror));
-    // 4 round stools (cylinders, not boxes — reads as actual bar stool)
+    // 4 round stools — primitive fallback until bar-stool-leather.glb
+    // lands. When the GLB is on disk, the props loader places real
+    // stools at z=-32.8; primitives at z=-32 to -35 will overlap, so
+    // the next session that lands the stool GLB should also delete
+    // these lines.
     [-35, -34, -33, -32].forEach((z) => {
       g.push(cyl(22.4, 0.4, z, 0.22, 0.8, MAT.leather));
     });
-    // 3 pendant lamps over the counter — the #1 "this is a bar"
-    // signal. Short emissive cylinder with a tiny stem visible.
+    // 3 pendant lamps — primitive fallback until pendant-cone-brass.glb
+    // lands. Same as above — delete when GLB lands.
     [-34.5, -33.5, -32.5].forEach((z) => {
       g.push(cyl(21.55, 3.9, z, 0.12, 0.15, MAT.amberGlow));
     });
