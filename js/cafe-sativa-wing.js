@@ -344,11 +344,71 @@
     tryWall('z', room.xMax, room.zMin, room.zMax, byWall.east);
     tryWall('z', room.xMin, room.zMin, room.zMax, byWall.west);
 
+    // ─── Atmospheric pendant lighting ───────────────────────────
+    // Replaces the old single-flood ambient with a grid of pendants.
+    // Each pendant: brass cup shade + warm point light underneath,
+    // with decay 2 so light pools tightly under each. Result: rooms
+    // are mostly dark with warm focal pools — luxury hospitality look.
+    //
+    // Density: ~1 pendant per 9 sq m, capped at 3×3 grid for biggest
+    // rooms. Tiny rooms get a single center pendant.
     if (room.ambient) {
-      const maxDim = Math.max(w, d);
+      const cols = Math.max(1, Math.min(3, Math.round(w / 3.5)));
+      const rows = Math.max(1, Math.min(3, Math.round(d / 3.5)));
+      const colStep = w / (cols + 1);
+      const rowStep = d / (rows + 1);
+      const pendantY = h - 0.6;
+      const lightY = h - 1.1;
+      // Per-pendant light intensity scales by ambient.intensity (so
+      // designer can still emphasize bright vs dim rooms via the
+      // `ambient` config) but tuned down — was 0.7 flood, now 0.5
+      // per pendant which reads as ~0.15 total ambient + N×focal.
+      const lightI = Math.max(0.4, room.ambient.intensity * 0.8);
+      // Light reaches roughly ceiling-height + 50% across floor
+      const lightDist = h * 1.4;
+
+      for (let cx_i = 1; cx_i <= cols; cx_i++) {
+        for (let rz_i = 1; rz_i <= rows; rz_i++) {
+          const px = room.xMin + colStep * cx_i;
+          const pz = room.zMin + rowStep * rz_i;
+          // Brass cup shade (small inverted cone made from a flat-top
+          // cylinder — A-Frame doesn't have a-cone-truncated so we
+          // use a thin cylinder)
+          const shade = document.createElement('a-cylinder');
+          shade.setAttribute('position', `${px} ${pendantY} ${pz}`);
+          shade.setAttribute('radius', 0.18);
+          shade.setAttribute('height', 0.16);
+          shade.setAttribute('material', 'color: #2a1a10; metalness: 0.6; roughness: 0.5');
+          g.appendChild(shade);
+
+          // Bulb glow visible inside the shade (small emissive sphere)
+          const bulb = document.createElement('a-sphere');
+          bulb.setAttribute('position', `${px} ${pendantY - 0.05} ${pz}`);
+          bulb.setAttribute('radius', 0.08);
+          bulb.setAttribute('material', `color: ${room.ambient.color}; emissive: ${room.ambient.color}; emissiveIntensity: 1.5`);
+          g.appendChild(bulb);
+
+          // Pendant cord
+          const cord = document.createElement('a-cylinder');
+          cord.setAttribute('position', `${px} ${(pendantY + h)/2 + 0.08} ${pz}`);
+          cord.setAttribute('radius', 0.01);
+          cord.setAttribute('height', h - pendantY - 0.16);
+          cord.setAttribute('material', 'color: #1a1a1a; roughness: 0.9');
+          g.appendChild(cord);
+
+          // Actual point light hanging below the shade. decay:2 is
+          // physically accurate inverse-square — light pools tightly.
+          g.appendChild(makeEntity({
+            light: `type: point; color: ${room.ambient.color}; intensity: ${lightI}; distance: ${lightDist}; decay: 2; castShadow: true`,
+            position: `${px} ${lightY} ${pz}`,
+          }));
+        }
+      }
+
+      // VERY low ambient light so the rooms aren't pitch-black between
+      // pendants — just enough to read shapes in shadow.
       g.appendChild(makeEntity({
-        light: `type: point; color: ${room.ambient.color}; intensity: ${room.ambient.intensity}; distance: ${maxDim * 1.8}; decay: 1.5`,
-        position: `${cx} ${h - 0.5} ${cz}`,
+        light: `type: ambient; color: ${room.ambient.color}; intensity: 0.12`,
       }));
     }
 

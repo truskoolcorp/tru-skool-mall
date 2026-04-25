@@ -298,7 +298,7 @@ AFRAME.registerComponent('fix-avatar', {
 <a-scene
   id="mall-scene"
   vr-mode-ui="enabled: true"
-  renderer="antialias: true; colorManagement: true; anisotropy: 16"
+  renderer="antialias: true; colorManagement: true; anisotropy: 16; toneMapping: ACESFilmic; physicallyCorrectLights: true"
   fog="type: exponential; color: #0a0a0f; density: 0.005"
   background="color: #0a0a0f"
   loading-screen="enabled: false"
@@ -704,6 +704,8 @@ AFRAME.registerComponent('fix-avatar', {
 <script src="js/doorway-signs.js"></script>
 <!-- Café Sativa wing — programmatic 6-room build from official floor plan -->
 <script src="js/cafe-sativa-wing.js"></script>
+<!-- Hero object loader — drops GLBs into rooms, replaces primitives where claimed -->
+<script src="js/cafe-sativa-hero-objects.js"></script>
 <!-- Interiors (lean rebuild) — ~64 primitives, zero point lights, 3 text nodes -->
 <script src="js/cafe-sativa-interiors.js"></script>
 <!-- js/debug-collision.js is available but not auto-loaded. To use:

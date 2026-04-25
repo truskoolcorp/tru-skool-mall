@@ -430,17 +430,39 @@
       root.id = 'cafe-sativa-interiors';
       scene.appendChild(root);
 
+      // Each room gets its own tagged sub-entity so hero-objects.js can
+      // remove it later if a GLB claims the room. Room IDs match the
+      // ROOMS[].id in cafe-sativa-wing.js exactly.
+      //
+      // If window.HERO_LOADED[roomId] already exists with
+      // suppressPrimitives:true, skip the primitive pass for that room —
+      // the hero GLB has the room covered.
+      const heroLoaded = window.HERO_LOADED || {};
+      const skip = (roomId) => heroLoaded[roomId] && heroLoaded[roomId].suppressPrimitives;
+
+      const roomWrap = (roomId, builder) => {
+        if (skip(roomId)) {
+          console.log('[CSInteriors] skip', roomId, '— hero GLB claimed it');
+          return 0;
+        }
+        const sub = document.createElement('a-entity');
+        sub.setAttribute('data-cs-room', roomId);
+        sub.id = 'cs-room-' + roomId;
+        root.appendChild(sub);
+        return builder(sub);
+      };
+
       const counts = {
-        foyer:         roomFoyer(root),
-        gallery:       roomGallery(root),
-        bar:           roomBar(root),
-        mainLounge:    roomMainLounge(root),
-        coldStoned:    roomColdStoned(root),
-        courtyard:     roomCourtyard(root),
-        cigarAirlock:  roomCigarAirlock(root),
-        cigarLounge:   roomCigarLounge(root),
-        boh:           roomBoH(root),
-        culinary:      roomCulinary(root),
+        foyer:         roomWrap('foyer',         roomFoyer),
+        gallery:       roomWrap('gallery',       roomGallery),
+        bar:           roomWrap('bar',           roomBar),
+        mainLounge:    roomWrap('main-lounge',   roomMainLounge),
+        coldStoned:    roomWrap('cold-stoned',   roomColdStoned),
+        courtyard:     roomWrap('courtyard',     roomCourtyard),
+        cigarAirlock:  roomWrap('cigar-airlock', roomCigarAirlock),
+        cigarLounge:   roomWrap('cigar',         roomCigarLounge),
+        boh:           roomWrap('boh',           roomBoH),
+        culinary:      roomWrap('culinary',      roomCulinary),
       };
       const total = Object.values(counts).reduce((a, b) => a + b, 0);
       console.log('[CSInteriors] Furnished CS wing.',
