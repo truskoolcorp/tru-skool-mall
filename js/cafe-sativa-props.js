@@ -52,18 +52,24 @@
     // at the desk, use a directory to pick a room, teleport away.
     'foyer': [
       {
-        // Reception desk — replaces the primitive desk in
-        // cafe-sativa-interiors.js when this Meshy GLB lands.
+        // Reception desk — Meshy-generated GLB. Came back at 150m
+        // wide native (auto_size wasn't enabled), so scale 0.02 to
+        // bring to ~3m wide. Y bbox is centered (not floor-anchored),
+        // so origin lifted to y=0.48 puts base on floor. Z bbox runs
+        // from -1.18 to 0 post-scale, so origin at z=-22 places back
+        // of desk at z=-23.18 (1m south of north wall, leaving room
+        // for Laviche to stand behind it).
         src: 'assets/models/props/foyer-reception-desk.glb',
         instances: [
-          // Centered against north wall, facing south (entrance)
-          { pos: '25 0 -22.5', rot: '0 0 0' },
+          { pos: '25 0.48 -22', rot: '0 0 0', scale: '0.02 0.02 0.02' },
         ],
       },
       {
-        // Laviche the concierge — generated via Meshy text-to-3D
-        // character mode, A-pose, rigged. Stands behind the desk.
-        // Replaces the cylinder+sphere placeholder in interiors.js.
+        // Laviche — the real avatar GLB (was assets/models/laviche.glb,
+        // copied to props folder so the loader finds it). 1.70m tall,
+        // floor-anchored origin, 0.84m wide. Native size is correct.
+        // Stands ~1m behind the desk facing south (toward incoming
+        // patrons).
         src: 'assets/models/props/concierge-laviche.glb',
         instances: [
           { pos: '25 0 -23.2', rot: '0 0 0' },

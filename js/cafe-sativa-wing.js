@@ -96,9 +96,10 @@
   const WING = {
     wallT: 0.2,
     doorHeight: 2.4,
-    // Entry arcade: 8m × 2m covered walkway from corridor wall to Foyer
+    // Entry arcade: 3m × 2m short threshold from mall corridor to Foyer
+    // (was 8m long — Keith's feedback was 'too long, too columnar')
     arcade: {
-      xMin: 15, xMax: 23, zMin: -19, zMax: -17,
+      xMin: 20, xMax: 23, zMin: -19, zMax: -17,
       ceilingY: 4,
     },
   };
@@ -277,7 +278,9 @@
     parent.appendChild(g);
   }
 
-  // ─── Entry arcade: enclosed colonnade gallery from corridor to Foyer ───
+  // ─── Entry arcade: short clean threshold from mall corridor to Foyer ───
+  // Keith feedback: too long + too columnar previously. Simplified to a
+  // brief 3m portal with smooth walls, no pilasters, no decorative lights.
   function buildArcade(parent) {
     const A = WING.arcade;
     const w = A.xMax - A.xMin;
@@ -288,35 +291,14 @@
     const floorMat = 'color: #6a5438; roughness: 0.7; metalness: 0.1';
     const ceilMat  = 'color: #2a2420; roughness: 0.9; side: double';
     const wallMat  = 'color: #3a2a20; roughness: 0.85; metalness: 0.1';   // deep walnut
-    const colMat   = 'color: #2a1d14; roughness: 0.8; metalness: 0.25';   // darker pilaster
 
     // Floor + ceiling
     parent.appendChild(makePlane(cx, 0.01, cz, w, d, -90, floorMat));
     parent.appendChild(makePlane(cx, A.ceilingY, cz, w, d, 90, ceilMat));
 
-    // SOLID side walls — eliminates open-to-sky visual, gives a real "hall"
-    // Walls pulled back 0.3m from the Foyer boundary (end at x=22.7 instead
-    // of x=23) so the approach to the Foyer west door isn't a hard corner.
-    const wallW   = (A.xMax - 0.3) - A.xMin;                  // 7.7m
-    const wallCx  = A.xMin + wallW / 2;                       // centered on new length
-    parent.appendChild(makeSolidBox(wallCx, A.ceilingY/2, A.zMin, wallW, A.ceilingY, 0.2, wallMat));
-    parent.appendChild(makeSolidBox(wallCx, A.ceilingY/2, A.zMax, wallW, A.ceilingY, 0.2, wallMat));
-
-    // Decorative pilasters — 3 per side along the new wall length
-    const pilasterPositions = [A.xMin + 1.5, A.xMin + 4, A.xMax - 1.8];
-    for (const x of pilasterPositions) {
-      parent.appendChild(makeBox(x, A.ceilingY/2, A.zMin + 0.2, 0.4, A.ceilingY, 0.25, colMat));
-      parent.appendChild(makeBox(x, A.ceilingY/2, A.zMax - 0.2, 0.4, A.ceilingY, 0.25, colMat));
-      // Warm up-lights on each pilaster
-      parent.appendChild(makeEntity({
-        light: 'type: point; color: #e8a050; intensity: 0.35; distance: 3.5; decay: 2',
-        position: `${x} ${A.ceilingY - 0.25} ${A.zMin + 0.3}`,
-      }));
-      parent.appendChild(makeEntity({
-        light: 'type: point; color: #e8a050; intensity: 0.35; distance: 3.5; decay: 2',
-        position: `${x} ${A.ceilingY - 0.25} ${A.zMax - 0.3}`,
-      }));
-    }
+    // Smooth side walls — no pilasters, no decorative lights
+    parent.appendChild(makeSolidBox(cx, A.ceilingY/2, A.zMin, w, A.ceilingY, 0.2, wallMat));
+    parent.appendChild(makeSolidBox(cx, A.ceilingY/2, A.zMax, w, A.ceilingY, 0.2, wallMat));
   }
 
   // ─── Signage at the corridor entry ────────────────────────────────────
@@ -360,10 +342,9 @@
   // ─── Wing perimeter safety fence ──────────────────────────────────────
   // Invisible solid walls around the foyer's bounding box. Tight cordon
   // — patrons can only walk arcade + foyer. Everything outside this
-  // box is unreachable (which is now most of the world, since we
-  // demolished the rest of the CS rooms).
+  // box is unreachable.
   //
-  // Footprint: x=15..28 (arcade west to foyer east), z=-24..-17
+  // Footprint: x=20..28 (arcade west to foyer east), z=-24..-17
   // (foyer south to arcade north). Single arcade opening at the
   // north edge of the west wall.
   function buildPerimeterFence(parent) {
@@ -373,17 +354,17 @@
 
     // West fence — split around arcade opening (z=-19..-17)
     // South segment: z=-24 to -19, length 5, center z=-21.5
-    parent.appendChild(makeSolidBox(15 - t/2, hy, -21.5, t, h, 5, fMat));
+    parent.appendChild(makeSolidBox(20 - t/2, hy, -21.5, t, h, 5, fMat));
     // (No north segment — wing ends at z=-17 which IS the arcade opening)
 
     // East fence — x=28, z=-24 to -17, length 7, center z=-20.5
     parent.appendChild(makeSolidBox(28 + t/2, hy, -20.5, t, h, 7, fMat));
 
-    // South fence — z=-17, x=15 to 28, length 13, center x=21.5
-    parent.appendChild(makeSolidBox(21.5, hy, -17 + t/2, 13, h, t, fMat));
+    // South fence — z=-17, x=20 to 28, length 8, center x=24
+    parent.appendChild(makeSolidBox(24, hy, -17 + t/2, 8, h, t, fMat));
 
-    // North fence — z=-24, x=15 to 28, length 13, center x=21.5
-    parent.appendChild(makeSolidBox(21.5, hy, -24 - t/2, 13, h, t, fMat));
+    // North fence — z=-24, x=20 to 28, length 8, center x=24
+    parent.appendChild(makeSolidBox(24, hy, -24 - t/2, 8, h, t, fMat));
   }
 
   // ─── Main render ──────────────────────────────────────────────────────

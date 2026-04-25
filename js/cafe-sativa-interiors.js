@@ -74,21 +74,13 @@
     // Welcome rug
     g.push(rug(25, -20.5, 3.0, 4.0, MAT.rug));
 
-    // Concierge desk against north wall
-    g.push(box(25, 0.55, -22.5, 2.4, 1.1, 0.8, MAT.walnutDark));
-    g.push(box(25, 1.13, -22.5, 2.5, 0.04, 0.85, MAT.marbleWarm));
-    g.push(box(25, 0.35, -22.1, 2.4, 0.04, 0.02, MAT.brass));
+    // ── Concierge desk + Laviche are now real GLBs ──
+    // Provided by cafe-sativa-props.js:
+    //   - foyer-reception-desk.glb  (Meshy-generated, 0.02× scale)
+    //   - concierge-laviche.glb     (1.70m tall avatar)
+    // No primitive placeholders here — they'd overlap the GLBs.
 
-    // Brass desk lamp
-    g.push(cyl(25.9, 1.15, -22.5, 0.04, 0.4, MAT.brass));
-    g.push(sphere(25.9, 1.45, -22.5, 0.12, MAT.warmGlow));
-
-    // Laviche NPC placeholder
-    g.push(cyl(25, 0.45, -23.2, 0.18, 0.9, MAT.velvetGreen));
-    g.push(cyl(25, 1.15, -23.2, 0.20, 0.5, MAT.velvetGreen));
-    g.push(sphere(25, 1.55, -23.2, 0.14, MAT.skin));
-
-    // Ceiling pendants
+    // Ceiling pendants (environmental, not props)
     g.push(cyl(23.5, 4.6, -20, 0.15, 0.18, MAT.amberGlow));
     g.push(cyl(26.5, 4.6, -20, 0.15, 0.18, MAT.amberGlow));
 
