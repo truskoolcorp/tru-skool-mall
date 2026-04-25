@@ -96,10 +96,16 @@
   const WING = {
     wallT: 0.2,
     doorHeight: 2.4,
-    // Entry arcade: 3m × 2m short threshold from mall corridor to Foyer
-    // (was 8m long — Keith's feedback was 'too long, too columnar')
+    // Entry arcade: 8m × 2m short threshold from mall corridor (x=15)
+    // to Foyer (x=22). Spans the gap between the corridor's right wall
+    // and the foyer's west wall — without this length, the foyer
+    // would float disconnected from the rest of the mall.
+    //
+    // Visually kept simple per Keith's feedback: smooth walls only,
+    // no pilasters, no decorative lights (those were the actual
+    // problem — not the length).
     arcade: {
-      xMin: 20, xMax: 23, zMin: -19, zMax: -17,
+      xMin: 15, xMax: 23, zMin: -19, zMax: -17,
       ceilingY: 4,
     },
   };
@@ -340,13 +346,13 @@
   }
 
   // ─── Wing perimeter safety fence ──────────────────────────────────────
-  // Invisible solid walls around the foyer's bounding box. Tight cordon
-  // — patrons can only walk arcade + foyer. Everything outside this
-  // box is unreachable.
+  // Invisible solid walls around foyer + arcade. Tight cordon — patrons
+  // can only walk these two spaces. Everything outside this box is
+  // unreachable.
   //
-  // Footprint: x=20..28 (arcade west to foyer east), z=-24..-17
-  // (foyer south to arcade north). Single arcade opening at the
-  // north edge of the west wall.
+  // Footprint: x=15..28 (arcade west to foyer east), z=-24..-17.
+  // Single arcade opening at x=15 along the west wall (where it meets
+  // the mall corridor's right wall opening).
   function buildPerimeterFence(parent) {
     const fMat = 'color: #000000; opacity: 0; transparent: true';
     const h = 10, hy = h / 2;
@@ -354,17 +360,17 @@
 
     // West fence — split around arcade opening (z=-19..-17)
     // South segment: z=-24 to -19, length 5, center z=-21.5
-    parent.appendChild(makeSolidBox(20 - t/2, hy, -21.5, t, h, 5, fMat));
+    parent.appendChild(makeSolidBox(15 - t/2, hy, -21.5, t, h, 5, fMat));
     // (No north segment — wing ends at z=-17 which IS the arcade opening)
 
     // East fence — x=28, z=-24 to -17, length 7, center z=-20.5
     parent.appendChild(makeSolidBox(28 + t/2, hy, -20.5, t, h, 7, fMat));
 
-    // South fence — z=-17, x=20 to 28, length 8, center x=24
-    parent.appendChild(makeSolidBox(24, hy, -17 + t/2, 8, h, t, fMat));
+    // South fence — z=-17, x=15 to 28, length 13, center x=21.5
+    parent.appendChild(makeSolidBox(21.5, hy, -17 + t/2, 13, h, t, fMat));
 
-    // North fence — z=-24, x=20 to 28, length 8, center x=24
-    parent.appendChild(makeSolidBox(24, hy, -24 - t/2, 8, h, t, fMat));
+    // North fence — z=-24, x=15 to 28, length 13, center x=21.5
+    parent.appendChild(makeSolidBox(21.5, hy, -24 - t/2, 13, h, t, fMat));
   }
 
   // ─── Main render ──────────────────────────────────────────────────────
