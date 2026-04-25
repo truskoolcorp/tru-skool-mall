@@ -52,61 +52,53 @@
       {
         // Reception desk — Concierge_Desk.glb from Meshy.
         //
-        // CRITICAL: GLB has a baked-in scale matrix on its root
-        // node (0.01 on all axes), so the 'native' bbox of
-        // [-75..75, -24..24, -59..0] actually renders as
-        // [-0.75..0.75, -0.24..0.24, -0.59..0] — a 1.5m × 0.5m
-        // × 0.6m model. To get a 3m × 1m × 1.18m desk, manifest
-        // scale needs to be 2 (NOT 0.02).
+        // GLB has a baked 0.01 scale matrix on its root node (a plain
+        // mesh node, NOT a skinned hierarchy), so GLTFLoader preserves
+        // the matrix at runtime. Native vertex bbox is ~150x48x59
+        // units; with baked 0.01 it renders at 1.5m × 0.48m × 0.59m,
+        // and at manifest scale 1.50 the final size is 2.25m × 0.72m
+        // × 0.89m — concierge-counter proportions, hip-height to
+        // Laviche.
         //
-        // (My first attempt scaled 0.02, which combined with the
-        // baked 0.01 → 0.0002 effective scale → desk was a
-        // 0.03m speck, invisible to the eye. Took two GLB
-        // inspection rounds to spot the baked matrix.)
+        // Tuned 2026-04-25 with the interactive prop tuner against
+        // Laviche to find the right relative scale. Earlier scale 2
+        // (3m × 0.96m × 1.18m) made the desk read taller than her
+        // shoulders because the cylinder form has no transaction-
+        // counter top to break up the silhouette.
         //
-        // Also stripped: 'Rectangle' backdrop mesh, Directional
-        // Light, Default Ambient Light, orphan camera node — all
-        // were Meshy render-scene artifacts that came along for
-        // the ride in the export.
-        //
-        // Y bbox post-final-scale: [-0.48, 0.48] → origin at
-        // y=0.48 puts base on floor.
-        // Z bbox post-final-scale: [-1.18, 0] → origin at z=-22
-        // puts back of desk at z=-23.18.
+        // Stripped from the GLB on import: 'Rectangle' backdrop mesh,
+        // Directional Light, Default Ambient Light, orphan camera
+        // node — Meshy render-scene artifacts.
         src: 'assets/models/props/foyer-reception-desk.glb',
         instances: [
-          { pos: '25 0.48 -22', rot: '0 0 0', scale: '2 2 2' },
+          { pos: '24.70 0.05 -22.00', rot: '0 0 0', scale: '1.50 1.50 1.50' },
         ],
       },
       {
         // Laviche the concierge.
         //
-        // SAME baked-transform issue as the desk. Her GLB has an
-        // SCALE NOTE — corrected after the "Laviche bigger than the
-        // mall" incident:
+        // GLB has an Armature (node 25) at the scene root with scale
+        // [0.01,0.01,0.01]. Position-accessor bbox is Y:[0, 1.70] —
+        // those vertex values are already in meters (Mixamo exports
+        // rigged humans at human scale in vertex buffer; the 0.01
+        // Armature scale is a Blender unit-system artifact).
         //
-        // GLB structure: Armature (node 25) has scale [0.01,0.01,0.01]
-        // applied to its children (char1 mesh + Hips skeleton). The
-        // position-accessor bbox is Y:[0, 1.70] — and those vertex
-        // values are ALREADY in meters (Mixamo exports rigged humans
-        // at human scale in vertex buffer; the 0.01 Armature scale is
-        // a Blender unit-system artifact).
-        //
-        // When three.js GLTFLoader imports a skinned mesh, it flattens
+        // When three.js GLTFLoader imports a skinned mesh it flattens
         // the Armature transform into the bind pose, so the rendered
-        // mesh ends up at native vertex-buffer size (1.70m) regardless
-        // of the Armature's 0.01.
+        // mesh ends up at native vertex-buffer size (~0.84m × 1.70m
+        // × 0.31m) regardless of the Armature's 0.01.
         //
-        // Last session we assumed the 0.01 was applying at runtime and
-        // compensated with manifest scale 100. Result: 1.70m × 100 =
-        // 170m tall — bigger than the entire mall.
+        // Manifest scale 1.0 → renders at native ~1.70m human height.
         //
-        // Correct manifest scale is 1.0 → renders at native 1.70m.
+        // (Earlier we mistakenly compensated with scale 100, making
+        // her 170m tall — bigger than the entire mall. Lesson learned:
+        // skinned meshes ≠ plain meshes for transform flattening.)
         //
-        // Position z=-23.6: 0.4m behind the back face of the desk.
+        // Tuned 2026-04-25 next to the desk so she stands at its back
+        // edge, slightly camera-side of center, facing south.
         src: 'assets/models/props/concierge-laviche.glb',
         instances: [
-          { pos: '25 0 -23.6', rot: '0 0 0', scale: '1 1 1' },
+          { pos: '24.40 0.05 -22.80', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],
