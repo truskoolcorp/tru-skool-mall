@@ -118,6 +118,10 @@
 
     tick: function (time, delta) {
       if (!this.data.enabled) return;
+      // Pause movement when a modal is open (e.g. concierge directory).
+      // Modals set window.__csModalOpen = true; arrow keys then have
+      // no effect on the rig.
+      if (window.__csModalOpen) return;
       var dt = delta / 1000;
       if (dt > 0.1) dt = 0.1;   // cap timestep after tab-switch etc.
 
