@@ -45,145 +45,51 @@
   //   width: door opening width in meters (height is WING.doorHeight)
   //
   const ROOMS = [
-    // ── SPINE (centered on x=25) ──
+    // ── FOYER ONLY ──
+    // We've pivoted: Café Sativa is no longer a fully-walkable
+    // multi-room venue. Instead, the foyer is the only walked space —
+    // patrons meet Laviche (concierge), use a directory to pick a room,
+    // and teleport into that room's dedicated standalone scene.
+    //
+    // Each room (Bar, Main Lounge, Cold Stoned, Cigar, Culinary,
+    // Courtyard) lives in its own future scene file (cs-bar.html,
+    // cs-main-lounge.html, etc.) — none of those rooms exist in this
+    // wing anymore.
+    //
+    // Sized larger than original (was 4m × 4.5m) to give Laviche +
+    // desk + directory panel comfortable space.
     {
       id: 'foyer',
-      label: 'Entrance Foyer',
-      xMin: 23, xMax: 27, zMin: -21.5, zMax: -17,
-      ceilingY: 6,        // matches Gallery — eliminates see-through-ceiling
-      floor: '#8b6f47',   // warm oak
-      wall:  '#f0e8da',   // cream plaster
-      ambient: { color: '#e8c080', intensity: 0.7 },
+      label: 'Café Sativa — Concierge',
+      xMin: 22, xMax: 28, zMin: -24, zMax: -17,
+      ceilingY: 6,
+      floor: '#8b6f47',
+      wall:  '#f0e8da',
+      ambient: { color: '#e8c080', intensity: 0.9 },
       doors: [
-        { wall: 'west',  at: -18, width: 2.0 },   // entry from arcade (arcade runs z=-19..-17, spans full foyer west)
-        { wall: 'north', at: 25, width: 2.4 },    // into Gallery
+        // Entry from arcade (arcade runs z=-19..-17 along foyer west wall)
+        { wall: 'west', at: -18, width: 2.0 },
+        // No other doors — Laviche's directory IS the navigation
       ],
     },
-    {
-      id: 'gallery',
-      label: 'Gallery Atrium',
-      xMin: 22, xMax: 28, zMin: -29.5, zMax: -21.5,
-      ceilingY: 6,        // was 10 — dropped to reduce door-lintel mass
-      floor: '#e8e0d0',   // travertine
-      wall:  '#fbf6eb',   // warm cream white
-      ambient: { color: '#ffffff', intensity: 1.0 },
-      doors: [
-        { wall: 'south', at: 25, width: 2.4 },
-        { wall: 'north', at: 25, width: 2.4 },
-        { wall: 'east',  at: -24, width: 1.4 },  // into Cold Stoned
-      ],
-    },
-    {
-      id: 'bar',
-      label: 'Cocktail Bar',
-      xMin: 20, xMax: 30, zMin: -37.5, zMax: -29.5,
-      ceilingY: 4.5,
-      floor: '#3a2a20',
-      wall:  '#2a1f18',   // charcoal
-      ambient: { color: '#c08850', intensity: 0.85 },
-      doors: [
-        { wall: 'south', at: 25, width: 2.4 },
-        { wall: 'north', at: 25, width: 3.0 },
-        { wall: 'west',  at: -32, width: 1.4 },    // to BOH
-        { wall: 'east',  at: -28.5, width: 1.8 },  // to Courtyard
-      ],
-    },
-    {
-      id: 'main-lounge',
-      label: 'Main Lounge',
-      xMin: 17.5, xMax: 32.5, zMin: -46, zMax: -37.5,
-      ceilingY: 4.5,      // was 6 — dropped to reduce door-lintel mass
-      floor: '#2a1a10',
-      wall:  '#3a4a38',   // sage
-      ambient: { color: '#c08850', intensity: 0.6 },
-      doors: [
-        { wall: 'south', at: 25, width: 3.0 },       // from Bar
-        { wall: 'north', at: 25, width: 1.4 },       // to Culinary (behind stage)
-        { wall: 'east',  at: -43.75, width: 1.4 },   // to Cigar Airlock
-      ],
-    },
+  ];
 
-    // ── EAST OF SPINE ──
-    {
-      id: 'cold-stoned',
-      label: 'Cold Stoned Window',
-      xMin: 28, xMax: 32, zMin: -26, zMax: -21.5,
-      ceilingY: 6,        // matches Gallery — eliminates see-through-ceiling gap
-      floor: '#f0ece0',
-      wall:  '#fdfaf0',
-      ambient: { color: '#ffffff', intensity: 1.2 },
-      doors: [
-        { wall: 'west',  at: -24, width: 1.4 },   // from Gallery
-        { wall: 'north', at: 31, width: 1.4 },    // into Courtyard
-      ],
-    },
-    {
-      id: 'courtyard',
-      label: 'Courtyard',
-      xMin: 30, xMax: 37, zMin: -31, zMax: -26,
-      ceilingY: 12,
-      ceilingOmit: true,   // open-air
-      floor: '#c0a878',    // warm stone pavers
-      wall:  '#d0c0a0',
-      ambient: { color: '#ffd8a0', intensity: 0.6 },
-      doors: [
-        { wall: 'south', at: 31, width: 1.4 },       // from Cold Stoned
-        { wall: 'west',  at: -28.5, width: 1.8 },    // from Bar
-      ],
-    },
-    {
-      id: 'cigar-airlock',
-      label: 'Cigar Airlock',
-      xMin: 32.5, xMax: 35.7, zMin: -44.5, zMax: -43,
-      ceilingY: 3,
-      floor: '#2a2020',
-      wall:  '#1a1410',
-      ambient: { color: '#603020', intensity: 0.3 },
-      doors: [
-        { wall: 'west', at: -43.75, width: 1.4 },
-        { wall: 'east', at: -43.75, width: 1.4 },
-      ],
-    },
-    {
-      id: 'cigar',
-      label: 'Cigar Lounge',
-      xMin: 35.7, xMax: 41.7, zMin: -46, zMax: -37.5,
-      ceilingY: 3,
-      floor: '#1a1008',
-      wall:  '#2a3828',
-      ambient: { color: '#a06030', intensity: 0.4 },
-      doors: [
-        { wall: 'west', at: -43.75, width: 1.4 },
-      ],
-      vipGated: true,
-    },
-
-    // ── WEST OF SPINE ──
-    {
-      id: 'boh',
-      label: 'Back of House',
-      xMin: 15, xMax: 20, zMin: -34.5, zMax: -29.5,
-      ceilingY: 3,
-      floor: '#606060',
-      wall:  '#808080',
-      ambient: { color: '#c0c0c0', intensity: 0.5 },
-      doors: [
-        { wall: 'east', at: -32, width: 1.4 },   // to Bar
-      ],
-      staffOnly: true,
-    },
-    {
-      id: 'culinary',
-      label: 'Culinary Theater',
-      xMin: 22.5, xMax: 27.5, zMin: -51, zMax: -46,
-      ceilingY: 4,        // was 5
-      floor: '#c8c0b0',
-      wall:  '#f4f0e8',
-      ambient: { color: '#e8a050', intensity: 0.7 },
-      doors: [
-        { wall: 'south', at: 25, width: 1.4 },   // from Main Lounge (behind stage)
-      ],
-    },
+  // ── DEPRECATED ROOMS (removed) ──
+  // gallery, bar, main-lounge, cold-stoned, courtyard, cigar-airlock,
+  // cigar, boh, culinary — all moved to standalone per-room scenes
+  // (not yet built; Foyer + Laviche + directory ships first).
+  const _DEPRECATED_ROOMS = [
+    // kept as reference for when individual rooms are rebuilt as
+    // standalone scenes — original geometry coords:
+    // gallery:        x=22..28,    z=-29.5..-21.5  ceil=6
+    // bar:            x=20..30,    z=-37.5..-29.5  ceil=4.5
+    // main-lounge:    x=17.5..32.5, z=-46..-37.5   ceil=4.5
+    // cold-stoned:    x=28..32,    z=-26..-21.5    ceil=6
+    // courtyard:      x=30..37,    z=-31..-26      ceil=12
+    // cigar-airlock:  x=32.5..35.7, z=-44.5..-43   ceil=3
+    // cigar:          x=35.7..41.7, z=-46..-37.5   ceil=3
+    // boh:            x=15..20,    z=-34.5..-29.5  ceil=3
+    // culinary:       x=22.5..27.5, z=-51..-46     ceil=4
   ];
 
   // ═══ Wing-level config ═══
@@ -452,31 +358,32 @@
   }
 
   // ─── Wing perimeter safety fence ──────────────────────────────────────
-  // Invisible solid walls around the wing's bounding box. Backup against
-  // rig-collider race conditions, player clipping, etc. The only opening
-  // is at the arcade entry (x=15, z=-19..-17) where the player entered.
+  // Invisible solid walls around the foyer's bounding box. Tight cordon
+  // — patrons can only walk arcade + foyer. Everything outside this
+  // box is unreachable (which is now most of the world, since we
+  // demolished the rest of the CS rooms).
   //
-  // Wing footprint: x=15..41.7, z=-51..-17 (arcade northmost at z=-17)
-  // Fence height 10m — high enough that no look-up camera angle sees over.
+  // Footprint: x=15..28 (arcade west to foyer east), z=-24..-17
+  // (foyer south to arcade north). Single arcade opening at the
+  // north edge of the west wall.
   function buildPerimeterFence(parent) {
     const fMat = 'color: #000000; opacity: 0; transparent: true';
     const h = 10, hy = h / 2;
     const t = 0.3;
+
     // West fence — split around arcade opening (z=-19..-17)
-    // South segment: z=-51 to -19, length 32, center z=-35
-    parent.appendChild(makeSolidBox(15 - t/2, hy, -35, t, h, 32, fMat));
+    // South segment: z=-24 to -19, length 5, center z=-21.5
+    parent.appendChild(makeSolidBox(15 - t/2, hy, -21.5, t, h, 5, fMat));
     // (No north segment — wing ends at z=-17 which IS the arcade opening)
 
-    // East fence — x=41.7, z=-51 to -17, length 34, center z=-34
-    parent.appendChild(makeSolidBox(41.7 + t/2, hy, -34, t, h, 34, fMat));
+    // East fence — x=28, z=-24 to -17, length 7, center z=-20.5
+    parent.appendChild(makeSolidBox(28 + t/2, hy, -20.5, t, h, 7, fMat));
 
-    // South fence — z=-17, x=15 to 41.7, length 26.7, center x=28.35
-    // This closes the arcade's south side and Foyer/Cold Stoned's south
-    // beyond where their own walls already exist.
-    parent.appendChild(makeSolidBox(28.35, hy, -17 + t/2, 26.7, h, t, fMat));
+    // South fence — z=-17, x=15 to 28, length 13, center x=21.5
+    parent.appendChild(makeSolidBox(21.5, hy, -17 + t/2, 13, h, t, fMat));
 
-    // North fence — z=-51, x=15 to 41.7, length 26.7, center x=28.35
-    parent.appendChild(makeSolidBox(28.35, hy, -51 - t/2, 26.7, h, t, fMat));
+    // North fence — z=-24, x=15 to 28, length 13, center x=21.5
+    parent.appendChild(makeSolidBox(21.5, hy, -24 - t/2, 13, h, t, fMat));
   }
 
   // ─── Main render ──────────────────────────────────────────────────────

@@ -47,139 +47,37 @@
   // So this manifest can ship empty-on-disk and gradually fill in.
   const PROPS = {
 
-    // ─── BAR (x=20..30, z=-37.5..-29.5, ceil 4.5) ──────────────
-    'bar': [
-      {
-        // NOTE: Meshy generation came back as ONE combined piece —
-        // bar counter + backbar shelf with bottles all in a single
-        // GLB. Bounding box: 2m × 1.26m × 0.97m. We scale 3× on X
-        // to fill the 10m-wide room nicely while keeping the native
-        // height (which is correct for a bar at ~1.26m).
-        src: 'assets/models/props/bar-counter-walnut.glb',
-        instances: [
-          { pos: '25 0.63 -34', rot: '0 0 0', scale: '3 1 1' },
-        ],
-      },
-      {
-        src: 'assets/models/props/bar-stool-leather.glb',
-        instances: [
-          // Four stools facing the long counter from the south.
-          // Bar counter front face is at z ≈ -34 + 0.49 ≈ -33.5.
-          // Stools sit ~0.7m in front of that.
-          { pos: '21.5 0 -32.8', rot: '0 0 0' },
-          { pos: '23.5 0 -32.8', rot: '0 0 0' },
-          { pos: '26.5 0 -32.8', rot: '0 0 0' },
-          { pos: '28.5 0 -32.8', rot: '0 0 0' },
-        ],
-      },
-      {
-        src: 'assets/models/props/pendant-cone-brass.glb',
-        instances: [
-          // Three pendants hanging above the counter in a row
-          { pos: '22 4.0 -33', rot: '0 0 0' },
-          { pos: '25 4.0 -33', rot: '0 0 0' },
-          { pos: '28 4.0 -33', rot: '0 0 0' },
-        ],
-      },
-    ],
-
-    // ─── MAIN LOUNGE (x=17.5..32.5, z=-46..-37.5, ceil 4.5) ────
-    'main-lounge': [
-      {
-        src: 'assets/models/props/lounge-stage-platform.glb',
-        instances: [
-          // Performance stage at the south end (z=-44.5), 4m wide
-          { pos: '25 0 -44.5', rot: '0 0 0' },
-        ],
-      },
-      {
-        src: 'assets/models/props/lounge-host-table.glb',
-        instances: [
-          // Round table in the center of the lounge
-          { pos: '25 0 -41', rot: '0 0 0' },
-        ],
-      },
-      {
-        src: 'assets/models/props/lounge-dining-chair.glb',
-        instances: [
-          // 4 chairs around the table, facing center
-          { pos: '24 0 -40.2', rot: '0 -180 0' },
-          { pos: '26 0 -40.2', rot: '0 -180 0' },
-          { pos: '24 0 -41.8', rot: '0 0 0' },
-          { pos: '26 0 -41.8', rot: '0 0 0' },
-        ],
-      },
-      {
-        src: 'assets/models/props/wall-sconce-brass.glb',
-        instances: [
-          // Sconces on east + west walls
-          { pos: '17.55 2.5 -41', rot: '0 90 0' },
-          { pos: '32.45 2.5 -41', rot: '0 -90 0' },
-        ],
-      },
-    ],
-
-    // ─── CIGAR LOUNGE (x=35.7..41.7, z=-46..-37.5, ceil 3) ─────
-    'cigar': [
-      {
-        src: 'assets/models/props/lounge-armchair-oxblood.glb',
-        instances: [
-          // 4-chair cluster around a center table at (38.7, ?, -41)
-          { pos: '37.7 0 -41', rot: '0 90 0' },   // west, facing east
-          { pos: '39.7 0 -41', rot: '0 -90 0' },  // east, facing west
-          { pos: '38.7 0 -40', rot: '0 -180 0' }, // north, facing south
-          { pos: '38.7 0 -42', rot: '0 0 0' },    // south, facing north
-        ],
-      },
-      {
-        src: 'assets/models/props/lounge-side-table-walnut.glb',
-        instances: [
-          // Center round table for the chair cluster
-          { pos: '38.7 0 -41', rot: '0 0 0' },
-        ],
-      },
-      {
-        src: 'assets/models/props/cigar-humidor.glb',
-        instances: [
-          // East wall feature
-          { pos: '41.4 0 -39', rot: '0 -90 0' },
-        ],
-      },
-    ],
-
-    // ─── FOYER (x=23..27, z=-21.5..-17, ceil 6) ────────────────
+    // ─── FOYER (x=22..28, z=-24..-17, ceil 6) ──────────────────
+    // The only walked space in CS now. Patrons enter, meet Laviche
+    // at the desk, use a directory to pick a room, teleport away.
     'foyer': [
       {
+        // Reception desk — replaces the primitive desk in
+        // cafe-sativa-interiors.js when this Meshy GLB lands.
         src: 'assets/models/props/foyer-reception-desk.glb',
         instances: [
-          // North side of the foyer, facing the entrance
-          { pos: '25 0 -20.5', rot: '0 -180 0' },
+          // Centered against north wall, facing south (entrance)
+          { pos: '25 0 -22.5', rot: '0 0 0' },
+        ],
+      },
+      {
+        // Laviche the concierge — generated via Meshy text-to-3D
+        // character mode, A-pose, rigged. Stands behind the desk.
+        // Replaces the cylinder+sphere placeholder in interiors.js.
+        src: 'assets/models/props/concierge-laviche.glb',
+        instances: [
+          { pos: '25 0 -23.2', rot: '0 0 0' },
         ],
       },
     ],
 
-    // ─── GALLERY (x=22..28, z=-29.5..-21.5, ceil 6) ────────────
-    'gallery': [
-      {
-        src: 'assets/models/props/gallery-plinth.glb',
-        instances: [
-          // Three plinths spaced through the gallery
-          { pos: '24 0 -24', rot: '0 0 0' },
-          { pos: '26 0 -26', rot: '0 0 0' },
-          { pos: '24 0 -28', rot: '0 0 0' },
-        ],
-      },
-    ],
-
-    // ─── COLD STONED (x=28..32, z=-26..-21.5, ceil 6) ──────────
-    'cold-stoned': [
-      {
-        src: 'assets/models/props/gelato-display-case.glb',
-        instances: [
-          { pos: '30 0 -25.3', rot: '0 0 0' },
-        ],
-      },
-    ],
+    // ── DEPRECATED: bar / main-lounge / cigar / gallery / cold-stoned ──
+    // All removed. The Meshy GLBs we generate for those rooms will be
+    // placed in per-room standalone scenes (cs-bar.html, etc.) — not
+    // in this main mall scene.
+    //
+    // The bar-counter-walnut.glb already generated is preserved in
+    // assets/models/_archive/ for the future cs-bar.html build.
 
   };
 
