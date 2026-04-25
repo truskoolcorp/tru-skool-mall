@@ -82,23 +82,31 @@
         // Laviche the concierge.
         //
         // SAME baked-transform issue as the desk. Her GLB has an
-        // Armature node (node 25) at the scene root with a uniform
-        // scale [0.01, 0.01, 0.01] applied to all its children
-        // (including the mesh). The position-accessor bbox reads
-        // [0, 1.70] but those are vertex-buffer values — multiplied
-        // through the armature's 0.01 transform = 0 to 0.017m
-        // actual render height. Without compensating, Laviche
-        // renders at 1.7cm tall (smaller than a coffee mug) and
-        // hides behind the 1m desk.
+        // SCALE NOTE — corrected after the "Laviche bigger than the
+        // mall" incident:
         //
-        // Manifest scale 100 brings her back to the intended 1.70m
-        // height. (Combined: armature 0.01 × manifest 100 = 1.0
-        // effective scale → bbox values render as actual meters.)
+        // GLB structure: Armature (node 25) has scale [0.01,0.01,0.01]
+        // applied to its children (char1 mesh + Hips skeleton). The
+        // position-accessor bbox is Y:[0, 1.70] — and those vertex
+        // values are ALREADY in meters (Mixamo exports rigged humans
+        // at human scale in vertex buffer; the 0.01 Armature scale is
+        // a Blender unit-system artifact).
+        //
+        // When three.js GLTFLoader imports a skinned mesh, it flattens
+        // the Armature transform into the bind pose, so the rendered
+        // mesh ends up at native vertex-buffer size (1.70m) regardless
+        // of the Armature's 0.01.
+        //
+        // Last session we assumed the 0.01 was applying at runtime and
+        // compensated with manifest scale 100. Result: 1.70m × 100 =
+        // 170m tall — bigger than the entire mall.
+        //
+        // Correct manifest scale is 1.0 → renders at native 1.70m.
         //
         // Position z=-23.6: 0.4m behind the back face of the desk.
         src: 'assets/models/props/concierge-laviche.glb',
         instances: [
-          { pos: '25 0 -23.6', rot: '0 0 0', scale: '100 100 100' },
+          { pos: '25 0 -23.6', rot: '0 0 0', scale: '1 1 1' },
         ],
       },
     ],
@@ -143,6 +151,27 @@
     el.setAttribute('shadow', 'cast: true; receive: true');
     parent.appendChild(el);
     INSTANCES.push({ roomId, slot: `${propIdx}/${instanceIdx}`, el, src });
+
+    // ── One-time effective-bbox probe ──
+    // Logs actual rendered world-space size after GLTFLoader finishes.
+    // Solves the recurring "what scale does this Meshy GLB need?"
+    // problem by reporting truth instead of us guessing from the
+    // accessor min/max.
+    el.addEventListener('model-loaded', function onLoaded() {
+      el.removeEventListener('model-loaded', onLoaded);
+      try {
+        const obj = el.getObject3D('mesh');
+        if (!obj || !window.THREE) return;
+        const box = new window.THREE.Box3().setFromObject(obj);
+        const size = box.getSize(new window.THREE.Vector3());
+        const fileName = src.split('/').pop();
+        console.log(
+          `[CSProps:bbox] ${fileName} @ scale=${spec.scale || '1 1 1'} → ` +
+          `W=${size.x.toFixed(2)}m  H=${size.y.toFixed(2)}m  D=${size.z.toFixed(2)}m`
+        );
+      } catch (e) { /* ignore */ }
+    });
+
     return el;
   }
 
