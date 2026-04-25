@@ -79,13 +79,26 @@
         ],
       },
       {
-        // Laviche the concierge — assets/models/laviche.glb copied
-        // to props/. 1.70m tall, floor-anchored. Native size correct.
-        // Moved from z=-23.2 to z=-23.6 — was touching the back face
-        // of the desk, now has 0.4m gap.
+        // Laviche the concierge.
+        //
+        // SAME baked-transform issue as the desk. Her GLB has an
+        // Armature node (node 25) at the scene root with a uniform
+        // scale [0.01, 0.01, 0.01] applied to all its children
+        // (including the mesh). The position-accessor bbox reads
+        // [0, 1.70] but those are vertex-buffer values — multiplied
+        // through the armature's 0.01 transform = 0 to 0.017m
+        // actual render height. Without compensating, Laviche
+        // renders at 1.7cm tall (smaller than a coffee mug) and
+        // hides behind the 1m desk.
+        //
+        // Manifest scale 100 brings her back to the intended 1.70m
+        // height. (Combined: armature 0.01 × manifest 100 = 1.0
+        // effective scale → bbox values render as actual meters.)
+        //
+        // Position z=-23.6: 0.4m behind the back face of the desk.
         src: 'assets/models/props/concierge-laviche.glb',
         instances: [
-          { pos: '25 0 -23.6', rot: '0 0 0' },
+          { pos: '25 0 -23.6', rot: '0 0 0', scale: '100 100 100' },
         ],
       },
     ],
