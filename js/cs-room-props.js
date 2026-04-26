@@ -13,22 +13,26 @@
      index.html  →  cafe-sativa-props.js  →  PROPS = { foyer: [...] }
      cs-bar.html →  cs-room-props.js (this file) → ROOM_PROPS.bar
 
-   COORDINATE BOUNDS (from cafe-sativa-wing.js)
-     Each room's per-scene world has its OWN local coordinate
-     system. The bounds below are how the rooms USED to be laid
-     out in the unified wing — useful as starting positions but
-     each per-room scene can re-center if it wants.
+   COORDINATE SYSTEM
+     Each per-room scene uses a LOCAL coordinate system centered
+     at room origin. Room is W × D meters; valid placement range:
+       x: -W/2 to +W/2   (west to east)
+       z: -D/2 to +D/2   (north/far wall to south/entrance)
+       y: 0 (floor)      (props sit on floor; raised props use y>0)
 
-       bar:           x=20..30,    z=-37.5..-29.5  ceil=4.5
-       main-lounge:   x=17.5..32.5, z=-46..-37.5   ceil=4.5
-       smoke-lounge:  TBD (not in old wing layout)
-       cigar:         x=35.7..41.7, z=-46..-37.5   ceil=3
-       culinary:      x=22.5..27.5, z=-51..-46     ceil=4
-       courtyard:     x=30..37,    z=-31..-26      ceil=12
-       cold-stoned:   x=28..32,    z=-26..-21.5    ceil=6
+     Player spawns near south wall (z = +D/2 - 1.2) facing north
+     toward the room interior, so south-facing props face the
+     player.
+
+     The OLD wing-coords from cafe-sativa-wing.js (x=20..30,
+     z=-37.5..-29.5 etc.) are NO LONGER USED for these placements.
+     Each per-room HTML scene is fully self-contained.
 
    STARTING POSITIONS
-     These are educated guesses based on real-world room layouts:
+     These are educated guesses based on real-world room layouts.
+     Bar is currently the most-tested (cs-bar.html exists). Other
+     rooms still need their per-room HTML scenes built — values
+     below assume each room is approximately:
      - Bar: backbar against far wall, stools facing it from in front
      - Main lounge: stage at one short end, table+chair at center
      - Cigar lounge: armchair in corner with side table beside, humidor on far wall
@@ -56,30 +60,45 @@
   const ROOM_PROPS = {
 
     // ═══ BAR ═════════════════════════════════════════════════
-    // Layout: backbar against north wall, counter parallel to it,
-    // stools at the south face of the counter.
+    // Local coordinates: room is 10m × 8m centered at origin.
+    //   x: -5 to +5  (west to east)
+    //   z: -4 to +4  (north/far wall to south/entrance)
+    //
+    // Layout: backbar against north wall (-z far), counter
+    // parallel to it 1.5m closer to player, 3 stools at the south
+    // face of the counter for patrons. Player spawns near south
+    // wall and walks north toward the counter.
+    //
+    // Counter is at z=0 (room center). Backbar 1.5m behind it
+    // (z=-1.5). Stools 1.5m in front (z=+1.5) so walking patrons
+    // approach the bar naturally.
     'bar': [
       {
+        // Counter — archived from earlier round, baked 0.01 scale,
+        // manifest scale 1.0 renders at proper 4m × 1.1m × 0.9m.
         src: 'assets/models/_archive/bar-counter-walnut.glb',
         instances: [
-          // Counter centered E-W, set back from north wall by counter depth + 1m walking space
-          { pos: '25 0 -33', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Backbar shelf — pressed against north wall (z=-4 + half
+        // its 0.4m depth = effective z=-3.8). Use z=-3.5 for a bit
+        // of clearance from the wall.
         src: 'assets/models/props/bar-backbar-shelf.glb',
         instances: [
-          // Backbar pressed against north wall, behind counter
-          { pos: '25 0 -36', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -3.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Three stools at south face of counter, 1m apart.
+        // Counter front is at z=0 + half-depth (~0.45m), so stools
+        // sit at z=1.0 to leave knee room.
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
-          // Three stools at south face of counter, evenly spaced
-          { pos: '23 0 -31.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-          { pos: '25 0 -31.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-          { pos: '27 0 -31.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '-1.5 0 1.2', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: ' 0   0 1.2', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: ' 1.5 0 1.2', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],
