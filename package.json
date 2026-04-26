@@ -20,5 +20,11 @@
   "private": true,
   "dependencies": {
     "@vercel/analytics": "^2.0.1"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.3.0",
+    "draco3dgltf": "^1.5.7",
+    "meshoptimizer": "^1.1.1",
+    "sharp": "^0.34.5"
   }
 }
