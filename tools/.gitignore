@@ -3,3 +3,6 @@ meshy-state.json
 
 # Web-UI fallback list is regenerated each run — don't commit
 meshy-failed-fallback.md
+
+# Optimized props output dir — temporary work area, replace originals when done
+../assets/models/props-optimized/

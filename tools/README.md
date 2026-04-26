@@ -79,3 +79,42 @@ in the `PROPS` map. Once GLBs are generated, follow up by:
 1. Adding entries to `PROPS` for each new prop
 2. Loading `mall.truskool.net/?prop-tune=<room>` to position them
 3. Clicking 📋 Copy and pasting tuned values back into the manifest
+
+---
+
+# GLB Optimizer (`optimize-glbs.js`)
+
+Meshy returns ~5-10MB GLBs. For web delivery we want <1MB. The
+optimizer compresses textures (WebP @ 1024px) and meshes (Draco)
+to cut file size by 70-90% without visible quality loss.
+
+## Setup (one-time)
+
+```bash
+npm install --save-dev @gltf-transform/cli sharp draco3dgltf meshoptimizer
+```
+
+## Usage
+
+**Optimize all props (safe — outputs to `props-optimized/`):**
+```bash
+node tools/optimize-glbs.js
+```
+
+**Just one file:**
+```bash
+node tools/optimize-glbs.js assets/models/props/bar-stool-leather.glb
+```
+
+**Replace originals in-place (overwrites — back up first if uncertain):**
+```bash
+node tools/optimize-glbs.js --in-place
+```
+
+## Recommended workflow
+
+1. Run Meshy batch → 21 GLBs in `assets/models/props/` (~150MB total)
+2. Run optimizer (default mode) → optimized copies in `props-optimized/`
+3. Spot-check 2-3 optimized files in the browser to confirm visual quality
+4. If they look good: `cp assets/models/props-optimized/*.glb assets/models/props/`
+5. Commit the smaller versions — repo stays under 50MB
