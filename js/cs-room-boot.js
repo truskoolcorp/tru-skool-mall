@@ -231,7 +231,12 @@
     }
 
     // ─── PLAYER ─────────────────────────────────────────────────
-    // Spawn near the south door, looking north into the room.
+    // Spawn near the south door, looking north (-Z) into the room.
+    //
+    // Important: rig rotation alone does NOT control camera direction
+    // — look-controls overrides per frame. We use the rig's rotation
+    // for movement direction and apply an initial yaw to the camera's
+    // look-controls via its `pitchObject` / `yawObject` post-attach.
     const spawnX = 0;
     const spawnY = 1.6;
     const spawnZ = halfD - 1.2;
@@ -241,8 +246,11 @@
     const rig = document.createElement('a-entity');
     rig.setAttribute('id', 'player-rig');
     rig.setAttribute('position', `${spawnX} ${spawnY} ${spawnZ}`);
+    // Rig rotation 180 makes movement-controls' "forward" point -Z.
+    // Without this, pressing W moves the player toward the door
+    // instead of into the room.
+    rig.setAttribute('rotation', '0 180 0');
     rig.setAttribute('movement-controls', 'fly: false; constrainToNavMesh: false; speed: 0.18');
-    rig.setAttribute('rotation', '0 180 0'); // face north (toward room interior)
 
     const cam = document.createElement('a-entity');
     cam.setAttribute('camera', '');
@@ -254,6 +262,20 @@
     rig.appendChild(cam);
 
     scene.appendChild(rig);
+
+    // Force initial yaw on the camera so player spawns FACING THE BAR.
+    // look-controls stores yaw in its `yawObject.rotation.y`. Setting
+    // it after attach overrides the default of 0.
+    // Math: rig is rotated 180 (so its -Z = world +Z). Camera's local
+    // -Z (default look direction) ends up facing world +Z (door behind
+    // player). To look at world -Z (bar), apply 180° camera yaw.
+    requestAnimationFrame(() => {
+      const lc = cam.components['look-controls'];
+      if (lc && lc.yawObject) {
+        lc.yawObject.rotation.y = Math.PI; // 180°
+        console.log('[CSRoom] camera yaw set to 180° — facing bar');
+      }
+    });
 
     // Simple boundary clamp — prevents walking through walls.
     // Runs every frame, hard-snaps player back if they cross.
