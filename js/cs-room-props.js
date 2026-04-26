@@ -85,7 +85,7 @@
     'bar': [
       {
         // Counter — renders 2m × 1.26m × 0.97m at scale 1.0.
-        // Sits on floor, centered.
+        // Auto-snap puts its base at y=0.
         src: 'assets/models/_archive/bar-counter-walnut.glb',
         instances: [
           { pos: '0 0 -0.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
@@ -93,22 +93,17 @@
       },
       {
         // Backbar shelf — renders 2m × 0.87m × 0.32m at scale 1.0.
-        // The GLB origin is at the BOTTOM of the shelf unit, so y=0
-        // makes it sit on the floor — but a real backbar is wall-
-        // mounted at counter height. Raised to y=1.0 so its base
-        // hovers at counter-top level (counter is 1.26m tall, but
-        // visually y=1.0 reads better with the shelf being smaller).
+        // Wall-mounted at counter-top height. snap=false because we
+        // WANT it floating off the floor, mounted on the wall above
+        // the counter. y=1.4 puts the shelf base at counter-top
+        // height (counter is 1.26m tall).
         src: 'assets/models/props/bar-backbar-shelf.glb',
         instances: [
-          { pos: '0 1.0 -3.7', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 1.4 -3.7', rot: '0 0 0', scale: '1.00 1.00 1.00', snap: false },
         ],
       },
       {
-        // Stool — 0.42x → ~0.4m × 0.84m × 0.4m, real bar stool.
-        // Pushed back to z=0.4 (counter is at z=-0.5, so stools sit
-        // ~0.5m off the south face of the counter, with knee room).
-        // Closer than 0.4 puts them inside the counter, further makes
-        // them feel disconnected from the bar.
+        // Stool — 0.42x → ~0.4m × 0.84m × 0.4m. Auto-snap to floor.
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
           { pos: '-1.5 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },

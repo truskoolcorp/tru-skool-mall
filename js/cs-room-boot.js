@@ -149,35 +149,40 @@
     addWall(scene, 'wall-south-r', `${ halfW - sideW / 2}   ${h / 2} ${halfD}`, sideW, h,        '0 180 0', t.wall);
     addWall(scene, 'wall-south-t', `0 ${h - (h - doorH) / 2} ${halfD}`,         doorW, h - doorH,'0 180 0', t.wall);
 
-    // ─── DOORWAY PORTAL (back to mall) ──────────────────────────
-    const portal = document.createElement('a-entity');
-    portal.setAttribute('id', 'back-portal');
-    portal.setAttribute('position', `0 ${doorH / 2} ${halfD - 0.05}`);
-    portal.setAttribute('class', 'clickable');
+    // ─── DOORWAY ────────────────────────────────────────────────
+    // Visual-only door frame. The actual "go back to mall"
+    // interaction is the HUD button in the top-left of the page,
+    // which is always visible and works regardless of where the
+    // player is looking. Trying to click an in-world 3D text
+    // through dark walls is unreliable.
+    //
+    // We render two single-sided panels: a glow on the inside face
+    // (when facing the door from inside the room) and another on
+    // the outside face. This avoids the z-fighting double-sided
+    // bug where the text bled through opposite walls.
 
-    // Visible glow rectangle
-    const portalGlow = document.createElement('a-plane');
-    portalGlow.setAttribute('width', doorW - 0.1);
-    portalGlow.setAttribute('height', doorH - 0.1);
-    portalGlow.setAttribute('color', t.accent);
-    portalGlow.setAttribute('opacity', 0.15);
-    portalGlow.setAttribute('side', 'double');
-    portal.appendChild(portalGlow);
+    // Inside-facing glow panel
+    const portalIn = document.createElement('a-plane');
+    portalIn.setAttribute('id', 'door-glow-inside');
+    portalIn.setAttribute('position', `0 ${doorH / 2} ${halfD - 0.04}`);
+    portalIn.setAttribute('rotation', '0 180 0');
+    portalIn.setAttribute('width', doorW - 0.05);
+    portalIn.setAttribute('height', doorH - 0.05);
+    portalIn.setAttribute('color', t.accent);
+    portalIn.setAttribute('opacity', 0.12);
+    portalIn.setAttribute('side', 'front');
+    scene.appendChild(portalIn);
 
-    // "← Back to Mall" text
-    const portalText = document.createElement('a-text');
-    portalText.setAttribute('value', '← Back to Mall');
-    portalText.setAttribute('align', 'center');
-    portalText.setAttribute('color', t.accent);
-    portalText.setAttribute('width', 4);
-    portalText.setAttribute('position', `0 0 0.01`);
-    portalText.setAttribute('font', 'kelsonsans');
-    portal.appendChild(portalText);
-
-    portal.addEventListener('click', () => {
-      window.location.href = cfg.backUrl;
-    });
-    scene.appendChild(portal);
+    // Optional in-world "EXIT" label only visible from inside
+    const exitLabel = document.createElement('a-text');
+    exitLabel.setAttribute('value', 'EXIT');
+    exitLabel.setAttribute('align', 'center');
+    exitLabel.setAttribute('color', t.accent);
+    exitLabel.setAttribute('width', 3);
+    exitLabel.setAttribute('position', `0 ${doorH - 0.3} ${halfD - 0.03}`);
+    exitLabel.setAttribute('rotation', '0 180 0');
+    exitLabel.setAttribute('side', 'front');
+    scene.appendChild(exitLabel);
 
     // ─── LIGHTING ───────────────────────────────────────────────
     // Three.js r155+ uses physically-based lighting by default
@@ -277,13 +282,16 @@
       }
     });
 
-    // Simple boundary clamp — prevents walking through walls.
-    // Runs every frame, hard-snaps player back if they cross.
-    const boundary = {
-      minX: -halfW + 0.5, maxX: halfW - 0.5,
-      minZ: -halfD + 0.5, maxZ: halfD - 0.5,
-    };
-    rig.setAttribute('cs-boundary', JSON.stringify(boundary));
+    // Boundary clamp — keep player inside the room. The doorway
+    // gap in the south wall would otherwise let them walk OUT into
+    // the void; instead, exits happen via the "Back to Mall" HUD
+    // button (always visible in top-left of page).
+    rig.setAttribute('cs-boundary', {
+      minX: -halfW + 0.5,
+      maxX:  halfW - 0.5,
+      minZ: -halfD + 0.5,
+      maxZ:  halfD - 0.5,
+    });
 
     console.log('[CSRoom] ✓ room built —', cfg.id);
   }
@@ -319,7 +327,15 @@
         el.setAttribute('shadow', 'cast: true; receive: true');
         scene.appendChild(el);
 
-        // Bbox probe (same diagnostic as cafe-sativa-props.js)
+        // After load: measure bbox + auto-snap to floor.
+        // Many GLBs (especially Meshy outputs) have their geometric
+        // origin at the model's CENTER rather than its base, which
+        // means setting y=0 buries half the prop below the floor.
+        // We measure the world-space bbox after load, then nudge the
+        // entity up by `-bbox.min.y` so its bottom hits y=0 exactly.
+        //
+        // To DISABLE this auto-snap (e.g. for wall-mounted props that
+        // should hover off the floor), set spec.snap = false.
         el.addEventListener('model-loaded', function onLoaded() {
           el.removeEventListener('model-loaded', onLoaded);
           try {
@@ -328,6 +344,25 @@
             const box = new window.THREE.Box3().setFromObject(obj);
             const size = box.getSize(new window.THREE.Vector3());
             const fileName = prop.src.split('/').pop();
+
+            // Auto-snap to floor unless disabled
+            const snap = spec.snap !== false;
+            if (snap) {
+              const minY = box.min.y;
+              const currentY = el.getAttribute('position').y;
+              if (Math.abs(minY) > 0.01) {
+                el.setAttribute('position', {
+                  x: el.getAttribute('position').x,
+                  y: currentY - minY,
+                  z: el.getAttribute('position').z,
+                });
+                console.log(
+                  `[CSRoom:snap] ${fileName} bbox.min.y=${minY.toFixed(2)} → ` +
+                  `pos.y ${currentY.toFixed(2)} → ${(currentY - minY).toFixed(2)}`
+                );
+              }
+            }
+
             console.log(
               `[CSRoom:bbox] ${fileName} @ scale=${spec.scale || '1 1 1'} → ` +
               `W=${size.x.toFixed(2)}m  H=${size.y.toFixed(2)}m  D=${size.z.toFixed(2)}m`
