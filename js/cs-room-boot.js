@@ -107,15 +107,10 @@
     const t = cfg.theme;
 
     // ─── ENVIRONMENT ────────────────────────────────────────────
-    // Sky color reads as the "outside" through any window/portal —
-    // for an interior-only room we don't need it visible, but
-    // setting it warm avoids a black void if the camera clips out.
-    const sky = document.createElement('a-sky');
-    sky.setAttribute('color', t.ambient);
-    scene.appendChild(sky);
-
-    // Fog: subtle warm haze adds depth without being noticeable.
-    scene.setAttribute('fog', `type: linear; color: ${t.ambient}; near: 8; far: 25`);
+    // Solid background color set on <a-scene> via the `background`
+    // attribute is enough — no need for a-sky which can occlude
+    // interior geometry on some renderers.
+    // Fog removed: it was hiding the back wall on dark interiors.
 
     // ─── ROOM SHELL ─────────────────────────────────────────────
     // Floor — slightly larger than room footprint to avoid edge
@@ -185,29 +180,33 @@
     scene.appendChild(portal);
 
     // ─── LIGHTING ───────────────────────────────────────────────
-    // Ambient — warm low-key fill
+    // Standalone interior — needs higher base intensity than the
+    // main mall scene (which has additional global lights). Three
+    // layers: ambient fill, hemisphere wrap, and a center point.
+
+    // Ambient — neutral mid-grey fill so geometry is always visible
+    // (using a too-warm or too-dim color makes dark walls disappear).
     const ambient = document.createElement('a-light');
     ambient.setAttribute('type', 'ambient');
-    ambient.setAttribute('color', t.ambient);
-    ambient.setAttribute('intensity', 0.4);
+    ambient.setAttribute('color', '#ffffff');
+    ambient.setAttribute('intensity', 0.6);
     scene.appendChild(ambient);
 
-    // Hemisphere — sky/ground gradient feel
+    // Hemisphere — gives slight warm-from-above, cool-from-below feel
     const hemi = document.createElement('a-light');
     hemi.setAttribute('type', 'hemisphere');
     hemi.setAttribute('color', t.accent);
     hemi.setAttribute('groundColor', t.floor);
-    hemi.setAttribute('intensity', 0.3);
+    hemi.setAttribute('intensity', 0.5);
     scene.appendChild(hemi);
 
-    // Center spot — warm pool over the room's focal area
+    // Center point — warm pool over the room's focal area
     const spot = document.createElement('a-light');
     spot.setAttribute('type', 'point');
     spot.setAttribute('color', t.accent);
-    spot.setAttribute('intensity', 0.6);
-    spot.setAttribute('distance', Math.max(cfg.width, cfg.depth) * 1.2);
+    spot.setAttribute('intensity', 1.2);
+    spot.setAttribute('distance', Math.max(cfg.width, cfg.depth) * 1.5);
     spot.setAttribute('position', `0 ${h - 0.5} 0`);
-    spot.setAttribute('shadow', 'cast: true');
     scene.appendChild(spot);
 
     // ─── PROPS ──────────────────────────────────────────────────
