@@ -60,45 +60,53 @@
   const ROOM_PROPS = {
 
     // ═══ BAR ═════════════════════════════════════════════════
-    // Local coordinates: room is 10m × 8m centered at origin.
+    // BBOX REALITY CHECK (from probe at scale=1.0):
+    //   bar-counter-walnut.glb     → W=2.00m H=1.26m D=0.97m
+    //   bar-backbar-shelf.glb      → W=2.00m H=0.87m D=0.32m
+    //   bar-stool-leather.glb      → W=0.94m H=2.00m D=0.94m  ⚠️ stool is 2m tall
+    //
+    // The Meshy outputs render about 2x bigger than the prompt's
+    // stated dimensions across the board. Two options: shrink the
+    // props 2x (makes counter/backbar ok-ish but loses detail) OR
+    // accept Meshy's bigger scale and size the room around them.
+    //
+    // We pick a hybrid: counter & backbar stay at 1.0 (close to
+    // intended), stool gets 0.42 to land at human-realistic height
+    // (~0.85m). Room dimensions are bumped up in cs-bar.html to
+    // accommodate the 2m-wide counter without feeling cramped.
+    //
+    // Local coords: room is 10m × 8m centered at origin.
     //   x: -5 to +5  (west to east)
     //   z: -4 to +4  (north/far wall to south/entrance)
     //
     // Layout: backbar against north wall (-z far), counter
     // parallel to it 1.5m closer to player, 3 stools at the south
-    // face of the counter for patrons. Player spawns near south
-    // wall and walks north toward the counter.
-    //
-    // Counter is at z=0 (room center). Backbar 1.5m behind it
-    // (z=-1.5). Stools 1.5m in front (z=+1.5) so walking patrons
-    // approach the bar naturally.
+    // face of the counter.
     'bar': [
       {
-        // Counter — archived from earlier round, baked 0.01 scale,
-        // manifest scale 1.0 renders at proper 4m × 1.1m × 0.9m.
+        // Counter — renders 2m × 1.26m × 0.97m at scale 1.0
         src: 'assets/models/_archive/bar-counter-walnut.glb',
         instances: [
           { pos: '0 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
-        // Backbar shelf — pressed against north wall (z=-4 + half
-        // its 0.4m depth = effective z=-3.8). Use z=-3.5 for a bit
-        // of clearance from the wall.
+        // Backbar shelf — renders 2m × 0.87m × 0.32m at scale 1.0
+        // Pressed against north wall (z=-4 + half its 0.32m depth)
         src: 'assets/models/props/bar-backbar-shelf.glb',
         instances: [
-          { pos: '0 0 -3.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -3.7', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
-        // Three stools at south face of counter, 1m apart.
-        // Counter front is at z=0 + half-depth (~0.45m), so stools
-        // sit at z=1.0 to leave knee room.
+        // Stool — renders 0.94 × 2.0 × 0.94 at scale 1.0 (Meshy
+        // exported huge). 0.42 → ~0.4m × 0.85m × 0.4m, real bar
+        // stool proportions. Three stools at south face of counter.
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
-          { pos: '-1.5 0 1.2', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-          { pos: ' 0   0 1.2', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-          { pos: ' 1.5 0 1.2', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '-1.5 0 1.0', rot: '0 0 0', scale: '0.42 0.42 0.42' },
+          { pos: ' 0   0 1.0', rot: '0 0 0', scale: '0.42 0.42 0.42' },
+          { pos: ' 1.5 0 1.0', rot: '0 0 0', scale: '0.42 0.42 0.42' },
         ],
       },
     ],

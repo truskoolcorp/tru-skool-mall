@@ -236,14 +236,21 @@
 
     let targets = [];
 
+    // The tuner runs in two contexts:
+    //  1. Main mall scene (index.html) — INSTANCES has foyer props
+    //  2. Per-room scene (cs-bar.html etc) — props are tracked in
+    //     window.__CS_INSTANCES by cs-room-boot.js
+    // Merge both so ?prop-tune=<roomId> works in either context.
+    const allInstances = INSTANCES.concat(window.__CS_INSTANCES || []);
+
     if (tune.includes('/')) {
       // Single slot
       const [roomId, slot] = tune.split('/');
-      const t = INSTANCES.find((i) => i.roomId === roomId && i.slot.startsWith(slot + '/'));
+      const t = allInstances.find((i) => i.roomId === roomId && i.slot.startsWith(slot + '/'));
       if (t) targets = [t];
     } else {
       // Whole room — multi-prop tuner
-      targets = INSTANCES.filter((i) => i.roomId === tune);
+      targets = allInstances.filter((i) => i.roomId === tune);
     }
 
     if (targets.length === 0) {
