@@ -201,26 +201,39 @@
     const scene = document.querySelector('a-scene');
     if (!scene) return;
 
-    const roomIds = Object.keys(PROPS);
-    let totalPlaced = 0;
-    let totalSkipped = 0;
+    // If we're inside a per-room scene (cs-bar.html, cs-cigar.html, etc.)
+    // it has its own boot pipeline (CSRoom.boot) that already loaded the
+    // room-specific props. We must NOT also load the foyer here, or
+    // Laviche and the desk will appear in every per-room scene.
+    //
+    // Detection: CSRoom is defined by js/cs-room-boot.js, which is only
+    // included by per-room HTMLs.
+    const isPerRoomScene = !!window.CSRoom;
 
-    for (const roomId of roomIds) {
-      const result = await loadRoom(roomId, scene);
-      if (result) {
-        totalPlaced += result.placed;
-        totalSkipped += result.skipped;
-        if (result.skipped > 0) {
-          console.log(`[CSProps] ${roomId}: placed ${result.placed} instances, skipped ${result.skipped}/${result.totalProps} prop types (GLBs missing)`);
-        } else if (result.placed > 0) {
-          console.log(`[CSProps] ${roomId}: placed ${result.placed} instances from ${result.totalProps} prop types`);
+    if (!isPerRoomScene) {
+      const roomIds = Object.keys(PROPS);
+      let totalPlaced = 0;
+      let totalSkipped = 0;
+
+      for (const roomId of roomIds) {
+        const result = await loadRoom(roomId, scene);
+        if (result) {
+          totalPlaced += result.placed;
+          totalSkipped += result.skipped;
+          if (result.skipped > 0) {
+            console.log(`[CSProps] ${roomId}: placed ${result.placed} instances, skipped ${result.skipped}/${result.totalProps} prop types (GLBs missing)`);
+          } else if (result.placed > 0) {
+            console.log(`[CSProps] ${roomId}: placed ${result.placed} instances from ${result.totalProps} prop types`);
+          }
         }
       }
+
+      console.log(`[CSProps] Total placed: ${totalPlaced} instances. Skipped: ${totalSkipped} prop types (Meshy GLBs not yet generated).`);
+    } else {
+      console.log('[CSProps] per-room scene detected — skipping foyer auto-load (props handled by CSRoom)');
     }
 
-    console.log(`[CSProps] Total placed: ${totalPlaced} instances. Skipped: ${totalSkipped} prop types (Meshy GLBs not yet generated).`);
-
-    // Tuner activation
+    // Tuner activation runs in both contexts (foyer + per-room).
     initTuner();
   }
 
