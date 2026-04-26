@@ -60,52 +60,18 @@
   const ROOM_PROPS = {
 
     // ═══ BAR ═════════════════════════════════════════════════
-    // Room: 6m × 5m × 3.2m centered at origin.
-    //   x: -3 to +3  (west to east)
-    //   z: -2.5 to +2.5  (north/far wall to south/entrance)
+    // Bar is now built ENTIRELY from composition primitives in
+    // cs-bar.html (see CSRoom.boot composition array). The Meshy
+    // bar-counter-walnut.glb has been retired in favor of primitive
+    // geometry that gives us:
+    //   - Full control over proportions (7m bar, not the awkward
+    //     2m Meshy gave us)
+    //   - 36 bottles on 3 shelves (vs the GLB's frozen interior)
+    //   - 7 stools in a precise row (brass + oxblood from primitives)
+    //   - Every pendant gets its own point light
     //
-    // GLB ANALYSIS (measured via Box3 in console):
-    //   bar-counter-walnut.glb is actually a COMPLETE BAR UNIT:
-    //   - Counter base (wood paneling, brass details) at floor
-    //   - White service shelf running through middle at y=0.72m
-    //   - Built-in backbar with glass-front bottle display above
-    //   - Total height: 1.26m
-    //   So this single GLB is the entire bar — no separate
-    //   backbar shelf needed (would render as a redundant shelf
-    //   floating in mid-air).
-    //
-    //   bar-stool-leather.glb at scale 1.0 is 2m tall (Meshy
-    //   exported 2x oversized). At scale 0.30 → ~0.60m seat
-    //   height, which sits 12cm BELOW the white service shelf
-    //   at 0.72m. Reads as a proper counter-height bar.
-    //
-    // Layout: counter centered, 3 stools at front face. No
-    // separate backbar (it's built into the counter GLB).
-    'bar': [
-      {
-        // Counter — auto-snap to floor. Centered, with back face
-        // ~50cm off the back wall for breathing room.
-        src: 'assets/models/_archive/bar-counter-walnut.glb',
-        instances: [
-          { pos: '0 0 -0.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-      {
-        // Stools at south face of counter. Counter front face is
-        // at z = -0.5 + 0.485 ≈ z=0, so stools at z=0.4 leaves
-        // proper knee clearance. Spaced 0.6m apart.
-        //
-        // Scale 0.30 → ~0.60m seat height (clearly below the
-        // white service shelf at 0.72m). Patron sits comfortably
-        // with elbows resting on the white shelf.
-        src: 'assets/models/props/bar-stool-leather.glb',
-        instances: [
-          { pos: '-0.6 0 0.4', rot: '0 0 0', scale: '0.30 0.30 0.30' },
-          { pos: ' 0   0 0.4', rot: '0 0 0', scale: '0.30 0.30 0.30' },
-          { pos: ' 0.6 0 0.4', rot: '0 0 0', scale: '0.30 0.30 0.30' },
-        ],
-      },
-    ],
+    // Empty array = no Meshy props loaded for this room.
+    'bar': [],
 
     // ═══ CIGAR LOUNGE (VIP) ══════════════════════════════════
     // Room: 5m × 4m × 3.0m centered at origin.

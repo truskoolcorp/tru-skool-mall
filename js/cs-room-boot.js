@@ -288,6 +288,24 @@
       console.warn('[CSRoom] no props in catalog for', cfg.id);
     }
 
+    // ─── COMPOSITION (Base44-style atmospheric decor) ───────────
+    // Each composition entry adds carefully-arranged primitive
+    // geometry (bottle walls, pendant arrays, baseboards, candles,
+    // etc.) to make the room feel like a real interior space.
+    // Handled by js/cs-room-decor.js — see CSDecor.build for the
+    // full handler list.
+    //
+    // Order matters: baseboards/wainscoting go before bottles, so
+    // bottles sit visually on top. Iterate the composition as authored.
+    if (cfg.composition && Array.isArray(cfg.composition)) {
+      if (window.CSDecor && typeof window.CSDecor.build === 'function') {
+        cfg.composition.forEach((item) => CSDecor.build(scene, item, cfg));
+        console.log(`[CSRoom] composition built: ${cfg.composition.length} items`);
+      } else {
+        console.warn('[CSRoom] composition specified but CSDecor not loaded');
+      }
+    }
+
     // ─── PLAYER ─────────────────────────────────────────────────
     // Spawn near the south door, looking north (-Z) into the room.
     //

@@ -6,26 +6,19 @@
   <title>Cocktail Bar — Café Sativa</title>
   <meta name="description" content="A walnut-and-brass cocktail temple. Rare bottles, marble counters, warm pendants — Café Sativa's bar at the Tru Skool Mall.">
 
-  <!-- ═══════════════════════════════════════════════════════
-       SCRIPT LOAD ORDER (must match across all per-room scenes)
-
-         1. A-Frame core (defines AFRAME, THREE)
-         2. A-Frame Extras (movement-controls, etc.)
-         3. gltf-extensions.js (Meshopt decoder — REQUIRED for
-            optimized GLBs from tools/optimize-glbs.js to render)
-         4. cs-room-props.js (catalog of placements)
-         5. cs-room-boot.js (procedural room builder)
-         6. cafe-sativa-props.js (provides the interactive tuner
-            via ?prop-tune=<roomId>)
-         7. Inline boot config
-
-       Skipping step 3 = props render invisible.
-       Skipping step 4 = no props loaded.
-       Order matters: boot must run after props catalog is loaded.
-       ═══════════════════════════════════════════════════════ -->
+  <!-- Script load order matters:
+       1. A-Frame core (defines AFRAME, THREE)
+       2. A-Frame Extras (movement-controls)
+       3. gltf-extensions.js (Meshopt decoder for optimized GLBs)
+       4. cs-room-decor.js (composition primitives library)
+       5. cs-room-props.js (Meshy prop catalog — empty for bar now)
+       6. cs-room-boot.js (room builder + composition runner)
+       7. cafe-sativa-props.js (interactive tuner support)
+       8. Inline boot config -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
   <script src="js/gltf-extensions.js"></script>
+  <script src="js/cs-room-decor.js"></script>
   <script src="js/cs-room-props.js"></script>
   <script src="js/cs-room-boot.js"></script>
   <script src="js/cafe-sativa-props.js"></script>
@@ -33,67 +26,22 @@
   <link rel="stylesheet" href="css/ui.css">
 
   <style>
-    /* Minimal HUD — back link + room title in top-left */
-    #room-hud {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 100;
-      color: #c9a84c;
-      font-family: 'Cinzel', 'Georgia', serif;
-      pointer-events: auto;
-    }
-    #room-hud .room-title {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-    }
-    #room-hud .room-tagline {
-      font-size: 13px;
-      font-weight: 400;
-      font-style: italic;
-      opacity: 0.85;
-      margin-top: 2px;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
-    }
-    #room-hud .back-link {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 14px;
-      background: rgba(10,10,15,0.8);
-      border: 1px solid #c9a84c;
-      border-radius: 4px;
-      color: #c9a84c;
-      text-decoration: none;
-      font-family: system-ui, sans-serif;
-      font-size: 13px;
-      transition: background 0.2s;
-    }
-    #room-hud .back-link:hover {
-      background: rgba(201,168,76,0.2);
-    }
-
-    /* Loading veil — fades out when scene boots */
-    #loading-veil {
-      position: fixed;
-      inset: 0;
-      background: #0a0805;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #c9a84c;
-      font-family: system-ui, sans-serif;
-      font-size: 14px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      transition: opacity 0.6s ease;
-    }
-    #loading-veil.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    #room-hud { position: fixed; top: 16px; left: 16px; z-index: 100;
+      color: #c9a84c; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
+    #room-hud .room-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    #room-hud .room-tagline { font-size: 13px; font-weight: 400; font-style: italic;
+      opacity: 0.85; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    #room-hud .back-link { display: inline-block; margin-top: 10px; padding: 6px 14px;
+      background: rgba(10,10,15,0.8); border: 1px solid #c9a84c; border-radius: 4px;
+      color: #c9a84c; text-decoration: none; font-family: system-ui, sans-serif;
+      font-size: 13px; transition: background 0.2s; }
+    #room-hud .back-link:hover { background: rgba(201,168,76,0.2); }
+    #loading-veil { position: fixed; inset: 0; background: #0a0805; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; color: #c9a84c;
+      font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: opacity 0.6s ease; }
+    #loading-veil.hidden { opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -109,7 +57,7 @@
   <a-scene
     id="room-scene"
     renderer="antialias: true; colorManagement: true"
-    background="color: #1a1410"
+    background="color: #0a0604"
     cursor="rayOrigin: mouse"
     loading-screen="enabled: false"
     vr-mode-ui="enabled: false">
@@ -117,14 +65,25 @@
 
   <script>
     // ═══════════════════════════════════════════════════════════
-    // ROOM CONFIG — change these values to make a new room
+    // COCKTAIL BAR — Base44-style cinematic composition
     //
-    // To create cs-main-lounge.html, cs-cigar.html, etc:
-    //   1. Copy this file, rename
-    //   2. Update the <title>, hud title/tagline, loading veil
-    //   3. Update the boot config below (id, name, dimensions, theme)
-    //   4. Make sure js/cs-room-props.js has placements for that id
-    //   5. Done — everything else is shared
+    // Built from primitives via cs-room-decor.js. We deliberately
+    // skip the Meshy bar GLB this time — primitives let us control
+    // every proportion and avoid the 'small counter floating in
+    // a small room' problem we hit earlier.
+    //
+    // ROOM: 11m wide × 6m deep × 3.6m tall
+    //   Long horizontal proportion lets the 7m bar stretch across
+    //   nearly the full width and read as substantial. 3.6m ceiling
+    //   accommodates 5 pendants without crowding.
+    //
+    // COMPOSITION ORDER (matters!)
+    //   1. Architectural trim    (wainscoting, baseboard, crown)
+    //   2. Picture frames        (atmospheric wall art)
+    //   3. Bar counter           (primitive — the hero)
+    //   4. Bottle wall           (36 bottles on 3 shelves)
+    //   5. Stool row             (7 stools, brass + oxblood)
+    //   6. Pendant array         (5 lights with own point lights)
     // ═══════════════════════════════════════════════════════════
 
     CSRoom.boot({
@@ -132,28 +91,97 @@
       name: 'Cocktail Bar',
       tagline: 'Liquid Artistry, Reimagined',
 
-      // Room dimensions tuned to match the actual prop sizes.
-      // Counter is 2m wide × 1.26m tall, so a 6×5 room makes the
-      // bar setup feel appropriately filled rather than lost in a
-      // huge empty box. (Older 10×8 layout was sized for a
-      // hypothetical 4m counter that we don't have.)
-      width: 6,
-      depth: 5,
-      height: 3.2,
+      width: 11,
+      depth: 6,
+      height: 3.6,
 
-      // Bar theme: walnut + brass + warm amber glow
+      // Walnut + brass + warm amber palette
       theme: {
-        wall:    '#1a1410',  // dark walnut
-        floor:   '#0f0a06',  // near-black aged wood
-        ceiling: '#0a0805',  // smoky black
-        accent:  '#c9a84c',  // brass gold
-        ambient: '#3a2614',  // warm low ambient
+        wall:    '#1a1410',   // dark walnut
+        floor:   '#0c0805',   // near-black floor
+        ceiling: '#070504',   // smoky black
+        accent:  '#c9a84c',   // brass gold
+        ambient: '#3a2614',   // warm low ambient
       },
+
+      composition: [
+        // ─── ARCHITECTURAL DETAILS ──────────────────────────────
+        // Walnut wainscoting with brass chair-rail on 3 walls
+        // (not south where the door is).
+        {
+          type: 'wainscoting',
+          height: 1.05,
+          walls: ['north', 'east', 'west'],
+          color: '#241810',           // walnut panel face
+          stripeColor: '#c9a84c',     // brass chair-rail
+        },
+        // Crown molding at ceiling line
+        { type: 'crownMolding', height: 0.18, color: '#c9a84c' },
+        // Baseboard at floor line
+        { type: 'baseboard',    height: 0.12, color: '#c9a84c' },
+
+        // ─── ART ON SIDE WALLS ──────────────────────────────────
+        { type: 'pictureFrames', wall: 'east', count: 3, y: 1.95,
+          frameWidth: 0.7, frameHeight: 0.95, length: 4.5 },
+        { type: 'pictureFrames', wall: 'west', count: 3, y: 1.95,
+          frameWidth: 0.7, frameHeight: 0.95, length: 4.5 },
+
+        // ─── BAR COUNTER ────────────────────────────────────────
+        // 7m long, centered, sitting back from center so stools
+        // have south-side approach room.
+        {
+          type: 'barCounter',
+          length: 7,
+          depth: 0.7,
+          height: 1.10,
+          x: 0,
+          z: -1.3,
+          color: '#3a2618',   // walnut body
+          topColor: '#0c0604',// dark marble top
+        },
+
+        // ─── BOTTLE WALL ────────────────────────────────────────
+        // 36 bottles on 3 shelves, mounted on north wall behind the
+        // bar. This is the visual showstopper.
+        {
+          type: 'bottleWall',
+          wall: 'north',
+          shelves: 3,
+          perShelf: 12,
+          length: 7,
+          startY: 1.5,
+          shelfGap: 0.45,
+          shelfColor: '#0c0604',
+        },
+
+        // ─── BAR STOOLS ─────────────────────────────────────────
+        // 7 stools along south face of bar, brass posts + oxblood seats.
+        {
+          type: 'stoolRow',
+          count: 7,
+          z: -0.4,
+          axis: 'x',
+          length: 6.5,
+          seatHeight: 0.75,
+          seatColor: '#7a3a2a',  // oxblood leather
+          postColor: '#c9a84c',  // brass
+        },
+
+        // ─── PENDANT LIGHTS ─────────────────────────────────────
+        // 5 pendants over the counter. Each has its own point light
+        // — discrete warm pools instead of one washing dome.
+        {
+          type: 'pendantArray',
+          count: 5,
+          axis: 'x',
+          z: -1.0,
+          color: '#c9a84c',
+          cordLength: 1.1,
+        },
+      ],
     });
 
-    // Hide loading veil once the scene's loaded enough to render.
     document.querySelector('a-scene').addEventListener('loaded', () => {
-      // Small extra delay so first-frame doesn't flash through
       setTimeout(() => {
         document.getElementById('loading-veil').classList.add('hidden');
       }, 800);
