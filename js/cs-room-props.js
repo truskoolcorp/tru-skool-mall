@@ -64,50 +64,45 @@
     //   x: -3 to +3  (west to east)
     //   z: -2.5 to +2.5  (north/far wall to south/entrance)
     //
-    // Layout: counter centered facing south, backbar mounted on
-    // north wall above counter, 3 stools at counter front. Player
-    // spawns at (0, 1.6, 1.3) facing the bar (-Z direction).
+    // GLB ANALYSIS (measured via Box3 in console):
+    //   bar-counter-walnut.glb is actually a COMPLETE BAR UNIT:
+    //   - Counter base (wood paneling, brass details) at floor
+    //   - White service shelf running through middle at y=0.72m
+    //   - Built-in backbar with glass-front bottle display above
+    //   - Total height: 1.26m
+    //   So this single GLB is the entire bar — no separate
+    //   backbar shelf needed (would render as a redundant shelf
+    //   floating in mid-air).
     //
-    // BBOX (at scale 1.0):
-    //   bar-counter-walnut.glb   → W=2.00m H=1.26m D=0.97m
-    //   bar-backbar-shelf.glb    → W=2.00m H=0.87m D=0.32m
-    //   bar-stool-leather.glb    → W=0.94m H=2.00m D=0.94m  (needs 0.42 scale)
+    //   bar-stool-leather.glb at scale 1.0 is 2m tall (Meshy
+    //   exported 2x oversized). At scale 0.30 → ~0.60m seat
+    //   height, which sits 12cm BELOW the white service shelf
+    //   at 0.72m. Reads as a proper counter-height bar.
+    //
+    // Layout: counter centered, 3 stools at front face. No
+    // separate backbar (it's built into the counter GLB).
     'bar': [
       {
         // Counter — auto-snap to floor. Centered, with back face
-        // 0.5m off the back wall (counter is 0.97m deep so its
-        // back edge sits at z=-1.0, leaving 1.5m to the wall for
-        // the bartender).
+        // ~50cm off the back wall for breathing room.
         src: 'assets/models/_archive/bar-counter-walnut.glb',
         instances: [
           { pos: '0 0 -0.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
-        // Backbar shelf — wall-mounted at counter-top height
-        // (1.4m). Pressed against north wall (z=-2.5 + half its
-        // 0.32m depth = z=-2.34). Use z=-2.4 for slight clearance.
-        // snap=false because we want it floating off the floor.
-        src: 'assets/models/props/bar-backbar-shelf.glb',
-        instances: [
-          { pos: '0 1.4 -2.4', rot: '0 0 0', scale: '1.00 1.00 1.00', snap: false },
-        ],
-      },
-      {
-        // Stools at south face of counter. Counter front is at
-        // z = -0.5 + 0.485 ≈ z=0, so stools at z=0.4 leaves knee
-        // room. Spaced 0.6m apart for the 2m counter width.
+        // Stools at south face of counter. Counter front face is
+        // at z = -0.5 + 0.485 ≈ z=0, so stools at z=0.4 leaves
+        // proper knee clearance. Spaced 0.6m apart.
         //
-        // Scale 0.36 → ~0.72m tall stools (seat at ~0.72m). At
-        // 0.42 they were 0.84m which felt too close to the 1.26m
-        // counter height — patrons would be eating with their
-        // chin on the counter. 0.72m gives proper bar geometry:
-        // counter top at 1.26m, seat at 0.72m, elbows at ~1.05m.
+        // Scale 0.30 → ~0.60m seat height (clearly below the
+        // white service shelf at 0.72m). Patron sits comfortably
+        // with elbows resting on the white shelf.
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
-          { pos: '-0.6 0 0.4', rot: '0 0 0', scale: '0.36 0.36 0.36' },
-          { pos: ' 0   0 0.4', rot: '0 0 0', scale: '0.36 0.36 0.36' },
-          { pos: ' 0.6 0 0.4', rot: '0 0 0', scale: '0.36 0.36 0.36' },
+          { pos: '-0.6 0 0.4', rot: '0 0 0', scale: '0.30 0.30 0.30' },
+          { pos: ' 0   0 0.4', rot: '0 0 0', scale: '0.30 0.30 0.30' },
+          { pos: ' 0.6 0 0.4', rot: '0 0 0', scale: '0.30 0.30 0.30' },
         ],
       },
     ],
