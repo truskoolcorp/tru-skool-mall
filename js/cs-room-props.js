@@ -97,11 +97,17 @@
         // Stools at south face of counter. Counter front is at
         // z = -0.5 + 0.485 ≈ z=0, so stools at z=0.4 leaves knee
         // room. Spaced 0.6m apart for the 2m counter width.
+        //
+        // Scale 0.36 → ~0.72m tall stools (seat at ~0.72m). At
+        // 0.42 they were 0.84m which felt too close to the 1.26m
+        // counter height — patrons would be eating with their
+        // chin on the counter. 0.72m gives proper bar geometry:
+        // counter top at 1.26m, seat at 0.72m, elbows at ~1.05m.
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
-          { pos: '-0.6 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
-          { pos: ' 0   0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
-          { pos: ' 0.6 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
+          { pos: '-0.6 0 0.4', rot: '0 0 0', scale: '0.36 0.36 0.36' },
+          { pos: ' 0   0 0.4', rot: '0 0 0', scale: '0.36 0.36 0.36' },
+          { pos: ' 0.6 0 0.4', rot: '0 0 0', scale: '0.36 0.36 0.36' },
         ],
       },
     ],

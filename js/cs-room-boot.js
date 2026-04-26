@@ -150,18 +150,37 @@
     addWall(scene, 'wall-south-t', `0 ${h - (h - doorH) / 2} ${halfD}`,         doorW, h - doorH,'0 180 0', t.wall);
 
     // ─── DOORWAY ────────────────────────────────────────────────
-    // Visual-only door frame. The actual "go back to mall"
-    // interaction is the HUD button in the top-left of the page,
-    // which is always visible and works regardless of where the
-    // player is looking. Trying to click an in-world 3D text
-    // through dark walls is unreliable.
+    // Three pieces make the door GAP read as a real door from inside:
     //
-    // We render two single-sided panels: a glow on the inside face
-    // (when facing the door from inside the room) and another on
-    // the outside face. This avoids the z-fighting double-sided
-    // bug where the text bled through opposite walls.
+    //   1. Backdrop plane BEHIND the gap (outside the room).
+    //      Without this, the gap shows pure void/black, which looks
+    //      identical to a dark wall. The backdrop gives "looking
+    //      into a lit hallway" depth cue.
+    //
+    //   2. Glow accent plane INSIDE the gap. Brighter opacity so
+    //      it clearly reads as a portal, not a smudge.
+    //
+    //   3. Brass frame around the opening + EXIT label centered
+    //      above. Together they signal "this is the way out."
+    //
+    // The actual exit interaction is handled by cs-boundary's
+    // exitZ trigger — walking through this gap auto-redirects.
 
-    // Inside-facing glow panel
+    // 1. Backdrop — sits 1.5m OUTSIDE the south wall, painted in a
+    //    warm corridor color so the doorway reads as lit space
+    //    beyond, not void.
+    const doorBackdrop = document.createElement('a-plane');
+    doorBackdrop.setAttribute('id', 'door-backdrop');
+    doorBackdrop.setAttribute('position', `0 ${doorH / 2} ${halfD + 1.5}`);
+    doorBackdrop.setAttribute('rotation', '0 0 0'); // faces -Z (into the room)
+    doorBackdrop.setAttribute('width', doorW + 1);
+    doorBackdrop.setAttribute('height', doorH);
+    doorBackdrop.setAttribute('color', '#3a2614'); // warm corridor brown
+    doorBackdrop.setAttribute('side', 'double');
+    scene.appendChild(doorBackdrop);
+
+    // 2. Glow panel inside the doorway — bright enough to clearly
+    //    pop as the focal exit, faces inward.
     const portalIn = document.createElement('a-plane');
     portalIn.setAttribute('id', 'door-glow-inside');
     portalIn.setAttribute('position', `0 ${doorH / 2} ${halfD - 0.04}`);
@@ -169,19 +188,53 @@
     portalIn.setAttribute('width', doorW - 0.05);
     portalIn.setAttribute('height', doorH - 0.05);
     portalIn.setAttribute('color', t.accent);
-    portalIn.setAttribute('opacity', 0.12);
+    portalIn.setAttribute('opacity', 0.35);
     portalIn.setAttribute('side', 'front');
+    portalIn.setAttribute('material', 'shader: flat; transparent: true');
     scene.appendChild(portalIn);
 
-    // Optional in-world "EXIT" label only visible from inside
+    // 3a. Brass frame around the opening — top + 2 sides, ~5cm thick.
+    //     Positions follow the doorway boundary in the south wall.
+    const frameThickness = 0.06;
+    const frameZ = halfD - 0.02; // slightly inside south wall
+
+    // Top of frame (just above door opening)
+    const frameTop = document.createElement('a-box');
+    frameTop.setAttribute('position', `0 ${doorH + frameThickness / 2} ${frameZ}`);
+    frameTop.setAttribute('width', doorW + frameThickness * 2);
+    frameTop.setAttribute('height', frameThickness);
+    frameTop.setAttribute('depth', 0.05);
+    frameTop.setAttribute('color', t.accent);
+    scene.appendChild(frameTop);
+
+    // Left side of frame
+    const frameLeft = document.createElement('a-box');
+    frameLeft.setAttribute('position', `${-doorW / 2 - frameThickness / 2} ${doorH / 2} ${frameZ}`);
+    frameLeft.setAttribute('width', frameThickness);
+    frameLeft.setAttribute('height', doorH);
+    frameLeft.setAttribute('depth', 0.05);
+    frameLeft.setAttribute('color', t.accent);
+    scene.appendChild(frameLeft);
+
+    // Right side of frame
+    const frameRight = document.createElement('a-box');
+    frameRight.setAttribute('position', `${doorW / 2 + frameThickness / 2} ${doorH / 2} ${frameZ}`);
+    frameRight.setAttribute('width', frameThickness);
+    frameRight.setAttribute('height', doorH);
+    frameRight.setAttribute('depth', 0.05);
+    frameRight.setAttribute('color', t.accent);
+    scene.appendChild(frameRight);
+
+    // 3b. "EXIT ←" label above the door, faces the room interior
     const exitLabel = document.createElement('a-text');
-    exitLabel.setAttribute('value', 'EXIT');
+    exitLabel.setAttribute('value', '← EXIT');
     exitLabel.setAttribute('align', 'center');
     exitLabel.setAttribute('color', t.accent);
-    exitLabel.setAttribute('width', 3);
-    exitLabel.setAttribute('position', `0 ${doorH - 0.3} ${halfD - 0.03}`);
+    exitLabel.setAttribute('width', 4);
+    exitLabel.setAttribute('position', `0 ${doorH + 0.35} ${halfD - 0.03}`);
     exitLabel.setAttribute('rotation', '0 180 0');
     exitLabel.setAttribute('side', 'front');
+    exitLabel.setAttribute('material', 'shader: flat');
     scene.appendChild(exitLabel);
 
     // ─── LIGHTING ───────────────────────────────────────────────
