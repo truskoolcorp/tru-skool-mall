@@ -282,16 +282,24 @@
       }
     });
 
-    // Boundary clamp — keep player inside the room. The doorway
-    // gap in the south wall would otherwise let them walk OUT into
-    // the void; instead, exits happen via the "Back to Mall" HUD
-    // button (always visible in top-left of page).
-    rig.setAttribute('cs-boundary', {
-      minX: -halfW + 0.5,
-      maxX:  halfW - 0.5,
-      minZ: -halfD + 0.5,
-      maxZ:  halfD - 0.5,
-    });
+    // Boundary clamp + door auto-transition.
+    //
+    // Two responsibilities:
+    //  1. Clamp player to room bounds on east/west/north walls
+    //  2. If player crosses the SOUTH boundary (where the door is),
+    //     auto-redirect to the main mall instead of letting them
+    //     walk into the void.
+    //
+    // This means walking out the door = go back to mall. No
+    // dead-end "outside in nothing" state.
+    const boundStr =
+      `minX: ${-halfW + 0.5}; ` +
+      `maxX: ${ halfW - 0.5}; ` +
+      `minZ: ${-halfD + 0.5}; ` +
+      `exitZ: ${ halfD - 0.5}; ` +    // crossing this triggers exit
+      `exitUrl: ${cfg.backUrl}`;
+    rig.setAttribute('cs-boundary', boundStr);
+    console.log(`[CSRoom] boundary set: ${boundStr}`);
 
     console.log('[CSRoom] ✓ room built —', cfg.id);
   }
@@ -382,22 +390,36 @@
   }
 
   // ─── BOUNDARY COMPONENT ──────────────────────────────────────
-  // Hard-snap player back inside the room if they cross the wall.
-  // Registered once, used by all rooms via the cs-boundary attribute.
+  // Clamps player to room bounds on east/west/north. Crossing the
+  // south boundary (where the door is) triggers a redirect to the
+  // mall, simulating "walking out through the door."
+  //
+  // Why redirect-on-cross instead of clamp-on-cross for the door?
+  // The clamp would let player press into the door and bounce back,
+  // which feels broken because the door is a clearly visible exit.
+  // The redirect feels natural — you're leaving the room.
   if (window.AFRAME && !AFRAME.components['cs-boundary']) {
     AFRAME.registerComponent('cs-boundary', {
       schema: {
-        minX: { type: 'number', default: -10 },
-        maxX: { type: 'number', default:  10 },
-        minZ: { type: 'number', default: -10 },
-        maxZ: { type: 'number', default:  10 },
+        minX:    { type: 'number', default: -10 },
+        maxX:    { type: 'number', default:  10 },
+        minZ:    { type: 'number', default: -10 },
+        exitZ:   { type: 'number', default:  10 },  // crossing = exit
+        exitUrl: { type: 'string', default: ''  },
       },
       tick: function () {
         const p = this.el.object3D.position;
         if (p.x < this.data.minX) p.x = this.data.minX;
         if (p.x > this.data.maxX) p.x = this.data.maxX;
         if (p.z < this.data.minZ) p.z = this.data.minZ;
-        if (p.z > this.data.maxZ) p.z = this.data.maxZ;
+
+        // Door exit trigger
+        if (p.z > this.data.exitZ && this.data.exitUrl && !this._exiting) {
+          this._exiting = true; // prevent multiple fires
+          console.log('[CSRoom:exit] player walked through door — returning to mall');
+          // Tiny delay so console message flushes before navigation
+          setTimeout(() => { window.location.href = this.data.exitUrl; }, 50);
+        }
       },
     });
   }

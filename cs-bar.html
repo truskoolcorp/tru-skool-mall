@@ -132,10 +132,14 @@
       name: 'Cocktail Bar',
       tagline: 'Liquid Artistry, Reimagined',
 
-      // Room dimensions (matches old wing layout: x=20..30, z=-37.5..-29.5)
-      width: 10,
-      depth: 8,
-      height: 4.5,
+      // Room dimensions tuned to match the actual prop sizes.
+      // Counter is 2m wide × 1.26m tall, so a 6×5 room makes the
+      // bar setup feel appropriately filled rather than lost in a
+      // huge empty box. (Older 10×8 layout was sized for a
+      // hypothetical 4m counter that we don't have.)
+      width: 6,
+      depth: 5,
+      height: 3.2,
 
       // Bar theme: walnut + brass + warm amber glow
       theme: {

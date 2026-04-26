@@ -60,55 +60,48 @@
   const ROOM_PROPS = {
 
     // ═══ BAR ═════════════════════════════════════════════════
-    // BBOX REALITY CHECK (from probe at scale=1.0):
-    //   bar-counter-walnut.glb     → W=2.00m H=1.26m D=0.97m
-    //   bar-backbar-shelf.glb      → W=2.00m H=0.87m D=0.32m
-    //   bar-stool-leather.glb      → W=0.94m H=2.00m D=0.94m  ⚠️ stool is 2m tall
+    // Room: 6m × 5m × 3.2m centered at origin.
+    //   x: -3 to +3  (west to east)
+    //   z: -2.5 to +2.5  (north/far wall to south/entrance)
     //
-    // The Meshy outputs render about 2x bigger than the prompt's
-    // stated dimensions across the board. Two options: shrink the
-    // props 2x (makes counter/backbar ok-ish but loses detail) OR
-    // accept Meshy's bigger scale and size the room around them.
+    // Layout: counter centered facing south, backbar mounted on
+    // north wall above counter, 3 stools at counter front. Player
+    // spawns at (0, 1.6, 1.3) facing the bar (-Z direction).
     //
-    // We pick a hybrid: counter & backbar stay at 1.0 (close to
-    // intended), stool gets 0.42 to land at human-realistic height
-    // (~0.85m). Room dimensions are bumped up in cs-bar.html to
-    // accommodate the 2m-wide counter without feeling cramped.
-    //
-    // Local coords: room is 10m × 8m centered at origin.
-    //   x: -5 to +5  (west to east)
-    //   z: -4 to +4  (north/far wall to south/entrance)
-    //
-    // Layout: backbar against north wall (-z far), counter
-    // parallel to it 1.5m closer to player, 3 stools at the south
-    // face of the counter.
+    // BBOX (at scale 1.0):
+    //   bar-counter-walnut.glb   → W=2.00m H=1.26m D=0.97m
+    //   bar-backbar-shelf.glb    → W=2.00m H=0.87m D=0.32m
+    //   bar-stool-leather.glb    → W=0.94m H=2.00m D=0.94m  (needs 0.42 scale)
     'bar': [
       {
-        // Counter — renders 2m × 1.26m × 0.97m at scale 1.0.
-        // Auto-snap puts its base at y=0.
+        // Counter — auto-snap to floor. Centered, with back face
+        // 0.5m off the back wall (counter is 0.97m deep so its
+        // back edge sits at z=-1.0, leaving 1.5m to the wall for
+        // the bartender).
         src: 'assets/models/_archive/bar-counter-walnut.glb',
         instances: [
           { pos: '0 0 -0.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
-        // Backbar shelf — renders 2m × 0.87m × 0.32m at scale 1.0.
-        // Wall-mounted at counter-top height. snap=false because we
-        // WANT it floating off the floor, mounted on the wall above
-        // the counter. y=1.4 puts the shelf base at counter-top
-        // height (counter is 1.26m tall).
+        // Backbar shelf — wall-mounted at counter-top height
+        // (1.4m). Pressed against north wall (z=-2.5 + half its
+        // 0.32m depth = z=-2.34). Use z=-2.4 for slight clearance.
+        // snap=false because we want it floating off the floor.
         src: 'assets/models/props/bar-backbar-shelf.glb',
         instances: [
-          { pos: '0 1.4 -3.7', rot: '0 0 0', scale: '1.00 1.00 1.00', snap: false },
+          { pos: '0 1.4 -2.4', rot: '0 0 0', scale: '1.00 1.00 1.00', snap: false },
         ],
       },
       {
-        // Stool — 0.42x → ~0.4m × 0.84m × 0.4m. Auto-snap to floor.
+        // Stools at south face of counter. Counter front is at
+        // z = -0.5 + 0.485 ≈ z=0, so stools at z=0.4 leaves knee
+        // room. Spaced 0.6m apart for the 2m counter width.
         src: 'assets/models/props/bar-stool-leather.glb',
         instances: [
-          { pos: '-1.5 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
+          { pos: '-0.6 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
           { pos: ' 0   0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
-          { pos: ' 1.5 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
+          { pos: ' 0.6 0 0.4', rot: '0 0 0', scale: '0.42 0.42 0.42' },
         ],
       },
     ],
