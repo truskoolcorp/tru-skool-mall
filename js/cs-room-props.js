@@ -118,27 +118,26 @@
     // scene is built, place it in its own local coordinate system
     // (e.g. centered at origin with appropriate bounds). These
     // values assume a 6m × 6m room with origin at center.
+    //
+    // Cigar-focused (no hookah). The cigar + ashtray for this
+    // room are baked into cigar-side-table-walnut.glb's ashtray
+    // detail when we place that prop here too — but the catalog
+    // entry below uses smoke-specific furniture for visual variety.
     'smoke-lounge': [
       {
         src: 'assets/models/props/smoke-armchair-cognac.glb',
         instances: [
           // Two armchairs flanking the table, slightly angled toward each other
-          { pos: '-1.5 0 -1', rot: '0 30 0', scale: '1.00 1.00 1.00' },
-          { pos: '1.5 0 -1', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
+          { pos: '-1.2 0 -1', rot: '0 30 0', scale: '1.00 1.00 1.00' },
+          { pos: '1.2 0 -1', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
         src: 'assets/models/props/smoke-low-table-marble.glb',
         instances: [
           // Coffee table in the middle of the seating arrangement
+          // (already includes a hammered brass ashtray + whiskey glass)
           { pos: '0 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-      {
-        src: 'assets/models/props/smoke-hookah-brass.glb',
-        instances: [
-          // Hookah next to one of the armchairs
-          { pos: '-2.2 0 -1.8', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],

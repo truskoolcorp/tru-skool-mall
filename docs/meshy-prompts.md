@@ -10,7 +10,7 @@ The prop loader (`js/cafe-sativa-props.js`) already references these exact
 filenames — drop the GLB in, reload the page, the prop appears.
 
 **Credit budget:** Meshy text-to-3D = 25 credits per generation.
-- Full set (22 props) = ~550 credits of your ~909 available.
+- Full set (20 props) = ~500 credits of your ~909 available.
 - Bar minimum (3 props) = 75 credits to prove pipeline.
 
 ---
@@ -24,12 +24,12 @@ instead of one perfect room at a time.
 |---------------|-------|---------|----------|
 | Bar           | 3     | 75      | High (anchor) |
 | Main Lounge   | 3     | 75      | High (Verse Alkemist sessions) |
-| Smoke Lounge  | 3     | 75      | Med |
+| Smoke Lounge  | 2     | 60      | Med (cigar-focused, no hookah) |
 | Cigar Lounge  | 3     | 75      | Med (VIP) |
 | Culinary      | 3     | 75      | High (live cooking shows) |
 | Courtyard     | 3     | 75      | Low (transition space) |
 | Cold Stoned   | 3     | 75      | Med |
-| **Total**     | **21**| **525** | |
+| **Total**     | **20**| **510** | |
 
 Plus already-generated foyer (desk + Laviche). Bar-counter-walnut.glb is
 archived from previous round and can be reused.
@@ -80,19 +80,17 @@ archived from previous round and can be reused.
 
 ---
 
-## ROOM 3 — SMOKE LOUNGE (3 prompts, 75 credits)
+## ROOM 3 — SMOKE LOUNGE (2 prompts, 60 credits)
+
+> Note: this room shares the cigar lounge's smoking accessories
+> (cigar + ashtray are in the cigar-side-table-walnut.glb prop).
+> No hookah — Café Sativa's smoking program is cigar-focused.
 
 ### smoke-armchair-cognac.glb
 > Deep-seated lounge armchair, cognac brown distressed leather with rolled
 > arms and a high curved back, low wide seat for relaxed posture, brushed
 > brass nailhead trim along the edges, dark wood legs, single chair only,
 > stylized realism. Dimensions: 0.95m wide × 1m tall × 1m deep.
-
-### smoke-hookah-brass.glb
-> Ornate brass hookah pipe, traditional Middle Eastern style, polished brass
-> stem about 0.7m tall with a curved hose, decorative ruby red glass base,
-> single ceremonial mouthpiece, sitting on its own without table, stylized
-> realism. Dimensions: 0.3m diameter × 0.8m tall.
 
 ### smoke-low-table-marble.glb
 > Low rectangular coffee table, dark walnut wood frame with a green veined
