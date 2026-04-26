@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smoke Lounge — Café Sativa</title>
+  <meta name="description" content="Contemplation, elevated. Cognac armchairs, marble tables, and the slow burn of conversation at Café Sativa.">
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+  <script src="js/gltf-extensions.js"></script>
+  <script src="js/cs-room-props.js"></script>
+  <script src="js/cs-room-boot.js"></script>
+  <script src="js/cafe-sativa-props.js"></script>
+
+  <link rel="stylesheet" href="css/ui.css">
+
+  <style>
+    #room-hud { position: fixed; top: 16px; left: 16px; z-index: 100;
+      color: #c08651; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
+    #room-hud .room-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    #room-hud .room-tagline { font-size: 13px; font-weight: 400; font-style: italic;
+      opacity: 0.85; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    #room-hud .back-link { display: inline-block; margin-top: 10px; padding: 6px 14px;
+      background: rgba(10,10,15,0.8); border: 1px solid #c08651; border-radius: 4px;
+      color: #c08651; text-decoration: none; font-family: system-ui, sans-serif;
+      font-size: 13px; transition: background 0.2s; }
+    #room-hud .back-link:hover { background: rgba(192,134,81,0.2); }
+    #loading-veil { position: fixed; inset: 0; background: #1a0f0a; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; color: #c08651;
+      font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: opacity 0.6s ease; }
+    #loading-veil.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading-veil">Entering the smoke lounge…</div>
+
+  <div id="room-hud">
+    <div class="room-title">Smoke Lounge</div>
+    <div class="room-tagline">Contemplation, Elevated</div>
+    <a href="index.html" class="back-link">← Back to Mall</a>
+  </div>
+
+  <a-scene
+    id="room-scene"
+    renderer="antialias: true; colorManagement: true"
+    background="color: #1a0f0a"
+    cursor="rayOrigin: mouse"
+    loading-screen="enabled: false"
+    vr-mode-ui="enabled: false">
+  </a-scene>
+
+  <script>
+    CSRoom.boot({
+      id: 'smoke-lounge',
+      name: 'Smoke Lounge',
+      tagline: 'Contemplation, Elevated',
+
+      // Square, cozy. Cognac chairs need ~1.5m apart with a low
+      // table between — a 5x5 room with a 3m ceiling gives that
+      // intimate "slow conversation" feel.
+      width: 5,
+      depth: 5,
+      height: 3.0,
+
+      // Cognac + charcoal + pewter palette
+      theme: {
+        wall:    '#1a0f0a',   // deep cognac
+        floor:   '#0a0604',   // charcoal
+        ceiling: '#050302',   // smoky black
+        accent:  '#c08651',   // warm cognac
+        ambient: '#2a1810',   // ambient cognac
+      },
+    });
+
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      setTimeout(() => {
+        document.getElementById('loading-veil').classList.add('hidden');
+      }, 800);
+    });
+  </script>
+</body>
+</html>

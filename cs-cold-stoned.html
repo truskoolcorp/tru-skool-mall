@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cold Stoned — Café Sativa</title>
+  <meta name="description" content="CBD gelato made the old-fashioned way. Café Sativa's small-batch frozen pocket — mint, cream, and pink-gold details.">
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+  <script src="js/gltf-extensions.js"></script>
+  <script src="js/cs-room-props.js"></script>
+  <script src="js/cs-room-boot.js"></script>
+  <script src="js/cafe-sativa-props.js"></script>
+
+  <link rel="stylesheet" href="css/ui.css">
+
+  <style>
+    #room-hud { position: fixed; top: 16px; left: 16px; z-index: 100;
+      color: #e6a89c; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
+    #room-hud .room-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    #room-hud .room-tagline { font-size: 13px; font-weight: 400; font-style: italic;
+      opacity: 0.85; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    #room-hud .back-link { display: inline-block; margin-top: 10px; padding: 6px 14px;
+      background: rgba(10,10,15,0.8); border: 1px solid #e6a89c; border-radius: 4px;
+      color: #e6a89c; text-decoration: none; font-family: system-ui, sans-serif;
+      font-size: 13px; transition: background 0.2s; }
+    #room-hud .back-link:hover { background: rgba(230,168,156,0.2); }
+    #loading-veil { position: fixed; inset: 0; background: #1f2826; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; color: #e6a89c;
+      font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: opacity 0.6s ease; }
+    #loading-veil.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading-veil">Entering Cold Stoned…</div>
+
+  <div id="room-hud">
+    <div class="room-title">Cold Stoned</div>
+    <div class="room-tagline">CBD Gelato, Made the Old Way</div>
+    <a href="index.html" class="back-link">← Back to Mall</a>
+  </div>
+
+  <a-scene
+    id="room-scene"
+    renderer="antialias: true; colorManagement: true"
+    background="color: #1f2826"
+    cursor="rayOrigin: mouse"
+    loading-screen="enabled: false"
+    vr-mode-ui="enabled: false">
+  </a-scene>
+
+  <script>
+    CSRoom.boot({
+      id: 'cold-stoned',
+      name: 'Cold Stoned',
+      tagline: 'CBD Gelato, Made the Old Way',
+
+      // Small gelato kiosk — like a corner shop. Display case +
+      // prep station + menu board fit easily in a 4×4 footprint.
+      // Lower ceiling than other rooms to feel intimate.
+      width: 4,
+      depth: 4,
+      height: 2.8,
+
+      // Mint + cream + pink-gold palette (gelato shop vibe)
+      theme: {
+        wall:    '#1f2826',   // deep mint shadow
+        floor:   '#0e1413',   // dark
+        ceiling: '#080c0b',   // smoky
+        accent:  '#e6a89c',   // pink-gold (rose gold per Keith's pref)
+        ambient: '#2a4039',   // mint ambient
+      },
+    });
+
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      setTimeout(() => {
+        document.getElementById('loading-veil').classList.add('hidden');
+      }, 800);
+    });
+  </script>
+</body>
+</html>

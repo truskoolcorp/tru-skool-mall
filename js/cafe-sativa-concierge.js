@@ -37,7 +37,7 @@
       name: 'Cocktail Bar',
       tagline: 'Liquid Artistry, Reimagined',
       summary: 'A walnut-and-brass cocktail temple. Backbar lined with rare bottles; pendants throw warm pools over the marble counter.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#c9a84c',
     },
     {
@@ -45,7 +45,7 @@
       name: 'Main Lounge',
       tagline: 'Where Conversations Find Their Rhythm',
       summary: 'The intimate performance lounge. Home of "At The Table" — Episode 1 of the Verse Alkemist sessions.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#3a4a38',
       featured: true,
     },
@@ -54,7 +54,7 @@
       name: 'Smoke Lounge',
       tagline: 'Contemplation, Elevated',
       summary: 'Plush deep-seated armchairs, soft amber glow, the scent of curated leaf. A sanctuary for the slow burn.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#a06030',
     },
     {
@@ -62,7 +62,7 @@
       name: 'Cigar Lounge',
       tagline: 'Members\u2019 Quarters',
       summary: 'Oxblood leather, dark walnut, a wall of humidors. VIP membership required \u2014 a quiet room for private counsel.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#7a1525',
       vipOnly: true,
     },
@@ -71,7 +71,7 @@
       name: 'Culinary Theater',
       tagline: 'Gastronomy as Performance',
       summary: 'The kitchen-as-stage. Tiered velvet seating faces the chef\u2019s line. Ticketed tastings, broadcast live.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#e8a050',
     },
     {
@@ -79,7 +79,7 @@
       name: 'Courtyard',
       tagline: 'Open-Air Sanctuary',
       summary: 'Olive trees, warm stone pavers, a live fire pit, a strand of glowing lights overhead. The transition between rooms.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#c0a878',
     },
     {
@@ -87,7 +87,7 @@
       name: 'Cold Stoned',
       tagline: 'Artisan Frozen Indulgence',
       summary: 'Café Sativa\u2019s gelato pocket. Eight rotating flavors hand-folded daily; the chocolate is unholy.',
-      status: 'soon',
+      status: 'open',
       themeColor: '#d4a577',
     },
   ];

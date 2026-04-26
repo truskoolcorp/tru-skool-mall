@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Culinary Theater — Café Sativa</title>
+  <meta name="description" content="Watch artistry unfold. Live chef demonstrations and tasting flights at Café Sativa's culinary theater.">
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+  <script src="js/gltf-extensions.js"></script>
+  <script src="js/cs-room-props.js"></script>
+  <script src="js/cs-room-boot.js"></script>
+  <script src="js/cafe-sativa-props.js"></script>
+
+  <link rel="stylesheet" href="css/ui.css">
+
+  <style>
+    #room-hud { position: fixed; top: 16px; left: 16px; z-index: 100;
+      color: #c87a3e; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
+    #room-hud .room-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    #room-hud .room-tagline { font-size: 13px; font-weight: 400; font-style: italic;
+      opacity: 0.85; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    #room-hud .back-link { display: inline-block; margin-top: 10px; padding: 6px 14px;
+      background: rgba(10,10,15,0.8); border: 1px solid #c87a3e; border-radius: 4px;
+      color: #c87a3e; text-decoration: none; font-family: system-ui, sans-serif;
+      font-size: 13px; transition: background 0.2s; }
+    #room-hud .back-link:hover { background: rgba(200,122,62,0.2); }
+    #loading-veil { position: fixed; inset: 0; background: #181210; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; color: #c87a3e;
+      font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: opacity 0.6s ease; }
+    #loading-veil.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading-veil">Entering the culinary theater…</div>
+
+  <div id="room-hud">
+    <div class="room-title">Culinary Theater</div>
+    <div class="room-tagline">Watch Artistry Unfold</div>
+    <a href="index.html" class="back-link">← Back to Mall</a>
+  </div>
+
+  <a-scene
+    id="room-scene"
+    renderer="antialias: true; colorManagement: true"
+    background="color: #181210"
+    cursor="rayOrigin: mouse"
+    loading-screen="enabled: false"
+    vr-mode-ui="enabled: false">
+  </a-scene>
+
+  <script>
+    CSRoom.boot({
+      id: 'culinary',
+      name: 'Culinary Theater',
+      tagline: 'Watch Artistry Unfold',
+
+      // Chef station + tiered seating + display counter need depth.
+      // 7m × 6m gives the chef room to perform, audience proper
+      // viewing distance, and a display counter near the entrance.
+      width: 7,
+      depth: 6,
+      height: 3.5,
+
+      // Copper + cream + butcher-block palette
+      theme: {
+        wall:    '#181210',   // butcher-block warm dark
+        floor:   '#0c0907',   // dark wood
+        ceiling: '#070504',   // smoky
+        accent:  '#c87a3e',   // copper
+        ambient: '#2a1c14',   // warm ambient
+      },
+    });
+
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      setTimeout(() => {
+        document.getElementById('loading-veil').classList.add('hidden');
+      }, 800);
+    });
+  </script>
+</body>
+</html>

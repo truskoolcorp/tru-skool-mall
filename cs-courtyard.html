@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courtyard — Café Sativa</title>
+  <meta name="description" content="Open sky, olive trees, fire pit. Café Sativa's outdoor courtyard for daylight gatherings and twilight reflection.">
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
+  <script src="js/gltf-extensions.js"></script>
+  <script src="js/cs-room-props.js"></script>
+  <script src="js/cs-room-boot.js"></script>
+  <script src="js/cafe-sativa-props.js"></script>
+
+  <link rel="stylesheet" href="css/ui.css">
+
+  <style>
+    #room-hud { position: fixed; top: 16px; left: 16px; z-index: 100;
+      color: #d4925a; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
+    #room-hud .room-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    #room-hud .room-tagline { font-size: 13px; font-weight: 400; font-style: italic;
+      opacity: 0.85; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    #room-hud .back-link { display: inline-block; margin-top: 10px; padding: 6px 14px;
+      background: rgba(10,10,15,0.8); border: 1px solid #d4925a; border-radius: 4px;
+      color: #d4925a; text-decoration: none; font-family: system-ui, sans-serif;
+      font-size: 13px; transition: background 0.2s; }
+    #room-hud .back-link:hover { background: rgba(212,146,90,0.2); }
+    #loading-veil { position: fixed; inset: 0; background: #4a6b7a; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; color: #d4925a;
+      font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: 0.2em;
+      text-transform: uppercase; transition: opacity 0.6s ease; }
+    #loading-veil.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading-veil">Stepping into the courtyard…</div>
+
+  <div id="room-hud">
+    <div class="room-title">Courtyard</div>
+    <div class="room-tagline">Open Sky, Open Conversation</div>
+    <a href="index.html" class="back-link">← Back to Mall</a>
+  </div>
+
+  <a-scene
+    id="room-scene"
+    renderer="antialias: true; colorManagement: true"
+    background="color: #4a6b7a"
+    cursor="rayOrigin: mouse"
+    loading-screen="enabled: false"
+    vr-mode-ui="enabled: false">
+  </a-scene>
+
+  <script>
+    CSRoom.boot({
+      id: 'courtyard',
+      name: 'Courtyard',
+      tagline: 'Open Sky, Open Conversation',
+
+      // Outdoor courtyard — biggest room, tall to feel "open sky."
+      // Square footprint with olive tree, fire pit, and bistro set.
+      // The "ceiling" theme color is sky-blue so it reads as outdoor
+      // even with our procedural ceiling-plane (we can't do real
+      // skybox here without restructuring the shared boot).
+      width: 8,
+      depth: 8,
+      height: 6.0,
+
+      // Terracotta + sage + sky palette
+      theme: {
+        wall:    '#7a5c42',   // sun-warmed terracotta plaster
+        floor:   '#3a2c1f',   // weathered stone
+        ceiling: '#4a6b7a',   // open sky / dusk
+        accent:  '#d4925a',   // sunset terracotta
+        ambient: '#5a8a6f',   // sage olive ambient
+      },
+    });
+
+    document.querySelector('a-scene').addEventListener('loaded', () => {
+      setTimeout(() => {
+        document.getElementById('loading-veil').classList.add('hidden');
+      }, 800);
+    });
+  </script>
+</body>
+</html>

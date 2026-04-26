@@ -107,169 +107,190 @@
       },
     ],
 
+    // ═══ CIGAR LOUNGE (VIP) ══════════════════════════════════
+    // Room: 5m × 4m × 3.0m centered at origin.
+    //   x: -2.5 to +2.5    z: -2 to +2
+    //
+    // Layout: armchair pair facing inward across a side table at
+    // the WEST end (player's left as they enter), humidor against
+    // the EAST wall (right as they enter). Player walks down the
+    // length of the room and sees the seating arrangement on
+    // their left, humidor on their right.
+    'cigar': [
+      {
+        // Two oxblood armchairs angled toward each other across
+        // the side table. West side of room.
+        src: 'assets/models/props/cigar-armchair-oxblood.glb',
+        instances: [
+          { pos: '-1.5 0 -0.6', rot: '0  30 0', scale: '1.00 1.00 1.00' },
+          { pos: '-1.5 0  0.6', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
+        ],
+      },
+      {
+        // Side table between the chairs (includes glass ashtray)
+        src: 'assets/models/props/cigar-side-table-walnut.glb',
+        instances: [
+          { pos: '-1.5 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+        ],
+      },
+      {
+        // Humidor against east wall, faces into the room.
+        src: 'assets/models/props/cigar-humidor.glb',
+        instances: [
+          { pos: '2.0 0 -0.5', rot: '0 -90 0', scale: '1.00 1.00 1.00' },
+        ],
+      },
+    ],
+
     // ═══ MAIN LOUNGE ═════════════════════════════════════════
-    // Layout: stage at the south end (back wall for performer),
-    // host table + chair at center, audience implied by empty
-    // space facing the stage.
+    // Room: 8m × 7m × 4.0m centered at origin.
+    //   x: -4 to +4    z: -3.5 to +3.5
+    //
+    // Verse Alkemist sessions venue. Stage along the NORTH wall
+    // (where performer sits, facing south toward audience), host
+    // table center-stage for guest interview format, dining
+    // chairs flanking it. Audience would stand/sit anywhere
+    // facing the stage — implied by the 7m of depth.
     'main-lounge': [
       {
+        // Stage platform along north wall. Performer faces SOUTH.
         src: 'assets/models/props/lounge-stage-platform.glb',
         instances: [
-          // Stage along the south wall (z=-46 is the back), facing north
-          { pos: '25 0 -45', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -2.8', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Host table on the stage — interview/discussion format
         src: 'assets/models/props/lounge-host-table.glb',
         instances: [
-          // Centered table for host/guest seating during sessions
-          { pos: '25 0 -41.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -2.0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Two dining chairs flanking the host table
         src: 'assets/models/props/lounge-dining-chair.glb',
         instances: [
-          // Two chairs at the host table — one each side
-          { pos: '24 0 -41.5', rot: '0 90 0', scale: '1.00 1.00 1.00' },
-          { pos: '26 0 -41.5', rot: '0 -90 0', scale: '1.00 1.00 1.00' },
+          { pos: '-0.9 0 -2.0', rot: '0  90 0', scale: '1.00 1.00 1.00' },
+          { pos: ' 0.9 0 -2.0', rot: '0 -90 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],
 
     // ═══ SMOKE LOUNGE ════════════════════════════════════════
-    // No coordinates assigned in old wing layout — when per-room
-    // scene is built, place it in its own local coordinate system
-    // (e.g. centered at origin with appropriate bounds). These
-    // values assume a 6m × 6m room with origin at center.
+    // Room: 5m × 5m × 3.0m centered at origin.
+    //   x: -2.5 to +2.5    z: -2.5 to +2.5
     //
-    // Cigar-focused (no hookah). The cigar + ashtray for this
-    // room are baked into cigar-side-table-walnut.glb's ashtray
-    // detail when we place that prop here too — but the catalog
-    // entry below uses smoke-specific furniture for visual variety.
+    // Square cozy room. Two cognac armchairs angled toward each
+    // other across a marble low table at the center. The marble
+    // table includes hammered brass ashtray + whiskey glass details.
     'smoke-lounge': [
       {
         src: 'assets/models/props/smoke-armchair-cognac.glb',
         instances: [
-          // Two armchairs flanking the table, slightly angled toward each other
-          { pos: '-1.2 0 -1', rot: '0 30 0', scale: '1.00 1.00 1.00' },
-          { pos: '1.2 0 -1', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
+          // Chairs flanking the table, angled ~30° inward
+          { pos: '-1.0 0 -0.5', rot: '0  30 0', scale: '1.00 1.00 1.00' },
+          { pos: ' 1.0 0 -0.5', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Marble coffee table centered in the seating arrangement
         src: 'assets/models/props/smoke-low-table-marble.glb',
         instances: [
-          // Coffee table in the middle of the seating arrangement
-          // (already includes a hammered brass ashtray + whiskey glass)
-          { pos: '0 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-    ],
-
-    // ═══ CIGAR LOUNGE (VIP) ══════════════════════════════════
-    // Layout: armchair pair in the SW corner, side table between
-    // them, humidor against the far wall.
-    'cigar': [
-      {
-        src: 'assets/models/props/cigar-armchair-oxblood.glb',
-        instances: [
-          // Two armchairs facing each other across the side table
-          { pos: '37 0 -42', rot: '0 30 0', scale: '1.00 1.00 1.00' },
-          { pos: '39 0 -42', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-      {
-        src: 'assets/models/props/cigar-side-table-walnut.glb',
-        instances: [
-          // Side table between the two armchairs
-          { pos: '38 0 -42', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-      {
-        src: 'assets/models/props/cigar-humidor.glb',
-        instances: [
-          // Humidor against the east wall (far end of room)
-          { pos: '41 0 -41.5', rot: '0 -90 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -0.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],
 
     // ═══ CULINARY THEATER ════════════════════════════════════
-    // Layout: chef station against far wall (south), tiered
-    // seating facing it (north), display counter at the entrance.
+    // Room: 7m × 6m × 3.5m centered at origin.
+    //   x: -3.5 to +3.5    z: -3 to +3
+    //
+    // Theatrical layout: chef station against NORTH wall
+    // (performer side), tiered seating on SOUTH (audience), with
+    // a display counter at the entrance for menu browsing.
     'culinary': [
       {
+        // Chef station at north wall — performer's prep area.
         src: 'assets/models/props/culinary-chef-station.glb',
         instances: [
-          // Chef station at south wall, performer side
-          { pos: '25 0 -50', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -2.3', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Tiered seating facing the chef station (faces north)
         src: 'assets/models/props/culinary-tiered-seating.glb',
         instances: [
-          // Tiered seating on north side, facing south toward chef
-          { pos: '25 0 -47', rot: '0 180 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 1.0', rot: '0 180 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Display counter near the entrance for menu/specials
         src: 'assets/models/props/culinary-display-counter.glb',
         instances: [
-          // Display counter near entrance for browsing tonight's menu
-          { pos: '23 0 -48.5', rot: '0 90 0', scale: '1.00 1.00 1.00' },
+          { pos: '-2.5 0 1.5', rot: '0 90 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],
 
     // ═══ COURTYARD ═══════════════════════════════════════════
-    // Layout: olive tree in NE corner (anchor), fire pit center,
-    // bistro set opposite the tree for variety.
+    // Room: 8m × 8m × 6.0m centered at origin.
+    //   x: -4 to +4    z: -4 to +4
+    //
+    // Open square footprint, tall ceiling for "outdoor" feel.
+    // Olive tree as anchor in NW corner, fire pit at center,
+    // bistro set in SE corner across from the tree.
     'courtyard': [
       {
+        // Olive tree in NW corner — natural shade/anchor
         src: 'assets/models/props/courtyard-olive-tree.glb',
         instances: [
-          // Olive tree in NE corner — natural anchor / shade source
-          { pos: '35.5 0 -27.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '-2.5 0 -2.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Fire pit at room center — gathering point
         src: 'assets/models/props/courtyard-fire-pit.glb',
         instances: [
-          // Fire pit at room center
-          { pos: '33.5 0 -28.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Bistro set across from olive tree, angled to face center
         src: 'assets/models/props/courtyard-bistro-set.glb',
         instances: [
-          // Bistro set across from the olive tree
-          { pos: '31.5 0 -29.5', rot: '0 45 0', scale: '1.00 1.00 1.00' },
+          { pos: '2.0 0 1.5', rot: '0 -135 0', scale: '1.00 1.00 1.00' },
         ],
       },
     ],
 
     // ═══ COLD STONED ═════════════════════════════════════════
-    // Layout: display case along customer wall, prep station
-    // behind it, menu board hanging on side wall.
+    // Room: 4m × 4m × 2.8m centered at origin.
+    //   x: -2 to +2    z: -2 to +2
+    //
+    // Small gelato kiosk. Display case at customer-facing edge
+    // (south, where player approaches), prep station behind it
+    // (north), menu board on the east wall.
     'cold-stoned': [
       {
+        // Display case facing customer (faces south, +Z)
         src: 'assets/models/props/cold-stoned-display-case.glb',
         instances: [
-          // Display case at customer-facing edge
-          { pos: '30 0 -23.5', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -0.3', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Prep station behind the display, parallel
         src: 'assets/models/props/cold-stoned-prep-station.glb',
         instances: [
-          // Prep station behind the display, parallel
-          { pos: '30 0 -25', rot: '0 0 0', scale: '1.00 1.00 1.00' },
+          { pos: '0 0 -1.4', rot: '0 0 0', scale: '1.00 1.00 1.00' },
         ],
       },
       {
+        // Menu board mounted on east wall, faces west (into room).
+        // snap=false so it can hang at eye-level off the floor.
         src: 'assets/models/props/cold-stoned-menu-board.glb',
         instances: [
-          // Menu board on the east wall, visible from entrance
-          { pos: '31.5 0 -22.5', rot: '0 -90 0', scale: '1.00 1.00 1.00' },
+          { pos: '1.85 1.5 -0.5', rot: '0 -90 0', scale: '1.00 1.00 1.00', snap: false },
         ],
       },
     ],
