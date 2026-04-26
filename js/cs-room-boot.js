@@ -180,31 +180,40 @@
     scene.appendChild(portal);
 
     // ─── LIGHTING ───────────────────────────────────────────────
-    // Standalone interior — three lights for proper coverage.
-    // Values calibrated for non-physical, non-tone-mapped renderer.
+    // Three.js r155+ uses physically-based lighting by default
+    // (when colorManagement: true). Light intensity values now
+    // expect candela-style numbers — roughly 5-10x higher than
+    // legacy mode. With low values everything renders near-black.
+    //
+    // Reference: https://discourse.threejs.org/t/updates-to-lighting-in-three-js-r155/53733
+    //
+    // Key insight: PBR materials in optimized GLBs reflect light
+    // multiplicatively. A dark walnut counter reflects ~10% of
+    // incoming light, so to look "lit" it needs ~10x more light
+    // than a white-painted wall would.
 
-    // Ambient — neutral white fill at 0.8 intensity makes geometry
-    // clearly visible regardless of theme darkness. THIS is the
-    // floor of what you can see; everything else adds on top.
+    // Ambient — neutral white at high intensity. This is what
+    // makes walls and props visible at all.
     const ambient = document.createElement('a-light');
     ambient.setAttribute('type', 'ambient');
     ambient.setAttribute('color', '#ffffff');
-    ambient.setAttribute('intensity', 0.8);
+    ambient.setAttribute('intensity', 3.5);
     scene.appendChild(ambient);
 
-    // Hemisphere — adds gentle sky/ground gradient feel
-    const hemi = document.createElement('a-light');
-    hemi.setAttribute('type', 'hemisphere');
-    hemi.setAttribute('color', t.accent);
-    hemi.setAttribute('groundColor', t.floor);
-    hemi.setAttribute('intensity', 0.6);
-    scene.appendChild(hemi);
+    // Directional — sun-like for proper shading on prop surfaces.
+    // Without this, props look flat-shaded blob-like.
+    const dir = document.createElement('a-light');
+    dir.setAttribute('type', 'directional');
+    dir.setAttribute('color', '#ffffff');
+    dir.setAttribute('intensity', 2.5);
+    dir.setAttribute('position', `2 ${h} 2`);
+    scene.appendChild(dir);
 
-    // Center point — warm highlight pool over the room's focal area
+    // Center point — warm color accent over focal area
     const spot = document.createElement('a-light');
     spot.setAttribute('type', 'point');
     spot.setAttribute('color', t.accent);
-    spot.setAttribute('intensity', 1.5);
+    spot.setAttribute('intensity', 8);
     spot.setAttribute('distance', Math.max(cfg.width, cfg.depth) * 1.5);
     spot.setAttribute('decay', 1);
     spot.setAttribute('position', `0 ${h - 0.5} 0`);
@@ -223,9 +232,15 @@
 
     // ─── PLAYER ─────────────────────────────────────────────────
     // Spawn near the south door, looking north into the room.
+    const spawnX = 0;
+    const spawnY = 1.6;
+    const spawnZ = halfD - 1.2;
+    console.log(`[CSRoom] player spawn: (${spawnX}, ${spawnY}, ${spawnZ}), facing -Z (north)`);
+    console.log(`[CSRoom] room bounds: x[${-halfW}..${halfW}] y[0..${h}] z[${-halfD}..${halfD}]`);
+
     const rig = document.createElement('a-entity');
     rig.setAttribute('id', 'player-rig');
-    rig.setAttribute('position', `0 1.6 ${halfD - 1.2}`);
+    rig.setAttribute('position', `${spawnX} ${spawnY} ${spawnZ}`);
     rig.setAttribute('movement-controls', 'fly: false; constrainToNavMesh: false; speed: 0.18');
     rig.setAttribute('rotation', '0 180 0'); // face north (toward room interior)
 
