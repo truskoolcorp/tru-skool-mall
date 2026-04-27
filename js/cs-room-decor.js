@@ -840,20 +840,22 @@
     post.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
     scene.appendChild(post);
 
-    // Lampshade (tapered cylinder for lampshade silhouette)
+    // Lampshade (tapered cylinder for lampshade silhouette).
+    // Sized for proper standing-lamp proportion — earlier 0.22 bottom
+    // radius read as an oversized pendant.
     const shade = document.createElement('a-cylinder');
-    shade.setAttribute('position', `${x} ${height + 0.12} ${z}`);
-    shade.setAttribute('radius-top', 0.16);
-    shade.setAttribute('radius-bottom', 0.22);
-    shade.setAttribute('height', 0.28);
+    shade.setAttribute('position', `${x} ${height + 0.10} ${z}`);
+    shade.setAttribute('radius-top', 0.10);
+    shade.setAttribute('radius-bottom', 0.14);
+    shade.setAttribute('height', 0.22);
     shade.setAttribute('color', shadeColor);
     shade.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.85');
     scene.appendChild(shade);
 
     // Glowing bulb just below the shade opening
     const bulb = document.createElement('a-sphere');
-    bulb.setAttribute('position', `${x} ${height + 0.05} ${z}`);
-    bulb.setAttribute('radius', 0.06);
+    bulb.setAttribute('position', `${x} ${height + 0.04} ${z}`);
+    bulb.setAttribute('radius', 0.045);
     bulb.setAttribute('color', bulbColor);
     bulb.setAttribute('material', 'shader: flat');
     scene.appendChild(bulb);
@@ -861,7 +863,7 @@
     // Warm point light
     const light = document.createElement('a-light');
     light.setAttribute('type', 'point');
-    light.setAttribute('position', `${x} ${height + 0.05} ${z}`);
+    light.setAttribute('position', `${x} ${height + 0.04} ${z}`);
     light.setAttribute('color', lightColor);
     light.setAttribute('intensity', lightIntensity);
     light.setAttribute('distance', 3.5);

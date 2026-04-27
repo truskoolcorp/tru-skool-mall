@@ -6,16 +6,6 @@
   <title>Cigar Lounge — Café Sativa</title>
   <meta name="description" content="A walnut-and-leather hideaway. Tufted wingbacks, rare boxes, library shelves — Café Sativa's cigar lounge at the Tru Skool Mall.">
 
-  <!-- Same load order as the bar:
-       1. A-Frame core
-       2. A-Frame Extras
-       3. gltf-extensions.js (Meshopt decoder)
-       4. mall-nav.js (registers tank-controls)
-       5. cs-room-decor.js (composition primitives)
-       6. cs-room-props.js (Meshy prop catalog — empty for cigar)
-       7. cs-room-boot.js (room builder + composition runner)
-       8. cafe-sativa-props.js (interactive tuner support)
-       9. Inline boot config -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
   <script src="js/gltf-extensions.js"></script>
@@ -67,30 +57,42 @@
 
   <script>
     // ═══════════════════════════════════════════════════════════
-    // CIGAR LOUNGE — Base44-style composition
+    // CIGAR LOUNGE v2 — Composition with multiple seating clusters
     //
-    // Intentionally smaller, lower-ceilinged than the bar: 9m × 7m
-    // × 3.2m. Smaller footprint reads "intimate / private." Lower
-    // ceiling drops you into the smoke. Two wingback chairs square
-    // off across a low table — the heart of the room — flanked by
-    // standing lamps. Humidor wall on the north (the visual anchor),
-    // library shelf on the west, sepia art on the east.
+    // ROOM: 11m × 8m × 3.4m (bigger than v1's 9×7×3.2 — needs the
+    //   extra width to host two seating clusters + circulation).
     //
-    // SPAWN: south of center facing north into the seating area.
-    // First thing you see is the back of the wingbacks framed
-    // against the humidor wall — drawing the eye in.
+    // LAYOUT (top-down view, north at top):
     //
-    // EXIT: south wall, returns to CS foyer (Laviche concierge).
+    //          ┌───────────HUMIDOR (north wall)──────────┐
+    //          │                                          │
+    //          │   [chair][table][chair]                  │
+    //          │       (cluster A)                        │
+    //          │                          [chair]         │
+    //          │                          [table]         │
+    //          │                          [chair]         │
+    //          │                          (cluster B)     │
+    //          │ [LIBRARY (west)]                         │
+    //          │                          [art (east)]   │
+    //          └────────────[door (south)]────────────────┘
     //
-    // COMPOSITION ORDER
-    //   1. Architectural trim          (wainscoting, baseboard, crown)
-    //   2. Persian rug                 (zones the seating area)
-    //   3. Picture frames              (sepia art on east wall)
-    //   4. Humidor wall (north)        (the back-of-room hero)
-    //   5. Bookshelf (west)            (library wall)
-    //   6. Wingback chairs (×2)        (facing each other)
-    //   7. Coffee table                (between the chairs)
-    //   8. Standing lamps (×2)         (one beside each chair)
+    // CLUSTER A (north side): 2 chairs facing each other across a
+    //   small table, lampshade above. Closer to the humidor wall —
+    //   reading-and-pairing seats.
+    //
+    // CLUSTER B (south-east): 2 more chairs facing each other with
+    //   their own table and lamp. More private — conversation seats.
+    //
+    // 4 chairs + 2 tables + 2 lamps = up to 4 patrons comfortably,
+    // 6+ if friends share a chair-arm or stand. Library wall on west
+    // is a third place to linger.
+    //
+    // Humidor wall raised: startY 1.95 (was 1.55). Chair backs reach
+    // y=1.60. Humidor now sits clearly above them, visible from the
+    // entire room.
+    //
+    // EXIT: south wall, door-only (cs-boundary now clamps the rest
+    // of the south wall — no more accidental walk-throughs).
     // ═══════════════════════════════════════════════════════════
 
     CSRoom.boot({
@@ -98,145 +100,158 @@
       name: 'Cigar Lounge',
       tagline: 'A Walnut-and-Leather Hideaway',
 
-      width: 9,
-      depth: 7,
-      height: 3.2,
+      width: 11,
+      depth: 8,
+      height: 3.4,
 
-      // Oxblood + brass + tobacco palette
       theme: {
-        wall:    '#1f1410',   // deep oxblood-tinted walnut
-        floor:   '#0a0604',   // near-black hardwood
-        ceiling: '#070504',   // smoky black
-        accent:  '#c9a84c',   // brass (matches bar/foyer for continuity)
-        ambient: '#3a1f12',   // warm tobacco-smoke amber
+        wall:    '#1f1410',
+        floor:   '#0a0604',
+        ceiling: '#070504',
+        accent:  '#c9a84c',
+        ambient: '#3a1f12',
       },
 
       composition: [
         // ─── ARCHITECTURAL DETAILS ──────────────────────────────
-        // Oxblood wainscoting on 3 walls (not south where the door
-        // is). Taller than the bar's 1.05m → 1.20m for a more formal
-        // proportion that suits the cigar-lounge vibe.
         {
           type: 'wainscoting',
           height: 1.20,
           walls: ['north', 'east', 'west'],
-          color: '#2a1814',           // oxblood-walnut panel face
-          stripeColor: '#c9a84c',     // brass chair-rail
+          color: '#2a1814',
+          stripeColor: '#c9a84c',
         },
         { type: 'crownMolding', height: 0.18, color: '#c9a84c' },
         { type: 'baseboard',    height: 0.12, color: '#c9a84c' },
 
-        // ─── PERSIAN RUG ────────────────────────────────────────
-        // Zones the seating area in the middle of the room. Brass
-        // border picks up the chair-rail trim color for cohesion.
-        {
-          type: 'floorRug',
-          x: 0,
-          z: 0,
-          width: 3.6,
-          depth: 2.4,
-          color: '#3a1818',   // muted oxblood
-          trimColor: '#c9a84c',
-          trimWidth: 0.10,
-        },
-
         // ─── ART ON EAST WALL ───────────────────────────────────
-        // 3 sepia-toned framed pieces. West wall is the library so
-        // we don't put art there — gives each side wall its own role.
         {
           type: 'pictureFrames',
           wall: 'east',
-          count: 3,
-          y: 2.05,
+          count: 4,
+          y: 2.10,
           frameWidth: 0.65,
           frameHeight: 0.85,
-          length: 4.5,
-          colors: ['#3a2818', '#4a3020', '#3e2818'], // sepia tones
+          length: 5.5,
+          colors: ['#3a2818', '#4a3020', '#3e2818', '#4a2818'],
         },
 
         // ─── HUMIDOR WALL (NORTH) ───────────────────────────────
-        // The visual anchor of the room. 3 cedar shelves with 6
-        // boxes per shelf = 18 cigar boxes total. Brass clasps
-        // catch the standing lamp light.
+        // Raised to startY 1.95 so it clears the chair-back tops
+        // (chairs are 1.60m tall; humidor was previously hidden
+        // behind them). Now visible from anywhere in the room.
+        // 4 shelves × 8 boxes = 32 cigar boxes.
         {
           type: 'humidorWall',
           wall: 'north',
-          shelves: 3,
-          perShelf: 6,
-          length: 5.5,
-          startY: 1.55,
-          shelfGap: 0.55,
-          shelfColor: '#2a1a0e',   // cedar
+          shelves: 4,
+          perShelf: 8,
+          length: 7.0,
+          startY: 1.95,
+          shelfGap: 0.32,
+          shelfColor: '#2a1a0e',
         },
 
         // ─── BOOKSHELF (WEST WALL) ──────────────────────────────
-        // 4-shelf library running most of the wall. Varied book
-        // widths and muted leather-bound colors make it read as a
-        // real library, not stickers on a wall.
         {
           type: 'bookshelf',
           wall: 'west',
-          shelves: 4,
-          perShelf: 14,
-          length: 5.0,
+          shelves: 5,
+          perShelf: 16,
+          length: 6.0,
           startY: 0.30,
-          shelfGap: 0.45,
-          shelfColor: '#1f1208',  // mahogany planks
+          shelfGap: 0.40,
+          shelfColor: '#1f1208',
         },
 
-        // ─── WINGBACK CHAIRS (×2) ───────────────────────────────
-        // Two oxblood wingbacks facing each other across the rug.
-        // West chair faces east (rotY 90), east chair faces west
-        // (rotY -90). Spaced 1.6m apart so they fit the rug width
-        // (3.6m) with the coffee table centered between them.
+        // ═══ CLUSTER A — north reading nook ════════════════════
+        // 2 chairs facing each other (east-west axis) just south of
+        // humidor. Coffee table between, standing lamp behind west
+        // chair. Player walking from south sees this cluster first.
         {
-          type: 'wingbackChair',
-          x: -0.85,
-          z: 0,
-          rotY: 90,            // facing east toward the other chair
-          color: '#5a1a1a',    // oxblood
-          woodColor: '#1a0e08',
+          type: 'floorRug',
+          x: -1.5, z: -1.8,
+          width: 3.4, depth: 2.2,
+          color: '#3a1818',
+          trimColor: '#c9a84c',
+          trimWidth: 0.10,
         },
+        // West chair faces east
         {
           type: 'wingbackChair',
-          x:  0.85,
-          z: 0,
-          rotY: -90,           // facing west toward the other chair
+          x: -2.4, z: -1.8,
+          rotY: 90,
           color: '#5a1a1a',
           woodColor: '#1a0e08',
         },
-
-        // ─── COFFEE TABLE ───────────────────────────────────────
-        // Round mahogany top on a brass pedestal, centered between
-        // the chairs. Round shape gives a more relaxed feel than
-        // a square one.
+        // East chair faces west
+        {
+          type: 'wingbackChair',
+          x: -0.6, z: -1.8,
+          rotY: -90,
+          color: '#5a1a1a',
+          woodColor: '#1a0e08',
+        },
+        // Coffee table centered between them
         {
           type: 'coffeeTable',
-          x: 0,
-          z: 0,
+          x: -1.5, z: -1.8,
           shape: 'round',
-          radius: 0.45,
+          radius: 0.40,
           height: 0.45,
           topColor: '#1a0e08',
           baseColor: '#c9a84c',
         },
-
-        // ─── STANDING LAMPS (×2) ────────────────────────────────
-        // One behind each wingback. Warm pools of light over the
-        // seating area — readers' lamps. Lower intensity than bar
-        // pendants because the cigar lounge wants moodier light.
+        // Standing lamp north of west chair
         {
           type: 'standingLamp',
-          x: -1.7,
-          z: -0.6,
+          x: -2.4, z: -2.7,
           height: 1.6,
           shadeColor: '#3a1f12',
           lightIntensity: 4.5,
         },
+
+        // ═══ CLUSTER B — south conversation nook ═══════════════
+        // 2 more chairs facing each other (north-south axis) on the
+        // east side of the room. Coffee table + lamp.
+        {
+          type: 'floorRug',
+          x: 2.5, z: 1.0,
+          width: 2.4, depth: 3.4,
+          color: '#3a1818',
+          trimColor: '#c9a84c',
+          trimWidth: 0.10,
+        },
+        // North chair faces south
+        {
+          type: 'wingbackChair',
+          x: 2.5, z: -0.1,
+          rotY: 180,
+          color: '#5a1a1a',
+          woodColor: '#1a0e08',
+        },
+        // South chair faces north
+        {
+          type: 'wingbackChair',
+          x: 2.5, z: 2.1,
+          rotY: 0,
+          color: '#5a1a1a',
+          woodColor: '#1a0e08',
+        },
+        // Coffee table centered between them
+        {
+          type: 'coffeeTable',
+          x: 2.5, z: 1.0,
+          shape: 'round',
+          radius: 0.40,
+          height: 0.45,
+          topColor: '#1a0e08',
+          baseColor: '#c9a84c',
+        },
+        // Standing lamp east of cluster
         {
           type: 'standingLamp',
-          x:  1.7,
-          z: -0.6,
+          x: 3.6, z: 1.0,
           height: 1.6,
           shadeColor: '#3a1f12',
           lightIntensity: 4.5,

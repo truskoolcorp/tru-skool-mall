@@ -395,22 +395,29 @@
 
     // Boundary clamp + door auto-transition.
     //
-    // Two responsibilities:
+    // Three responsibilities:
     //  1. Clamp player to room bounds on east/west/north walls
-    //  2. If player crosses the SOUTH boundary (where the door is),
-    //     auto-redirect to the main mall instead of letting them
-    //     walk into the void.
+    //  2. Clamp the SOUTH wall everywhere EXCEPT the door opening
+    //  3. If player crosses the south boundary INSIDE the door's
+    //     horizontal extent, auto-redirect to the foyer.
+    //
+    // The door opening is centered at x=0 with width doorW. Walking
+    // backward against the south wall outside the doorway will now
+    // clamp at exitZ instead of accidentally exiting (the bug we
+    // hit in the cigar lounge build).
     //
     // Player radius 0.3m matches the foyer's PLAYER_RADIUS — wall
-    // surface stops feel solid right at the visual contact point,
-    // not 0.5m before like the previous overcautious buffer.
+    // surface stops feel solid right at the visual contact point.
     const PR = 0.3;
     const exitUrl = cfg.backUrl || 'index.html';
+    const exitHalfW = doorW / 2 - PR;  // tightened so player must center on doorway
     const boundStr =
       `minX: ${-halfW + PR}; ` +
       `maxX: ${ halfW - PR}; ` +
       `minZ: ${-halfD + PR}; ` +
-      `exitZ: ${ halfD - PR}; ` +    // crossing this triggers exit
+      `exitZ: ${ halfD - PR}; ` +
+      `exitMinX: ${-exitHalfW}; ` +
+      `exitMaxX: ${ exitHalfW}; ` +
       `exitUrl: ${exitUrl}`;
     rig.setAttribute('cs-boundary', boundStr);
     console.log(`[CSRoom] boundary set: ${boundStr}`);
@@ -515,11 +522,13 @@
   if (window.AFRAME && !AFRAME.components['cs-boundary']) {
     AFRAME.registerComponent('cs-boundary', {
       schema: {
-        minX:    { type: 'number', default: -10 },
-        maxX:    { type: 'number', default:  10 },
-        minZ:    { type: 'number', default: -10 },
-        exitZ:   { type: 'number', default:  10 },  // crossing = exit
-        exitUrl: { type: 'string', default: ''  },
+        minX:      { type: 'number', default: -10 },
+        maxX:      { type: 'number', default:  10 },
+        minZ:      { type: 'number', default: -10 },
+        exitZ:     { type: 'number', default:  10 },  // crossing = exit
+        exitMinX:  { type: 'number', default: -10 },  // door's left edge
+        exitMaxX:  { type: 'number', default:  10 },  // door's right edge
+        exitUrl:   { type: 'string', default: ''  },
       },
       tick: function () {
         const p = this.el.object3D.position;
@@ -527,12 +536,27 @@
         if (p.x > this.data.maxX) p.x = this.data.maxX;
         if (p.z < this.data.minZ) p.z = this.data.minZ;
 
-        // Door exit trigger
-        if (p.z > this.data.exitZ && this.data.exitUrl && !this._exiting) {
-          this._exiting = true; // prevent multiple fires
-          console.log('[CSRoom:exit] player walked through door — returning to mall');
-          // Tiny delay so console message flushes before navigation
-          setTimeout(() => { window.location.href = this.data.exitUrl; }, 50);
+        // South wall handling: exit only where the door is.
+        //
+        // Two cases when crossing exitZ:
+        //   1. WITHIN the door opening (exitMinX < x < exitMaxX) →
+        //      trigger redirect (player is walking through the door)
+        //   2. OUTSIDE the door opening → clamp player back to exitZ
+        //      (south wall is solid here, just no door)
+        //
+        // This prevents the bug where walking backwards anywhere on
+        // the south wall would teleport the player out of the room.
+        if (p.z > this.data.exitZ) {
+          const inDoorway = (p.x >= this.data.exitMinX) &&
+                            (p.x <= this.data.exitMaxX);
+          if (inDoorway && this.data.exitUrl && !this._exiting) {
+            this._exiting = true; // prevent multiple fires
+            console.log('[CSRoom:exit] player walked through door — returning to mall');
+            setTimeout(() => { window.location.href = this.data.exitUrl; }, 50);
+          } else if (!inDoorway) {
+            // Solid wall — clamp z back inside the room
+            p.z = this.data.exitZ;
+          }
         }
       },
     });
