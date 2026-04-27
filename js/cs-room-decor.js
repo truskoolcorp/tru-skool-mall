@@ -546,6 +546,462 @@
     console.log(`[CSDecor] ${count} stars`);
   };
 
+  // ─── HUMIDOR WALL ─────────────────────────────────────────────
+  // Cigar humidor display: N horizontal shelves with M cedar cigar
+  // boxes per shelf, glass-fronted display. Each box is a flat
+  // tobacco-brown rectangle with a thin brass clasp at center —
+  // reads as a closed humidor box at a glance.
+  //
+  // Use cases beyond cigar lounge:
+  //   - Tea/spice display in culinary (swap colors to ochre/sage)
+  //   - Apothecary/cocktail bitters wall (smoke lounge)
+  HANDLERS.humidorWall = function (scene, comp, room) {
+    const wall = comp.wall || 'north';
+    const shelves = comp.shelves || 3;
+    const perShelf = comp.perShelf || 6;
+    const length = comp.length || room.width * 0.6;
+    const startY = comp.startY !== undefined ? comp.startY : 1.4;
+    const shelfGap = comp.shelfGap || 0.55;
+    const shelfColor = comp.shelfColor || '#2a1a0e';
+    const boxColors = comp.boxColors || [
+      '#3a1f12', '#4a2a18', '#2e1808', '#5a341c',
+      '#3e2010', '#4e2a16', '#3a1f12', '#5a3416',
+    ];
+
+    // Determine wall coords
+    const halfD = room.depth / 2;
+    const halfW = room.width / 2;
+    let baseZ, baseX, axis;
+    if (wall === 'north') { baseZ = -halfD + 0.18; baseX = 0; axis = 'x'; }
+    else if (wall === 'south') { baseZ = halfD - 0.18; baseX = 0; axis = 'x'; }
+    else if (wall === 'east')  { baseZ = 0; baseX = halfW - 0.18; axis = 'z'; }
+    else if (wall === 'west')  { baseZ = 0; baseX = -halfW + 0.18; axis = 'z'; }
+
+    for (let s = 0; s < shelves; s++) {
+      const shelfY = startY + s * shelfGap;
+
+      // The shelf plank — cedar-tone, slightly proud of the wall
+      const shelf = document.createElement('a-box');
+      shelf.setAttribute('position', `${baseX} ${shelfY - 0.03} ${baseZ}`);
+      if (axis === 'x') {
+        shelf.setAttribute('width', length);
+        shelf.setAttribute('depth', 0.28);
+      } else {
+        shelf.setAttribute('width', 0.28);
+        shelf.setAttribute('depth', length);
+      }
+      shelf.setAttribute('height', 0.04);
+      shelf.setAttribute('color', shelfColor);
+      shelf.setAttribute('material', 'shader: standard; metalness: 0.15; roughness: 0.7');
+      scene.appendChild(shelf);
+
+      // Cigar boxes lined up on the shelf
+      const startCoord = -length / 2 + length / (perShelf * 2);
+      const step = length / perShelf;
+      for (let b = 0; b < perShelf; b++) {
+        const c = startCoord + step * b;
+        const bX = axis === 'x' ? baseX + c : baseX;
+        const bZ = axis === 'z' ? baseZ + c : baseZ;
+        const bColor = boxColors[(s * perShelf + b) % boxColors.length];
+
+        // Box body — wider than tall, deep enough to read as a box
+        const box = document.createElement('a-box');
+        box.setAttribute('position', `${bX} ${shelfY + 0.08} ${bZ}`);
+        if (axis === 'x') {
+          box.setAttribute('width', step * 0.78);
+          box.setAttribute('depth', 0.22);
+        } else {
+          box.setAttribute('width', 0.22);
+          box.setAttribute('depth', step * 0.78);
+        }
+        box.setAttribute('height', 0.16);
+        box.setAttribute('color', bColor);
+        box.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.8');
+        scene.appendChild(box);
+
+        // Brass clasp at the front-center of the box (small box detail)
+        const clasp = document.createElement('a-box');
+        const claspZ = axis === 'x' ? bZ + 0.115 : bZ;
+        const claspX = axis === 'z' ? bX + 0.115 : bX;
+        clasp.setAttribute('position', `${claspX} ${shelfY + 0.08} ${claspZ}`);
+        clasp.setAttribute('width', axis === 'x' ? 0.04 : 0.005);
+        clasp.setAttribute('height', 0.04);
+        clasp.setAttribute('depth', axis === 'x' ? 0.005 : 0.04);
+        clasp.setAttribute('color', room.theme.accent);
+        clasp.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+        scene.appendChild(clasp);
+      }
+    }
+    console.log(`[CSDecor] humidor wall: ${shelves} shelves × ${perShelf} boxes = ${shelves * perShelf} boxes on ${wall} wall`);
+  };
+
+  // ─── WINGBACK CHAIR ───────────────────────────────────────────
+  // Tufted leather wingback: tall arched back, two side wings, broad
+  // seat cushion, four wooden legs. Built from a-box/a-cylinder
+  // primitives. Optional brass nailhead trim along the arms.
+  //
+  // Spawned at (x, z) facing a direction (rotation y in degrees).
+  // Use cases beyond cigar lounge:
+  //   - Main lounge VIP seating
+  //   - Smoke lounge accent chairs
+  HANDLERS.wingbackChair = function (scene, comp, room) {
+    const x = comp.x !== undefined ? comp.x : 0;
+    const z = comp.z !== undefined ? comp.z : 0;
+    const rotY = comp.rotY !== undefined ? comp.rotY : 0;
+    const leatherColor = comp.color || '#5a1a1a';   // oxblood
+    const woodColor = comp.woodColor || '#1a0e08';   // dark mahogany
+    const accent = comp.accent || room.theme.accent; // brass nailheads
+
+    // Group everything under a pivot entity so we can rotate the whole chair
+    const chair = document.createElement('a-entity');
+    chair.setAttribute('position', `${x} 0 ${z}`);
+    chair.setAttribute('rotation', `0 ${rotY} 0`);
+    scene.appendChild(chair);
+
+    // Seat cushion (tufted leather block)
+    const seat = document.createElement('a-box');
+    seat.setAttribute('position', '0 0.45 0');
+    seat.setAttribute('width', 0.85);
+    seat.setAttribute('height', 0.18);
+    seat.setAttribute('depth', 0.80);
+    seat.setAttribute('color', leatherColor);
+    seat.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+    chair.appendChild(seat);
+
+    // Backrest (tall, slightly back-tilted via offset z)
+    const back = document.createElement('a-box');
+    back.setAttribute('position', '0 1.05 -0.36');
+    back.setAttribute('width', 0.85);
+    back.setAttribute('height', 1.10);
+    back.setAttribute('depth', 0.18);
+    back.setAttribute('color', leatherColor);
+    back.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+    chair.appendChild(back);
+
+    // Two wings (extending forward from the upper backrest, the iconic shape)
+    [-1, 1].forEach((side) => {
+      const wing = document.createElement('a-box');
+      wing.setAttribute('position', `${side * 0.40} 1.20 -0.20`);
+      wing.setAttribute('width', 0.10);
+      wing.setAttribute('height', 0.78);
+      wing.setAttribute('depth', 0.50);
+      wing.setAttribute('color', leatherColor);
+      wing.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+      chair.appendChild(wing);
+    });
+
+    // Two armrests (front-to-back, lower than wings)
+    [-1, 1].forEach((side) => {
+      const arm = document.createElement('a-box');
+      arm.setAttribute('position', `${side * 0.40} 0.70 0.10`);
+      arm.setAttribute('width', 0.10);
+      arm.setAttribute('height', 0.18);
+      arm.setAttribute('depth', 0.55);
+      arm.setAttribute('color', leatherColor);
+      arm.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+      chair.appendChild(arm);
+    });
+
+    // Brass nailhead trim — small studs along each arm front edge.
+    // 5 studs per arm, evenly spaced.
+    [-1, 1].forEach((side) => {
+      for (let i = 0; i < 5; i++) {
+        const stud = document.createElement('a-sphere');
+        const armFrontZ = 0.10 + 0.55 / 2 - 0.04;
+        const studZ = armFrontZ - i * 0.10;
+        stud.setAttribute('position', `${side * 0.45} 0.70 ${studZ}`);
+        stud.setAttribute('radius', 0.012);
+        stud.setAttribute('color', accent);
+        stud.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+        chair.appendChild(stud);
+      }
+    });
+
+    // 4 wooden legs (square posts)
+    [
+      { x: -0.36, z: -0.36 },
+      { x:  0.36, z: -0.36 },
+      { x: -0.36, z:  0.36 },
+      { x:  0.36, z:  0.36 },
+    ].forEach((leg) => {
+      const post = document.createElement('a-box');
+      post.setAttribute('position', `${leg.x} 0.18 ${leg.z}`);
+      post.setAttribute('width', 0.08);
+      post.setAttribute('height', 0.36);
+      post.setAttribute('depth', 0.08);
+      post.setAttribute('color', woodColor);
+      post.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.6');
+      chair.appendChild(post);
+    });
+
+    console.log(`[CSDecor] wingback chair at (${x}, ${z}) rot ${rotY}°`);
+  };
+
+  // ─── COFFEE TABLE ─────────────────────────────────────────────
+  // Low table, mahogany top + brass pedestal base. Round or square
+  // configurable via shape: 'round' | 'square'.
+  //
+  // Use cases beyond cigar lounge:
+  //   - Smoke lounge low tables in the conversation pit
+  //   - Main lounge cocktail tables
+  HANDLERS.coffeeTable = function (scene, comp, room) {
+    const x = comp.x !== undefined ? comp.x : 0;
+    const z = comp.z !== undefined ? comp.z : 0;
+    const shape = comp.shape || 'round';
+    const radius = comp.radius || 0.45;
+    const height = comp.height || 0.45;
+    const topColor = comp.topColor || '#1a0e08';     // dark mahogany
+    const baseColor = comp.baseColor || room.theme.accent; // brass
+
+    if (shape === 'round') {
+      const top = document.createElement('a-cylinder');
+      top.setAttribute('position', `${x} ${height} ${z}`);
+      top.setAttribute('radius', radius);
+      top.setAttribute('height', 0.05);
+      top.setAttribute('color', topColor);
+      top.setAttribute('material', 'shader: standard; metalness: 0.4; roughness: 0.3');
+      scene.appendChild(top);
+
+      // Pedestal base (slim brass column)
+      const post = document.createElement('a-cylinder');
+      post.setAttribute('position', `${x} ${height / 2} ${z}`);
+      post.setAttribute('radius', 0.04);
+      post.setAttribute('height', height);
+      post.setAttribute('color', baseColor);
+      post.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+      scene.appendChild(post);
+
+      // Base disc on floor
+      const disc = document.createElement('a-cylinder');
+      disc.setAttribute('position', `${x} 0.015 ${z}`);
+      disc.setAttribute('radius', radius * 0.55);
+      disc.setAttribute('height', 0.03);
+      disc.setAttribute('color', baseColor);
+      disc.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+      scene.appendChild(disc);
+    } else {
+      const top = document.createElement('a-box');
+      top.setAttribute('position', `${x} ${height} ${z}`);
+      top.setAttribute('width', radius * 2);
+      top.setAttribute('height', 0.05);
+      top.setAttribute('depth', radius * 2);
+      top.setAttribute('color', topColor);
+      top.setAttribute('material', 'shader: standard; metalness: 0.4; roughness: 0.3');
+      scene.appendChild(top);
+      // 4 legs at corners
+      const off = radius - 0.05;
+      [[-off,-off],[off,-off],[-off,off],[off,off]].forEach(([lx,lz]) => {
+        const leg = document.createElement('a-box');
+        leg.setAttribute('position', `${x+lx} ${height/2} ${z+lz}`);
+        leg.setAttribute('width', 0.05);
+        leg.setAttribute('height', height);
+        leg.setAttribute('depth', 0.05);
+        leg.setAttribute('color', baseColor);
+        leg.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+        scene.appendChild(leg);
+      });
+    }
+    console.log(`[CSDecor] coffee table at (${x}, ${z}) ${shape}`);
+  };
+
+  // ─── STANDING LAMP ────────────────────────────────────────────
+  // Tall floor lamp: brass post, weighted base, conical shade,
+  // bulb sphere, point light. Casts a warm pool of light from
+  // the floor up. Pairs well next to a wingback chair.
+  //
+  // Use cases beyond cigar lounge:
+  //   - Main lounge accent lighting
+  //   - Reading corner in the library section
+  HANDLERS.standingLamp = function (scene, comp, room) {
+    const x = comp.x !== undefined ? comp.x : 0;
+    const z = comp.z !== undefined ? comp.z : 0;
+    const height = comp.height || 1.6;
+    const shadeColor = comp.shadeColor || '#3a1f12';
+    const postColor = comp.postColor || room.theme.accent;
+    const bulbColor = comp.bulbColor || '#fff4d4';
+    const lightColor = comp.lightColor || '#ffaa55';
+    const lightIntensity = comp.lightIntensity || 5;
+
+    // Base disc on the floor
+    const base = document.createElement('a-cylinder');
+    base.setAttribute('position', `${x} 0.025 ${z}`);
+    base.setAttribute('radius', 0.18);
+    base.setAttribute('height', 0.05);
+    base.setAttribute('color', postColor);
+    base.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+    scene.appendChild(base);
+
+    // Post
+    const post = document.createElement('a-cylinder');
+    post.setAttribute('position', `${x} ${height / 2} ${z}`);
+    post.setAttribute('radius', 0.025);
+    post.setAttribute('height', height);
+    post.setAttribute('color', postColor);
+    post.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+    scene.appendChild(post);
+
+    // Lampshade (tapered cylinder for lampshade silhouette)
+    const shade = document.createElement('a-cylinder');
+    shade.setAttribute('position', `${x} ${height + 0.12} ${z}`);
+    shade.setAttribute('radius-top', 0.16);
+    shade.setAttribute('radius-bottom', 0.22);
+    shade.setAttribute('height', 0.28);
+    shade.setAttribute('color', shadeColor);
+    shade.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.85');
+    scene.appendChild(shade);
+
+    // Glowing bulb just below the shade opening
+    const bulb = document.createElement('a-sphere');
+    bulb.setAttribute('position', `${x} ${height + 0.05} ${z}`);
+    bulb.setAttribute('radius', 0.06);
+    bulb.setAttribute('color', bulbColor);
+    bulb.setAttribute('material', 'shader: flat');
+    scene.appendChild(bulb);
+
+    // Warm point light
+    const light = document.createElement('a-light');
+    light.setAttribute('type', 'point');
+    light.setAttribute('position', `${x} ${height + 0.05} ${z}`);
+    light.setAttribute('color', lightColor);
+    light.setAttribute('intensity', lightIntensity);
+    light.setAttribute('distance', 3.5);
+    light.setAttribute('decay', 1.5);
+    scene.appendChild(light);
+
+    console.log(`[CSDecor] standing lamp at (${x}, ${z}) h=${height}`);
+  };
+
+  // ─── BOOKSHELF ────────────────────────────────────────────────
+  // Multi-row library shelf — N shelves with M book spines each.
+  // Books are flat thin boxes in varied muted colors (leather-bound
+  // library aesthetic).
+  //
+  // Use cases beyond cigar lounge:
+  //   - Library section in main lounge
+  //   - Vintage decor in smoke lounge
+  HANDLERS.bookshelf = function (scene, comp, room) {
+    const wall = comp.wall || 'west';
+    const shelves = comp.shelves || 4;
+    const perShelf = comp.perShelf || 14;
+    const length = comp.length || room.depth * 0.6;
+    const startY = comp.startY !== undefined ? comp.startY : 0.3;
+    const shelfGap = comp.shelfGap || 0.45;
+    const shelfColor = comp.shelfColor || '#1f1208';
+    const bookColors = comp.bookColors || [
+      '#3a1f12', '#1f2a3a', '#5a1a30', '#2e2818',
+      '#3a3018', '#4a1818', '#1f3528', '#3a2418',
+      '#2a2030', '#5a3a18', '#1a3540', '#3e1818',
+    ];
+
+    const halfD = room.depth / 2;
+    const halfW = room.width / 2;
+    let baseZ, baseX, axis;
+    if (wall === 'north') { baseZ = -halfD + 0.12; baseX = 0; axis = 'x'; }
+    else if (wall === 'south') { baseZ = halfD - 0.12; baseX = 0; axis = 'x'; }
+    else if (wall === 'east')  { baseZ = 0; baseX = halfW - 0.12; axis = 'z'; }
+    else if (wall === 'west')  { baseZ = 0; baseX = -halfW + 0.12; axis = 'z'; }
+
+    for (let s = 0; s < shelves; s++) {
+      const shelfY = startY + s * shelfGap;
+
+      // Shelf plank (mahogany)
+      const shelf = document.createElement('a-box');
+      shelf.setAttribute('position', `${baseX} ${shelfY - 0.02} ${baseZ}`);
+      if (axis === 'x') {
+        shelf.setAttribute('width', length);
+        shelf.setAttribute('depth', 0.20);
+      } else {
+        shelf.setAttribute('width', 0.20);
+        shelf.setAttribute('depth', length);
+      }
+      shelf.setAttribute('height', 0.025);
+      shelf.setAttribute('color', shelfColor);
+      shelf.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.7');
+      scene.appendChild(shelf);
+
+      // Books — varied widths so the row reads "real library", not a
+      // grid of identical bricks.
+      const startCoord = -length / 2;
+      let cursor = startCoord;
+      for (let b = 0; b < perShelf; b++) {
+        // Random-ish width based on (s,b) so it's stable across reloads
+        const widthSeed = ((s * 17 + b * 31) % 7) / 7;
+        const bookW = 0.04 + widthSeed * 0.04;          // 4cm to 8cm
+        const bookH = 0.20 + ((s * 13 + b * 7) % 5) / 50;  // ~20-30cm
+        if (cursor + bookW > -startCoord) break;        // out of room
+        const c = cursor + bookW / 2;
+        const bX = axis === 'x' ? baseX + c : baseX;
+        const bZ = axis === 'z' ? baseZ + c : baseZ;
+        const bColor = bookColors[(s * perShelf + b) % bookColors.length];
+
+        const book = document.createElement('a-box');
+        book.setAttribute('position', `${bX} ${shelfY + bookH / 2} ${bZ}`);
+        if (axis === 'x') {
+          book.setAttribute('width', bookW);
+          book.setAttribute('depth', 0.16);
+        } else {
+          book.setAttribute('width', 0.16);
+          book.setAttribute('depth', bookW);
+        }
+        book.setAttribute('height', bookH);
+        book.setAttribute('color', bColor);
+        book.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+        scene.appendChild(book);
+
+        cursor += bookW + 0.005;  // tiny gap between books
+      }
+    }
+    console.log(`[CSDecor] bookshelf: ${shelves} shelves on ${wall} wall`);
+  };
+
+  // ─── FLOOR RUG ────────────────────────────────────────────────
+  // A darkened rectangular plane on the floor for visual zoning
+  // (delineates a seating area from the rest of the room). Use a
+  // subtle pattern color or a flat dark tone — the rug doesn't
+  // need detail at this rendering scale, just shape.
+  //
+  // Use cases beyond cigar lounge:
+  //   - Conversation pit in smoke lounge
+  //   - Stage area in main lounge
+  HANDLERS.floorRug = function (scene, comp, room) {
+    const x = comp.x !== undefined ? comp.x : 0;
+    const z = comp.z !== undefined ? comp.z : 0;
+    const width = comp.width || 3;
+    const depth = comp.depth || 2;
+    const color = comp.color || '#3a1818';     // muted oxblood
+    const trimColor = comp.trimColor || room.theme.accent;
+    const trimWidth = comp.trimWidth || 0.10;
+
+    // Rug body
+    const rug = document.createElement('a-plane');
+    rug.setAttribute('position', `${x} 0.012 ${z}`);
+    rug.setAttribute('rotation', '-90 0 0');
+    rug.setAttribute('width', width);
+    rug.setAttribute('height', depth);
+    rug.setAttribute('color', color);
+    rug.setAttribute('material', 'shader: standard; metalness: 0; roughness: 0.95');
+    scene.appendChild(rug);
+
+    // Brass-ish thin trim border via 4 thin planes around the edges
+    [
+      { px: x, pz: z - depth / 2 + trimWidth / 2, w: width, d: trimWidth }, // top edge
+      { px: x, pz: z + depth / 2 - trimWidth / 2, w: width, d: trimWidth }, // bottom edge
+      { px: x - width / 2 + trimWidth / 2, pz: z, w: trimWidth, d: depth },  // left edge
+      { px: x + width / 2 - trimWidth / 2, pz: z, w: trimWidth, d: depth },  // right edge
+    ].forEach((edge) => {
+      const e = document.createElement('a-plane');
+      e.setAttribute('position', `${edge.px} 0.013 ${edge.pz}`);
+      e.setAttribute('rotation', '-90 0 0');
+      e.setAttribute('width', edge.w);
+      e.setAttribute('height', edge.d);
+      e.setAttribute('color', trimColor);
+      e.setAttribute('material', 'shader: standard; metalness: 0.6; roughness: 0.5; opacity: 0.7; transparent: true');
+      scene.appendChild(e);
+    });
+
+    console.log(`[CSDecor] floor rug ${width}m × ${depth}m at (${x}, ${z})`);
+  };
+
   // ─── HERO GLB ─────────────────────────────────────────────────
   // Drop in a Meshy GLB at a specific location, scale, rotation.
   // Same auto-snap behavior as cs-room-boot's loadProps. Use this

@@ -4,11 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cigar Lounge — Café Sativa</title>
-  <meta name="description" content="Oxblood leather, mahogany, and aged paper — Café Sativa's VIP cigar lounge at the Tru Skool Mall.">
+  <meta name="description" content="A walnut-and-leather hideaway. Tufted wingbacks, rare boxes, library shelves — Café Sativa's cigar lounge at the Tru Skool Mall.">
 
+  <!-- Same load order as the bar:
+       1. A-Frame core
+       2. A-Frame Extras
+       3. gltf-extensions.js (Meshopt decoder)
+       4. mall-nav.js (registers tank-controls)
+       5. cs-room-decor.js (composition primitives)
+       6. cs-room-props.js (Meshy prop catalog — empty for cigar)
+       7. cs-room-boot.js (room builder + composition runner)
+       8. cafe-sativa-props.js (interactive tuner support)
+       9. Inline boot config -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
   <script src="js/gltf-extensions.js"></script>
+  <script src="js/mall-nav.js"></script>
+  <script src="js/cs-room-decor.js"></script>
   <script src="js/cs-room-props.js"></script>
   <script src="js/cs-room-boot.js"></script>
   <script src="js/cafe-sativa-props.js"></script>
@@ -17,18 +29,18 @@
 
   <style>
     #room-hud { position: fixed; top: 16px; left: 16px; z-index: 100;
-      color: #b85450; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
+      color: #c9a84c; font-family: 'Cinzel', 'Georgia', serif; pointer-events: auto; }
     #room-hud .room-title { font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
       text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
     #room-hud .room-tagline { font-size: 13px; font-weight: 400; font-style: italic;
       opacity: 0.85; margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
     #room-hud .back-link { display: inline-block; margin-top: 10px; padding: 6px 14px;
-      background: rgba(10,10,15,0.8); border: 1px solid #b85450; border-radius: 4px;
-      color: #b85450; text-decoration: none; font-family: system-ui, sans-serif;
+      background: rgba(10,10,15,0.8); border: 1px solid #c9a84c; border-radius: 4px;
+      color: #c9a84c; text-decoration: none; font-family: system-ui, sans-serif;
       font-size: 13px; transition: background 0.2s; }
-    #room-hud .back-link:hover { background: rgba(184,84,80,0.2); }
-    #loading-veil { position: fixed; inset: 0; background: #0a0503; z-index: 9999;
-      display: flex; align-items: center; justify-content: center; color: #b85450;
+    #room-hud .back-link:hover { background: rgba(201,168,76,0.2); }
+    #loading-veil { position: fixed; inset: 0; background: #0a0604; z-index: 9999;
+      display: flex; align-items: center; justify-content: center; color: #c9a84c;
       font-family: system-ui, sans-serif; font-size: 14px; letter-spacing: 0.2em;
       text-transform: uppercase; transition: opacity 0.6s ease; }
     #loading-veil.hidden { opacity: 0; pointer-events: none; }
@@ -40,39 +52,196 @@
 
   <div id="room-hud">
     <div class="room-title">Cigar Lounge</div>
-    <div class="room-tagline">Reserved for Refined Gentlemen</div>
-    <a href="index.html" class="back-link">← Back to Mall</a>
+    <div class="room-tagline">A Walnut-and-Leather Hideaway</div>
+    <a href="index.html#cafe-sativa-foyer" class="back-link">← Back to Café Sativa</a>
   </div>
 
   <a-scene
     id="room-scene"
     renderer="antialias: true; colorManagement: true"
-    background="color: #1a0a08"
+    background="color: #0a0604"
     cursor="rayOrigin: mouse"
     loading-screen="enabled: false"
     vr-mode-ui="enabled: false">
   </a-scene>
 
   <script>
+    // ═══════════════════════════════════════════════════════════
+    // CIGAR LOUNGE — Base44-style composition
+    //
+    // Intentionally smaller, lower-ceilinged than the bar: 9m × 7m
+    // × 3.2m. Smaller footprint reads "intimate / private." Lower
+    // ceiling drops you into the smoke. Two wingback chairs square
+    // off across a low table — the heart of the room — flanked by
+    // standing lamps. Humidor wall on the north (the visual anchor),
+    // library shelf on the west, sepia art on the east.
+    //
+    // SPAWN: south of center facing north into the seating area.
+    // First thing you see is the back of the wingbacks framed
+    // against the humidor wall — drawing the eye in.
+    //
+    // EXIT: south wall, returns to CS foyer (Laviche concierge).
+    //
+    // COMPOSITION ORDER
+    //   1. Architectural trim          (wainscoting, baseboard, crown)
+    //   2. Persian rug                 (zones the seating area)
+    //   3. Picture frames              (sepia art on east wall)
+    //   4. Humidor wall (north)        (the back-of-room hero)
+    //   5. Bookshelf (west)            (library wall)
+    //   6. Wingback chairs (×2)        (facing each other)
+    //   7. Coffee table                (between the chairs)
+    //   8. Standing lamps (×2)         (one beside each chair)
+    // ═══════════════════════════════════════════════════════════
+
     CSRoom.boot({
       id: 'cigar',
       name: 'Cigar Lounge',
-      tagline: 'Reserved for Refined Gentlemen',
+      tagline: 'A Walnut-and-Leather Hideaway',
 
-      // Intimate VIP — smaller than the bar, lower ceiling for the
-      // contained "smoke clings to the ceiling" feel.
-      width: 5,
-      depth: 4,
-      height: 3.0,
+      width: 9,
+      depth: 7,
+      height: 3.2,
 
-      // Cigar lounge theme: oxblood + mahogany + aged paper
+      // Oxblood + brass + tobacco palette
       theme: {
-        wall:    '#1a0a08',   // deep oxblood
-        floor:   '#100604',   // near-black mahogany
-        ceiling: '#080302',   // smoky charcoal
-        accent:  '#b85450',   // muted oxblood-red
-        ambient: '#3a1812',   // mahogany ambient
+        wall:    '#1f1410',   // deep oxblood-tinted walnut
+        floor:   '#0a0604',   // near-black hardwood
+        ceiling: '#070504',   // smoky black
+        accent:  '#c9a84c',   // brass (matches bar/foyer for continuity)
+        ambient: '#3a1f12',   // warm tobacco-smoke amber
       },
+
+      composition: [
+        // ─── ARCHITECTURAL DETAILS ──────────────────────────────
+        // Oxblood wainscoting on 3 walls (not south where the door
+        // is). Taller than the bar's 1.05m → 1.20m for a more formal
+        // proportion that suits the cigar-lounge vibe.
+        {
+          type: 'wainscoting',
+          height: 1.20,
+          walls: ['north', 'east', 'west'],
+          color: '#2a1814',           // oxblood-walnut panel face
+          stripeColor: '#c9a84c',     // brass chair-rail
+        },
+        { type: 'crownMolding', height: 0.18, color: '#c9a84c' },
+        { type: 'baseboard',    height: 0.12, color: '#c9a84c' },
+
+        // ─── PERSIAN RUG ────────────────────────────────────────
+        // Zones the seating area in the middle of the room. Brass
+        // border picks up the chair-rail trim color for cohesion.
+        {
+          type: 'floorRug',
+          x: 0,
+          z: 0,
+          width: 3.6,
+          depth: 2.4,
+          color: '#3a1818',   // muted oxblood
+          trimColor: '#c9a84c',
+          trimWidth: 0.10,
+        },
+
+        // ─── ART ON EAST WALL ───────────────────────────────────
+        // 3 sepia-toned framed pieces. West wall is the library so
+        // we don't put art there — gives each side wall its own role.
+        {
+          type: 'pictureFrames',
+          wall: 'east',
+          count: 3,
+          y: 2.05,
+          frameWidth: 0.65,
+          frameHeight: 0.85,
+          length: 4.5,
+          colors: ['#3a2818', '#4a3020', '#3e2818'], // sepia tones
+        },
+
+        // ─── HUMIDOR WALL (NORTH) ───────────────────────────────
+        // The visual anchor of the room. 3 cedar shelves with 6
+        // boxes per shelf = 18 cigar boxes total. Brass clasps
+        // catch the standing lamp light.
+        {
+          type: 'humidorWall',
+          wall: 'north',
+          shelves: 3,
+          perShelf: 6,
+          length: 5.5,
+          startY: 1.55,
+          shelfGap: 0.55,
+          shelfColor: '#2a1a0e',   // cedar
+        },
+
+        // ─── BOOKSHELF (WEST WALL) ──────────────────────────────
+        // 4-shelf library running most of the wall. Varied book
+        // widths and muted leather-bound colors make it read as a
+        // real library, not stickers on a wall.
+        {
+          type: 'bookshelf',
+          wall: 'west',
+          shelves: 4,
+          perShelf: 14,
+          length: 5.0,
+          startY: 0.30,
+          shelfGap: 0.45,
+          shelfColor: '#1f1208',  // mahogany planks
+        },
+
+        // ─── WINGBACK CHAIRS (×2) ───────────────────────────────
+        // Two oxblood wingbacks facing each other across the rug.
+        // West chair faces east (rotY 90), east chair faces west
+        // (rotY -90). Spaced 1.6m apart so they fit the rug width
+        // (3.6m) with the coffee table centered between them.
+        {
+          type: 'wingbackChair',
+          x: -0.85,
+          z: 0,
+          rotY: 90,            // facing east toward the other chair
+          color: '#5a1a1a',    // oxblood
+          woodColor: '#1a0e08',
+        },
+        {
+          type: 'wingbackChair',
+          x:  0.85,
+          z: 0,
+          rotY: -90,           // facing west toward the other chair
+          color: '#5a1a1a',
+          woodColor: '#1a0e08',
+        },
+
+        // ─── COFFEE TABLE ───────────────────────────────────────
+        // Round mahogany top on a brass pedestal, centered between
+        // the chairs. Round shape gives a more relaxed feel than
+        // a square one.
+        {
+          type: 'coffeeTable',
+          x: 0,
+          z: 0,
+          shape: 'round',
+          radius: 0.45,
+          height: 0.45,
+          topColor: '#1a0e08',
+          baseColor: '#c9a84c',
+        },
+
+        // ─── STANDING LAMPS (×2) ────────────────────────────────
+        // One behind each wingback. Warm pools of light over the
+        // seating area — readers' lamps. Lower intensity than bar
+        // pendants because the cigar lounge wants moodier light.
+        {
+          type: 'standingLamp',
+          x: -1.7,
+          z: -0.6,
+          height: 1.6,
+          shadeColor: '#3a1f12',
+          lightIntensity: 4.5,
+        },
+        {
+          type: 'standingLamp',
+          x:  1.7,
+          z: -0.6,
+          height: 1.6,
+          shadeColor: '#3a1f12',
+          lightIntensity: 4.5,
+        },
+      ],
     });
 
     document.querySelector('a-scene').addEventListener('loaded', () => {

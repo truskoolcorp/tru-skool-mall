@@ -77,36 +77,18 @@
     // Room: 5m × 4m × 3.0m centered at origin.
     //   x: -2.5 to +2.5    z: -2 to +2
     //
-    // Layout: armchair pair facing inward across a side table at
-    // the WEST end (player's left as they enter), humidor against
-    // the EAST wall (right as they enter). Player walks down the
-    // length of the room and sees the seating arrangement on
-    // their left, humidor on their right.
-    'cigar': [
-      {
-        // Two oxblood armchairs angled toward each other across
-        // the side table. West side of room.
-        src: 'assets/models/props/cigar-armchair-oxblood.glb',
-        instances: [
-          { pos: '-1.5 0 -0.6', rot: '0  30 0', scale: '1.00 1.00 1.00' },
-          { pos: '-1.5 0  0.6', rot: '0 -30 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-      {
-        // Side table between the chairs (includes glass ashtray)
-        src: 'assets/models/props/cigar-side-table-walnut.glb',
-        instances: [
-          { pos: '-1.5 0 0', rot: '0 0 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-      {
-        // Humidor against east wall, faces into the room.
-        src: 'assets/models/props/cigar-humidor.glb',
-        instances: [
-          { pos: '2.0 0 -0.5', rot: '0 -90 0', scale: '1.00 1.00 1.00' },
-        ],
-      },
-    ],
+    // ═══ CIGAR LOUNGE ════════════════════════════════════════
+    // Cigar is now built ENTIRELY from composition primitives in
+    // cs-cigar.html. The Meshy GLBs (armchair, side-table, humidor)
+    // are retired in favor of primitive geometry that gives:
+    //   - Full control over chair proportions and rotation
+    //   - 18-box humidor wall (vs the GLB's single small humidor)
+    //   - Multi-shelf bookshelf (no Meshy GLB existed for this)
+    //   - Persian rug for visual zoning
+    //   - Two standing lamps with their own point lights
+    //
+    // Empty array = no Meshy props loaded for this room.
+    'cigar': [],
 
     // ═══ MAIN LOUNGE ═════════════════════════════════════════
     // Room: 8m × 7m × 4.0m centered at origin.
