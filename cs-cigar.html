@@ -147,51 +147,56 @@
         // Sits flush against the north wall, centered on x=0.
         // Auto-snap-to-floor handles the y position. We rotY=0 so
         // the door faces SOUTH (toward the player as they enter).
-        // Scale 1.0 — Meshy GLBs at v5 are typically 1m scale-ratio.
+        //
+        // Scale 0.85 — same Meshy oversize issue. Original prompt
+        // was 2.5m × 2.6m × 1.2m; at scale 1.0 the cabinet was
+        // floating forward into the room. 0.85 keeps it flush
+        // and in scale with the rest of the room.
         {
           type: 'heroGLB',
           src: 'assets/models/props/cigar-walk-in-humidor.glb',
-          pos: '0 0 -3.4',
+          pos: '0 0 -3.5',
           rot: '0 0 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.85 0.85 0.85',
           id: 'walk-in-humidor',
         },
 
         // ─── HERO #2: BANQUETTE WEST ────────────────────────────
         // Curved tufted emerald banquette flush against west wall.
         // rotY=90 turns its back to face -X (the wall) so seat
-        // faces +X (into the room).
+        // faces +X (into the room). Scale 0.7 — Meshy oversize
+        // correction (banquette was reading ~6m long at scale 1.0).
         {
           type: 'heroGLB',
           src: 'assets/models/props/cigar-banquette-emerald.glb',
-          pos: '-5.5 0 -0.2',
+          pos: '-5.6 0 -0.2',
           rot: '0 90 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.7 0.7 0.7',
           id: 'banquette-west',
         },
 
         // ─── HERO #3: BANQUETTE EAST ────────────────────────────
-        // Mirrored on the east wall. rotY=-90 turns back to +X (wall),
-        // seat faces -X (into the room).
+        // Mirrored on the east wall. Same scale correction.
         {
           type: 'heroGLB',
           src: 'assets/models/props/cigar-banquette-emerald.glb',
-          pos: '5.5 0 -0.2',
+          pos: '5.6 0 -0.2',
           rot: '0 -90 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.7 0.7 0.7',
           id: 'banquette-east',
         },
 
         // ─── HERO #4: STATEMENT CHANDELIER ──────────────────────
         // Horizontal fixture mounted at ceiling height, centered.
         // Snap is OFF because we want the chandelier hanging from
-        // the ceiling, not snapped to floor.
+        // the ceiling, not snapped to floor. Scale 0.8 brings it
+        // to a sensible centerpiece size.
         {
           type: 'heroGLB',
           src: 'assets/models/props/cigar-statement-chandelier.glb',
           pos: '0 3.0 0',
           rot: '0 0 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.8 0.8 0.8',
           snap: false,
           id: 'chandelier',
         },
@@ -214,23 +219,28 @@
 
         // ─── INTIMATE CLUSTER (SW corner, existing GLBs) ─────────
         // Two oxblood armchairs angled toward each other across a
-        // walnut side table. Center of cluster around (-1, 0, 2.2)
-        // — south central area in front of the banquettes' middle,
+        // walnut side table. Center of cluster around (0, 0, 2.3) —
+        // south central area in front of the banquettes' middle,
         // visible from the entry but offset enough to feel private.
+        //
+        // Scale 0.55 — Meshy GLBs come in roughly 2x the prompted
+        // dimensions. At scale 1.0 the chairs were ~2m tall and
+        // dominated the room. 0.55 brings them to ~1.1m which
+        // matches the banquettes and proper seating proportion.
         {
           type: 'heroGLB',
           src: 'assets/models/props/cigar-armchair-oxblood.glb',
-          pos: '-1.5 0 2.3',
+          pos: '-1.2 0 2.3',
           rot: '0 30 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.55 0.55 0.55',
           id: 'armchair-a',
         },
         {
           type: 'heroGLB',
           src: 'assets/models/props/cigar-armchair-oxblood.glb',
-          pos: '1.5 0 2.3',
+          pos: '1.2 0 2.3',
           rot: '0 -30 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.55 0.55 0.55',
           id: 'armchair-b',
         },
         {
@@ -238,7 +248,7 @@
           src: 'assets/models/props/cigar-side-table-walnut.glb',
           pos: '0 0 2.5',
           rot: '0 0 0',
-          scale: '1.0 1.0 1.0',
+          scale: '0.55 0.55 0.55',
           id: 'cluster-table',
         },
 
