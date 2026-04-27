@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cigar Lounge — Café Sativa</title>
-  <meta name="description" content="Modern luxury — emerald banquettes, brass-framed humidor, marble tables. Café Sativa's cigar lounge at the Tru Skool Mall.">
+  <meta name="description" content="Modern luxury — emerald banquettes, walk-in humidor, statement chandelier. Café Sativa's cigar lounge at the Tru Skool Mall.">
 
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
@@ -57,49 +57,50 @@
 
   <script>
     // ═══════════════════════════════════════════════════════════
-    // CIGAR LOUNGE v3 — Eight Lounge inspired
+    // CIGAR LOUNGE v4 — Hybrid (Meshy GLBs + primitive shell)
     //
-    // Reference: Eight Cigar Lounge at Resorts World Las Vegas.
-    // Key aesthetic shifts from v1/v2 (Victorian library/wingbacks):
-    //   - Long banquettes along walls (not isolated chair clusters)
-    //   - Emerald velvet (not oxblood) — distinctive, modern
-    //   - Glass humidor with internal warm glow (not wood-shelf boxes)
-    //   - Wall sconces + ceiling cofferes (NOT standing lamps)
-    //   - Marble cocktail tables (not mahogany)
-    //   - Coffered ceiling with brass strips for architectural depth
+    // After v3 (all primitives) read as flat blocky benches and
+    // a dark rectangle for the humidor, we generated 3 fresh
+    // GLBs from Meshy targeted at the actual Eight Lounge
+    // visual language:
     //
-    // ROOM: 12m × 8m × 3.6m (longer/taller for the ceiling effect).
+    //   cigar-banquette-emerald.glb    — curved tufted banquette
+    //                                    with diamond stitching,
+    //                                    brass nailheads, walnut
+    //                                    base. Seats ~6 per piece.
+    //   cigar-walk-in-humidor.glb      — glass-enclosed walk-in
+    //                                    humidor ROOM (not a flat
+    //                                    cabinet). Brass-framed
+    //                                    glass walls, internal
+    //                                    cedar shelves with cigar
+    //                                    boxes, brass-handled door,
+    //                                    amber LED glow inside.
+    //   cigar-statement-chandelier.glb — horizontal linear ceiling
+    //                                    fixture, brass crossbar
+    //                                    with 8 amber-glass cylinder
+    //                                    pendants at varied heights.
     //
-    // LAYOUT (top-down, north at top):
+    // We KEEP from v3:
+    //   - Architectural shell (wainscoting, crown, baseboard)
+    //   - Coffered ceiling with brass strips
+    //   - Marble cocktail tables (in front of banquettes)
+    //   - Wall sconces (no big shades, no scale issues)
+    //   - Door-only south-wall exit
     //
-    //       ┌──────GLASS HUMIDOR (north wall)──────────┐
-    //       │                                          │
-    //       │  ┌────────────────────────────┐          │
-    //       │  │    BANQUETTE (west wall)   │          │
-    //       │  │ table  table  table  table │          │
-    //       │  │                            │          │
-    //       │  │            (open floor)    │          │
-    //       │  │                            │          │
-    //       │  │ table  table  table  table │          │
-    //       │  │   BANQUETTE (east wall)    │          │
-    //       │  └────────────────────────────┘          │
-    //       │                                          │
-    //       └────────────[door (south)]────────────────┘
+    // We REPLACE with GLBs:
+    //   - Long flat 'banquette' primitives → curved tufted banquette
+    //     GLBs (one east wall, one west wall)
+    //   - 'glassHumidor' primitive (flat dark rectangle) → walk-in
+    //     humidor GLB on the north wall as architectural centerpiece
+    //   - (no v3 ceiling fixture) → statement chandelier GLB centered
     //
-    // CAPACITY:
-    //   - West banquette: ~5m long, seats 8
-    //   - East banquette: ~5m long, seats 8
-    //   - Total: ~16 patrons + standing room in the open center
+    // We ADD a third intimate seating cluster in the SW corner using
+    // the EXISTING cigar-armchair-oxblood.glb and cigar-side-table-
+    // walnut.glb (already on disk, just unused since v3) — gives the
+    // room three distinct seating zones for varied patron experiences.
     //
-    // LIGHTING (no standing lamps):
-    //   - 6 wall sconces (3 per long wall, between banquettes &
-    //     ceiling) — warm pools above each booth
-    //   - Backlit humidor glow on north wall (emissive cabinet back)
-    //   - Coffered ceiling with brass strips reads as moody upper
-    //     architectural detail
-    //
-    // EXIT: south wall, door-only (cs-boundary clamps everywhere
-    // else on south wall).
+    // ROOM: 12m × 8m × 3.6m (same as v3).
+    // EXIT: south, door-only — inherited from cs-room-boot defaults.
     // ═══════════════════════════════════════════════════════════
 
     CSRoom.boot({
@@ -111,7 +112,6 @@
       depth: 8,
       height: 3.6,
 
-      // Eight Lounge palette: deep walnut + emerald accents + brass
       theme: {
         wall:    '#1a1208',   // deep dark walnut
         floor:   '#0a0604',   // near-black hardwood
@@ -121,10 +121,7 @@
       },
 
       composition: [
-        // ─── ARCHITECTURAL DETAILS ──────────────────────────────
-        // Walnut wainscoting up to 1.0m on N/E/W walls. Lower than
-        // v2 (1.20m) so the banquette backs are the dominant lower-
-        // wall element, with wainscoting just framing them.
+        // ─── ARCHITECTURAL SHELL ────────────────────────────────
         {
           type: 'wainscoting',
           height: 1.00,
@@ -136,9 +133,6 @@
         { type: 'baseboard',    height: 0.10, color: '#c9a84c' },
 
         // ─── COFFERED CEILING ───────────────────────────────────
-        // 3 cols × 4 rows of recessed panels with brass strips
-        // between. Adds significant architectural depth — looks
-        // like a real luxury venue ceiling.
         {
           type: 'cofferedCeiling',
           cols: 3,
@@ -149,65 +143,108 @@
           panelColor: '#0a0604',
         },
 
-        // ─── GLASS HUMIDOR (NORTH WALL) ─────────────────────────
-        // The visual centerpiece. Brass-framed cabinet, cigar boxes
-        // on 4 internal shelves, warm emissive interior glow.
-        // Player walking in from the south sees this lit cabinet
-        // glowing warmly across the room.
+        // ─── HERO #1: WALK-IN HUMIDOR (centerpiece) ─────────────
+        // Sits flush against the north wall, centered on x=0.
+        // Auto-snap-to-floor handles the y position. We rotY=0 so
+        // the door faces SOUTH (toward the player as they enter).
+        // Scale 1.0 — Meshy GLBs at v5 are typically 1m scale-ratio.
         {
-          type: 'glassHumidor',
-          wall: 'north',
-          length: 7.0,
-          height: 2.4,
-          startY: 0.6,
-          shelves: 4,
-          perShelf: 9,         // 36 boxes total
-          frameColor: '#c9a84c',
-          interiorColor: '#1a0e08',
-          glowColor: '#3a2010',
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-walk-in-humidor.glb',
+          pos: '0 0 -3.4',
+          rot: '0 0 0',
+          scale: '1.0 1.0 1.0',
+          id: 'walk-in-humidor',
         },
 
-        // ─── BANQUETTES ─────────────────────────────────────────
-        // Two long emerald velvet benches against east and west
-        // walls. Each runs ~5m, seats ~8 patrons.
+        // ─── HERO #2: BANQUETTE WEST ────────────────────────────
+        // Curved tufted emerald banquette flush against west wall.
+        // rotY=90 turns its back to face -X (the wall) so seat
+        // faces +X (into the room).
         {
-          type: 'banquette',
-          wall: 'west',
-          length: 5.5,
-          offsetAlong: 0,        // centered along the wall
-          color: '#1a3a2a',      // emerald velvet (dark forest tone)
-          baseColor: '#1a0e08',
-          studColor: '#c9a84c',
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-banquette-emerald.glb',
+          pos: '-5.5 0 -0.2',
+          rot: '0 90 0',
+          scale: '1.0 1.0 1.0',
+          id: 'banquette-west',
         },
+
+        // ─── HERO #3: BANQUETTE EAST ────────────────────────────
+        // Mirrored on the east wall. rotY=-90 turns back to +X (wall),
+        // seat faces -X (into the room).
         {
-          type: 'banquette',
-          wall: 'east',
-          length: 5.5,
-          offsetAlong: 0,
-          color: '#1a3a2a',
-          baseColor: '#1a0e08',
-          studColor: '#c9a84c',
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-banquette-emerald.glb',
+          pos: '5.5 0 -0.2',
+          rot: '0 -90 0',
+          scale: '1.0 1.0 1.0',
+          id: 'banquette-east',
+        },
+
+        // ─── HERO #4: STATEMENT CHANDELIER ──────────────────────
+        // Horizontal fixture mounted at ceiling height, centered.
+        // Snap is OFF because we want the chandelier hanging from
+        // the ceiling, not snapped to floor.
+        {
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-statement-chandelier.glb',
+          pos: '0 3.0 0',
+          rot: '0 0 0',
+          scale: '1.0 1.0 1.0',
+          snap: false,
+          id: 'chandelier',
         },
 
         // ─── MARBLE COCKTAIL TABLES (in front of banquettes) ────
-        // 4 tables along each banquette, spaced evenly. Cream
-        // marble tops on slim brass posts.
-        // West side (x ≈ -4.0, in front of west banquette):
-        { type: 'marbleTable', x: -4.0, z: -2.0, radius: 0.32, height: 0.52 },
-        { type: 'marbleTable', x: -4.0, z: -0.65, radius: 0.32, height: 0.52 },
-        { type: 'marbleTable', x: -4.0, z:  0.65, radius: 0.32, height: 0.52 },
+        // Banquettes are at x=±5.5, ~0.7m deep, so seat fronts are at
+        // x=±4.8 facing inward. Place tables ~0.7m in from the
+        // banquette seat front so a patron can rest a drink without
+        // leaning forward.
+        // West side (in front of west banquette):
+        { type: 'marbleTable', x: -4.0, z: -2.2, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x: -4.0, z: -0.8, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x: -4.0, z:  0.6, radius: 0.32, height: 0.52 },
         { type: 'marbleTable', x: -4.0, z:  2.0, radius: 0.32, height: 0.52 },
-        // East side (x ≈ +4.0):
-        { type: 'marbleTable', x:  4.0, z: -2.0, radius: 0.32, height: 0.52 },
-        { type: 'marbleTable', x:  4.0, z: -0.65, radius: 0.32, height: 0.52 },
-        { type: 'marbleTable', x:  4.0, z:  0.65, radius: 0.32, height: 0.52 },
+        // East side:
+        { type: 'marbleTable', x:  4.0, z: -2.2, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x:  4.0, z: -0.8, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x:  4.0, z:  0.6, radius: 0.32, height: 0.52 },
         { type: 'marbleTable', x:  4.0, z:  2.0, radius: 0.32, height: 0.52 },
 
+        // ─── INTIMATE CLUSTER (SW corner, existing GLBs) ─────────
+        // Two oxblood armchairs angled toward each other across a
+        // walnut side table. Center of cluster around (-1, 0, 2.2)
+        // — south central area in front of the banquettes' middle,
+        // visible from the entry but offset enough to feel private.
+        {
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-armchair-oxblood.glb',
+          pos: '-1.5 0 2.3',
+          rot: '0 30 0',
+          scale: '1.0 1.0 1.0',
+          id: 'armchair-a',
+        },
+        {
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-armchair-oxblood.glb',
+          pos: '1.5 0 2.3',
+          rot: '0 -30 0',
+          scale: '1.0 1.0 1.0',
+          id: 'armchair-b',
+        },
+        {
+          type: 'heroGLB',
+          src: 'assets/models/props/cigar-side-table-walnut.glb',
+          pos: '0 0 2.5',
+          rot: '0 0 0',
+          scale: '1.0 1.0 1.0',
+          id: 'cluster-table',
+        },
+
         // ─── WALL SCONCES ───────────────────────────────────────
-        // 3 per long wall, ~2.2m up, between banquette top-rail and
-        // ceiling. Each casts a warm point light over the banquette
-        // patrons. NO standing lamps anywhere — architectural light
-        // only, like Eight.
+        // 3 per long wall, ~2.3m up — between banquette top-rail and
+        // ceiling. Each casts a warm point light over the booth.
         { type: 'wallSconce', wall: 'west', z: -2.2, y: 2.3 },
         { type: 'wallSconce', wall: 'west', z:  0,   y: 2.3 },
         { type: 'wallSconce', wall: 'west', z:  2.2, y: 2.3 },
