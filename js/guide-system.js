@@ -62,6 +62,12 @@ Keep responses concise (2-3 sentences max for in-mall chat). Guide visitors, rec
     'cafe-sativa': {
       laviche: 'Café Sativa — Sip. Smoke. Vibe. This is where culture, cuisine, and creativity converge. The Tenerife flagship is coming soon, darling. Imagine this atmosphere with an ocean view. ☕',
     },
+    // Foyer-specific greeting — fires when patron enters the CS foyer
+    // proper (vs the wing/store entrance). Used by the hash-route
+    // teleport when returning from a per-room scene like cs-bar.html.
+    'cafe-sativa-foyer': {
+      laviche: 'Welcome back, darling. Step right up to the directory and tell me where you\'d like to go next — every room is its own world. ☕',
+    },
     'verse-alkemist': {
       laviche: 'The Verse Alkemist studio — where Keith turns words into weapons and beats into anthems. This is the soul of the mall, love. Real hip hop lives here. 🎤',
     },

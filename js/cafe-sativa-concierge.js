@@ -407,6 +407,126 @@
     rooms: ROOMS,
   };
 
+  // ─── face-target component ───────────────────────────────────
+  // Rotates an entity to face another entity (looked up by selector).
+  // Only Y-axis rotation so the avatar stays upright. Smoothed via
+  // SLERP toward target yaw so motion feels natural, not robotic.
+  //
+  // Usage:
+  //   <a-entity face-target="target: #player-rig; smooth: 0.1"></a-entity>
+  //
+  // We attach this to Laviche's GLB once it loads so she always looks
+  // at whoever is in the room with her.
+  if (window.AFRAME && !AFRAME.components['face-target']) {
+    AFRAME.registerComponent('face-target', {
+      schema: {
+        target: { type: 'selector', default: '#camera-rig' },
+        smooth: { type: 'number', default: 0.08 },  // 0=instant, 1=never
+        offsetY: { type: 'number', default: 0 },    // additive yaw in degrees
+      },
+      tick: function () {
+        if (!this.data.target) return;
+        const me = this.el.object3D;
+        const target = this.data.target.object3D;
+        if (!target) return;
+
+        // Compute angle from me → target in XZ plane
+        const dx = target.position.x - me.position.x;
+        const dz = target.position.z - me.position.z;
+        // Math.atan2 gives angle in standard math convention.
+        // A-Frame rotation y=0 means forward is -Z, so we offset by π.
+        const desired = Math.atan2(dx, dz) + Math.PI + THREE.MathUtils.degToRad(this.data.offsetY);
+
+        // Smooth interpolate (lerp on the unit circle)
+        const cur = me.rotation.y;
+        // Shortest-path interpolation
+        let diff = desired - cur;
+        while (diff >  Math.PI) diff -= 2 * Math.PI;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+        me.rotation.y = cur + diff * (1 - this.data.smooth);
+      },
+    });
+    console.log('[CSConcierge] face-target component registered');
+  }
+
+  // ─── Attach face-target to Laviche ───────────────────────────
+  // Laviche is loaded by cafe-sativa-props.js as <a-entity> with
+  // gltf-model. We find her after the GLB loads and attach the
+  // face-target component so her body tracks the player.
+  function attachLavicheFaceTarget() {
+    const scene = document.querySelector('a-scene');
+    if (!scene) return;
+
+    // Search for the Laviche GLB entity. cafe-sativa-props doesn't
+    // give her a stable ID, so we match by gltf-model src.
+    const all = scene.querySelectorAll('[gltf-model]');
+    let laviche = null;
+    all.forEach((el) => {
+      const src = el.getAttribute('gltf-model');
+      if (src && src.indexOf('concierge-laviche') !== -1) {
+        laviche = el;
+      }
+    });
+
+    if (!laviche) {
+      console.log('[CSConcierge] Laviche GLB not yet in DOM, retrying...');
+      setTimeout(attachLavicheFaceTarget, 500);
+      return;
+    }
+
+    // Already has face-target? Don't double-attach.
+    if (laviche.getAttribute('face-target')) {
+      console.log('[CSConcierge] face-target already attached to Laviche');
+      return;
+    }
+
+    // Attach. Smooth 0.92 means each frame moves 8% toward target
+    // yaw — slow, dignified turn (matches Laviche's vibe).
+    laviche.setAttribute('face-target', 'target: #camera-rig; smooth: 0.92');
+    console.log('[CSConcierge] Laviche now tracks the player');
+  }
+
+  // ─── Auto-greet on foyer entry ───────────────────────────────
+  // Fires the directory modal automatically when the player has been
+  // in the foyer zone for ~1.2s (long enough that they didn't just
+  // pass through). One-shot per page load.
+  let _autoGreetFired = false;
+  function autoGreetOnFoyerEntry() {
+    if (_autoGreetFired) return;
+    const rig = document.getElementById('camera-rig');
+    if (!rig) {
+      setTimeout(autoGreetOnFoyerEntry, 500);
+      return;
+    }
+
+    // Foyer footprint per cafe-sativa-wing.js: x=22..28, z=-24..-17
+    const FOYER = { xMin: 22, xMax: 28, zMin: -24, zMax: -17 };
+    const DWELL_MS = 1200;
+    let dwellStart = null;
+
+    const interval = setInterval(() => {
+      if (_autoGreetFired) {
+        clearInterval(interval);
+        return;
+      }
+      const p = rig.object3D.position;
+      const inFoyer = p.x >= FOYER.xMin && p.x <= FOYER.xMax &&
+                      p.z >= FOYER.zMin && p.z <= FOYER.zMax;
+      if (inFoyer) {
+        if (dwellStart === null) {
+          dwellStart = Date.now();
+        } else if (Date.now() - dwellStart >= DWELL_MS) {
+          _autoGreetFired = true;
+          clearInterval(interval);
+          console.log('[CSConcierge] foyer dwell met, opening directory');
+          openDirectory();
+        }
+      } else {
+        dwellStart = null;
+      }
+    }, 200);
+  }
+
   // ─── Boot ────────────────────────────────────────────────────
   function boot() {
     const scene = document.querySelector('a-scene');
@@ -414,7 +534,11 @@
       document.addEventListener('DOMContentLoaded', boot, { once: true });
       return;
     }
-    const go = () => setTimeout(buildHotspot, 500);
+    const go = () => {
+      setTimeout(buildHotspot, 500);
+      setTimeout(attachLavicheFaceTarget, 1500);  // wait for GLB to load
+      setTimeout(autoGreetOnFoyerEntry, 2000);    // start watching after settle
+    };
     if (scene.hasLoaded) go();
     else scene.addEventListener('loaded', go);
   }
