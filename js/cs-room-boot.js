@@ -150,88 +150,180 @@
     addWall(scene, 'wall-south-t', `0 ${h - (h - doorH) / 2} ${halfD}`,         doorW, h - doorH,'0 180 0', t.wall);
 
     // ─── DOORWAY ────────────────────────────────────────────────
-    // Three pieces make the door GAP read as a real door from inside:
+    // Build a real architectural door: deep recessed jamb showing
+    // wall thickness, a paneled wooden door (rails + stiles + 4
+    // recessed panels), brass doorknob + kickplate, warm corridor
+    // light visible beyond through the doorway.
     //
-    //   1. Backdrop plane BEHIND the gap (outside the room).
-    //      Without this, the gap shows pure void/black, which looks
-    //      identical to a dark wall. The backdrop gives "looking
-    //      into a lit hallway" depth cue.
+    // Layout (cross-section, looking down):
     //
-    //   2. Glow accent plane INSIDE the gap. Brighter opacity so
-    //      it clearly reads as a portal, not a smudge.
+    //     INSIDE ROOM   ←→   DOORWAY   ←→   OUTSIDE
+    //     z=halfD-0.5       z=halfD          z=halfD+0.6
+    //     |                                  |
+    //     | jamb-inside     wood door        backdrop (warm corridor)
+    //     | (brass casing)  (paneled)
     //
-    //   3. Brass frame around the opening + EXIT label centered
-    //      above. Together they signal "this is the way out."
+    // The door is slightly inset from the south wall so you can see
+    // the jamb depth as you approach. Walking south through the
+    // gap triggers cs-boundary's exitZ → redirect to mall foyer.
+    const t_door = t.accent;        // brass for hardware/casing
+    const woodDark = '#2a1810';     // door body (deep walnut)
+    const woodMid  = '#3a2614';     // panel insets (slightly lighter)
+
+    // 1. CORRIDOR BACKDROP — warm-lit space VISIBLE beyond the door.
+    //    Sits 0.6m outside the south wall. With wood door geometry
+    //    in front, what you see through the doorway is the soft
+    //    glow of the corridor — sells the illusion of "real exit
+    //    leading somewhere".
+    const corridorGlow = document.createElement('a-plane');
+    corridorGlow.setAttribute('id', 'corridor-glow');
+    corridorGlow.setAttribute('position', `0 ${doorH / 2} ${halfD + 0.6}`);
+    corridorGlow.setAttribute('rotation', '0 0 0');
+    corridorGlow.setAttribute('width', doorW + 0.4);
+    corridorGlow.setAttribute('height', doorH + 0.2);
+    corridorGlow.setAttribute('color', '#5a3818');     // warm corridor amber
+    corridorGlow.setAttribute('side', 'double');
+    corridorGlow.setAttribute('material', 'shader: flat; emissive: #5a3818; emissiveIntensity: 0.6');
+    scene.appendChild(corridorGlow);
+
+    // Add a single warm point light just outside the doorway so
+    // light spills into the room from the corridor — adds depth.
+    const corridorLight = document.createElement('a-light');
+    corridorLight.setAttribute('type', 'point');
+    corridorLight.setAttribute('position', `0 ${doorH / 2} ${halfD + 0.4}`);
+    corridorLight.setAttribute('color', '#ff9a4a');
+    corridorLight.setAttribute('intensity', 2.5);
+    corridorLight.setAttribute('distance', 4);
+    corridorLight.setAttribute('decay', 1.5);
+    scene.appendChild(corridorLight);
+
+    // 2. JAMB (door casing) — recessed brass-trimmed frame around
+    //    the opening, INSIDE the room. Three pieces: head jamb (top)
+    //    + 2 side jambs. ~10cm deep so you see the wall thickness
+    //    when approaching the door.
+    const jambDepth = 0.20;        // depth of jamb (wall thickness)
+    const jambThick = 0.10;        // 10cm casing band
+    const jambZ = halfD - jambDepth / 2;
+
+    // Head jamb (top of doorway)
+    const jambTop = document.createElement('a-box');
+    jambTop.setAttribute('id', 'jamb-top');
+    jambTop.setAttribute('position', `0 ${doorH + jambThick / 2} ${jambZ}`);
+    jambTop.setAttribute('width', doorW + jambThick * 2);
+    jambTop.setAttribute('height', jambThick);
+    jambTop.setAttribute('depth', jambDepth);
+    jambTop.setAttribute('color', t_door);
+    jambTop.setAttribute('material', 'shader: standard; metalness: 0.7; roughness: 0.3');
+    scene.appendChild(jambTop);
+
+    // Left side jamb
+    const jambLeft = document.createElement('a-box');
+    jambLeft.setAttribute('id', 'jamb-left');
+    jambLeft.setAttribute('position', `${-doorW / 2 - jambThick / 2} ${doorH / 2} ${jambZ}`);
+    jambLeft.setAttribute('width', jambThick);
+    jambLeft.setAttribute('height', doorH + jambThick);  // overlap with head
+    jambLeft.setAttribute('depth', jambDepth);
+    jambLeft.setAttribute('color', t_door);
+    jambLeft.setAttribute('material', 'shader: standard; metalness: 0.7; roughness: 0.3');
+    scene.appendChild(jambLeft);
+
+    // Right side jamb
+    const jambRight = document.createElement('a-box');
+    jambRight.setAttribute('id', 'jamb-right');
+    jambRight.setAttribute('position', `${doorW / 2 + jambThick / 2} ${doorH / 2} ${jambZ}`);
+    jambRight.setAttribute('width', jambThick);
+    jambRight.setAttribute('height', doorH + jambThick);
+    jambRight.setAttribute('depth', jambDepth);
+    jambRight.setAttribute('color', t_door);
+    jambRight.setAttribute('material', 'shader: standard; metalness: 0.7; roughness: 0.3');
+    scene.appendChild(jambRight);
+
+    // 3. WOODEN DOOR — actual paneled door, hung in the jamb but
+    //    set slightly ajar (rotated 25° on its left hinge) so the
+    //    corridor glow spills through the gap. Sells "this opens".
     //
-    // The actual exit interaction is handled by cs-boundary's
-    // exitZ trigger — walking through this gap auto-redirects.
+    //    Door body is a thin slab; on top of it we mount 4 panel
+    //    insets (slightly proud) using woodMid to suggest classic
+    //    raised-panel construction. Brass doorknob on the right.
+    const doorPivot = document.createElement('a-entity');
+    doorPivot.setAttribute('id', 'door-pivot');
+    // Hinge along left edge: pivot at x = -doorW/2, z = halfD - 0.05
+    // Door swings open INWARD (-Z direction = into the room)
+    doorPivot.setAttribute('position', `${-doorW / 2} 0 ${halfD - 0.05}`);
+    doorPivot.setAttribute('rotation', '0 25 0');  // 25° ajar
+    scene.appendChild(doorPivot);
 
-    // 1. Backdrop — sits 1.5m OUTSIDE the south wall, painted in a
-    //    warm corridor color so the doorway reads as lit space
-    //    beyond, not void.
-    const doorBackdrop = document.createElement('a-plane');
-    doorBackdrop.setAttribute('id', 'door-backdrop');
-    doorBackdrop.setAttribute('position', `0 ${doorH / 2} ${halfD + 1.5}`);
-    doorBackdrop.setAttribute('rotation', '0 0 0'); // faces -Z (into the room)
-    doorBackdrop.setAttribute('width', doorW + 1);
-    doorBackdrop.setAttribute('height', doorH);
-    doorBackdrop.setAttribute('color', '#3a2614'); // warm corridor brown
-    doorBackdrop.setAttribute('side', 'double');
-    scene.appendChild(doorBackdrop);
+    // Door slab — child of pivot, offset so its left edge is at pivot
+    const doorSlab = document.createElement('a-box');
+    doorSlab.setAttribute('position', `${doorW / 2} ${doorH / 2} 0`);
+    doorSlab.setAttribute('width', doorW - 0.04);
+    doorSlab.setAttribute('height', doorH - 0.04);
+    doorSlab.setAttribute('depth', 0.05);
+    doorSlab.setAttribute('color', woodDark);
+    doorSlab.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.7');
+    doorPivot.appendChild(doorSlab);
 
-    // 2. Glow panel inside the doorway — bright enough to clearly
-    //    pop as the focal exit, faces inward.
-    const portalIn = document.createElement('a-plane');
-    portalIn.setAttribute('id', 'door-glow-inside');
-    portalIn.setAttribute('position', `0 ${doorH / 2} ${halfD - 0.04}`);
-    portalIn.setAttribute('rotation', '0 180 0');
-    portalIn.setAttribute('width', doorW - 0.05);
-    portalIn.setAttribute('height', doorH - 0.05);
-    portalIn.setAttribute('color', t.accent);
-    portalIn.setAttribute('opacity', 0.35);
-    portalIn.setAttribute('side', 'front');
-    portalIn.setAttribute('material', 'shader: flat; transparent: true');
-    scene.appendChild(portalIn);
+    // 4 paneled insets (2x2 grid on the door face). Each panel is
+    // a thin box mounted slightly proud of the door slab.
+    const panelMargin = 0.10;       // gap from door edges
+    const railHeight  = 0.08;       // horizontal rail dividing top/bottom panels
+    const stileWidth  = 0.06;       // vertical stile dividing L/R panels
+    const panelW = (doorW - 0.04 - panelMargin * 2 - stileWidth) / 2;
+    const panelH = (doorH - 0.04 - panelMargin * 2 - railHeight) / 2;
+    const panelZ = 0.028;           // proud of slab face (front side)
 
-    // 3a. Brass frame around the opening — top + 2 sides, ~5cm thick.
-    //     Positions follow the doorway boundary in the south wall.
-    const frameThickness = 0.06;
-    const frameZ = halfD - 0.02; // slightly inside south wall
+    [
+      { x: -(panelW + stileWidth) / 2, y: doorH / 2 + (panelH + railHeight) / 2 },  // top-left
+      { x:  (panelW + stileWidth) / 2, y: doorH / 2 + (panelH + railHeight) / 2 },  // top-right
+      { x: -(panelW + stileWidth) / 2, y: doorH / 2 - (panelH + railHeight) / 2 },  // bottom-left
+      { x:  (panelW + stileWidth) / 2, y: doorH / 2 - (panelH + railHeight) / 2 },  // bottom-right
+    ].forEach((p, i) => {
+      const panel = document.createElement('a-box');
+      panel.setAttribute('position', `${doorW / 2 + p.x} ${p.y} ${panelZ}`);
+      panel.setAttribute('width', panelW);
+      panel.setAttribute('height', panelH);
+      panel.setAttribute('depth', 0.012);
+      panel.setAttribute('color', woodMid);
+      panel.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.65');
+      doorPivot.appendChild(panel);
+    });
 
-    // Top of frame (just above door opening)
-    const frameTop = document.createElement('a-box');
-    frameTop.setAttribute('position', `0 ${doorH + frameThickness / 2} ${frameZ}`);
-    frameTop.setAttribute('width', doorW + frameThickness * 2);
-    frameTop.setAttribute('height', frameThickness);
-    frameTop.setAttribute('depth', 0.05);
-    frameTop.setAttribute('color', t.accent);
-    scene.appendChild(frameTop);
+    // Brass doorknob — sphere on the right side of the door,
+    // about waist-height (1.0m).
+    const knob = document.createElement('a-sphere');
+    knob.setAttribute('position', `${doorW - 0.15} 1.0 0.04`);
+    knob.setAttribute('radius', 0.04);
+    knob.setAttribute('color', t_door);
+    knob.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.2');
+    doorPivot.appendChild(knob);
 
-    // Left side of frame
-    const frameLeft = document.createElement('a-box');
-    frameLeft.setAttribute('position', `${-doorW / 2 - frameThickness / 2} ${doorH / 2} ${frameZ}`);
-    frameLeft.setAttribute('width', frameThickness);
-    frameLeft.setAttribute('height', doorH);
-    frameLeft.setAttribute('depth', 0.05);
-    frameLeft.setAttribute('color', t.accent);
-    scene.appendChild(frameLeft);
+    // Knob backplate (small disc behind the knob)
+    const knobPlate = document.createElement('a-cylinder');
+    knobPlate.setAttribute('position', `${doorW - 0.15} 1.0 0.025`);
+    knobPlate.setAttribute('rotation', '90 0 0');
+    knobPlate.setAttribute('radius', 0.06);
+    knobPlate.setAttribute('height', 0.005);
+    knobPlate.setAttribute('color', t_door);
+    knobPlate.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.2');
+    doorPivot.appendChild(knobPlate);
 
-    // Right side of frame
-    const frameRight = document.createElement('a-box');
-    frameRight.setAttribute('position', `${doorW / 2 + frameThickness / 2} ${doorH / 2} ${frameZ}`);
-    frameRight.setAttribute('width', frameThickness);
-    frameRight.setAttribute('height', doorH);
-    frameRight.setAttribute('depth', 0.05);
-    frameRight.setAttribute('color', t.accent);
-    scene.appendChild(frameRight);
+    // Brass kickplate at bottom of door
+    const kickplate = document.createElement('a-box');
+    kickplate.setAttribute('position', `${doorW / 2} 0.18 0.027`);
+    kickplate.setAttribute('width', doorW - 0.10);
+    kickplate.setAttribute('height', 0.20);
+    kickplate.setAttribute('depth', 0.008);
+    kickplate.setAttribute('color', t_door);
+    kickplate.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+    doorPivot.appendChild(kickplate);
 
-    // 3b. "EXIT ←" label above the door, faces the room interior
+    // 4. EXIT label above the doorway, faces room interior
     const exitLabel = document.createElement('a-text');
-    exitLabel.setAttribute('value', '← EXIT');
+    exitLabel.setAttribute('value', 'EXIT');
     exitLabel.setAttribute('align', 'center');
-    exitLabel.setAttribute('color', t.accent);
-    exitLabel.setAttribute('width', 4);
-    exitLabel.setAttribute('position', `0 ${doorH + 0.35} ${halfD - 0.03}`);
+    exitLabel.setAttribute('color', t_door);
+    exitLabel.setAttribute('width', 3);
+    exitLabel.setAttribute('position', `0 ${doorH + jambThick + 0.30} ${halfD - 0.03}`);
     exitLabel.setAttribute('rotation', '0 180 0');
     exitLabel.setAttribute('side', 'front');
     exitLabel.setAttribute('material', 'shader: flat');
@@ -354,20 +446,16 @@
     scene.appendChild(rig);
 
     // ─── SPAWN FACING ───────────────────────────────────────────
-    // tank-controls' init resets rig.position and rig.rotation to
-    // (0,0,0). We need to:
-    //   1. Re-apply our spawn position (was set above, but tank-controls
-    //      ran AFTER setAttribute and zeroed it)
-    //   2. Rotate rig 180° on Y so its forward (-Z) points -Z = into
-    //      the room (toward the bar at z=-1.3), not toward the door
-    //      at z=+halfD.
+    // tank-controls' init zeroes rig.position and rig.rotation in
+    // its init handler. Default rig rotation y=0 means forward (-Z)
+    // points NORTH = toward the bar at z=-1.3. That's what we want.
     //
-    // We do this in requestAnimationFrame so it runs AFTER tank-controls'
-    // init (which fires synchronously during setAttribute).
+    // We just need to re-apply our spawn POSITION after tank-controls'
+    // init zeroes it. Rotation stays at 0 → facing the bar.
     requestAnimationFrame(() => {
       rig.object3D.position.set(spawnX, spawnY, spawnZ);
-      rig.object3D.rotation.y = Math.PI; // face -Z (into the room)
-      console.log(`[CSRoom] respawned rig at (${spawnX}, ${spawnY}, ${spawnZ}) facing -Z`);
+      rig.object3D.rotation.set(0, 0, 0);
+      console.log(`[CSRoom] respawned rig at (${spawnX}, ${spawnY}, ${spawnZ}) facing -Z (bar)`);
     });
 
     // Boundary clamp + door auto-transition.
