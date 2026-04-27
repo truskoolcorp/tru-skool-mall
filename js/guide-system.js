@@ -66,7 +66,7 @@ Keep responses concise (2-3 sentences max for in-mall chat). Guide visitors, rec
     // proper (vs the wing/store entrance). Used by the hash-route
     // teleport when returning from a per-room scene like cs-bar.html.
     'cafe-sativa-foyer': {
-      laviche: 'Welcome back, darling. Step right up to the directory and tell me where you\'d like to go next — every room is its own world. ☕',
+      laviche: 'Welcome back to Café Sativa, darling. Care to see what else we have? Tap me, the glowing ring at my desk, or open the chat — I\'ll point you to whichever room calls you next. ☕',
     },
     'verse-alkemist': {
       laviche: 'The Verse Alkemist studio — where Keith turns words into weapons and beats into anthems. This is the soul of the mall, love. Real hip hop lives here. 🎤',

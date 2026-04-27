@@ -408,52 +408,96 @@
   };
 
   // ─── face-target component ───────────────────────────────────
-  // Rotates an entity to face another entity (looked up by selector).
-  // Only Y-axis rotation so the avatar stays upright. Smoothed via
-  // SLERP toward target yaw so motion feels natural, not robotic.
+  // Rotates an entity around Y axis to face another entity. Smoothed
+  // for natural motion. Configurable flip in case the GLB's authored
+  // forward vector doesn't match three.js convention.
+  //
+  // Schema:
+  //   target: selector for the entity to face (default: #camera-rig)
+  //   smooth: 0=instant catch-up, 1=never moves (default 0.08 = snappy)
+  //   offsetY: extra rotation in DEGREES (default 0)
+  //   flip: 1 = front faces -Z at rot 0 (three.js standard)
+  //         -1 = front faces +Z at rot 0 (some authored GLBs)
+  //         (default 1 — adjust per GLB if she shows her back)
   //
   // Usage:
-  //   <a-entity face-target="target: #player-rig; smooth: 0.1"></a-entity>
-  //
-  // We attach this to Laviche's GLB once it loads so she always looks
-  // at whoever is in the room with her.
+  //   <a-entity face-target="target: #camera-rig; smooth: 0.92"></a-entity>
   if (window.AFRAME && !AFRAME.components['face-target']) {
     AFRAME.registerComponent('face-target', {
       schema: {
         target: { type: 'selector', default: '#camera-rig' },
-        smooth: { type: 'number', default: 0.08 },  // 0=instant, 1=never
-        offsetY: { type: 'number', default: 0 },    // additive yaw in degrees
+        smooth: { type: 'number', default: 0.08 },
+        offsetY: { type: 'number', default: 0 },
+        flip:    { type: 'number', default: 1 },
+      },
+      _tmpV: null,
+      _logCount: 0,
+      init: function () {
+        this._tmpV = new THREE.Vector3();
+        this._logCount = 0;
       },
       tick: function () {
         if (!this.data.target) return;
         const me = this.el.object3D;
-        const target = this.data.target.object3D;
-        if (!target) return;
 
-        // Compute angle from me → target in XZ plane.
-        //
-        // GLB CONVENTION NOTE
-        // Laviche's GLB is authored with her visible front facing +Z
-        // (verified empirically — at rot y=0 she stands looking toward
-        // higher z, which is where the player is in the foyer). For a
-        // GLB with this convention, atan2(dx, dz) directly gives the
-        // y-rotation that points her front at the target.
-        //
-        // (For a standard three.js Object3D where forward = -Z, the
-        // formula would be atan2(dx, -dz) instead. If we ever swap
-        // Laviche's GLB for one authored to the standard convention,
-        // flip the sign on dz here.)
-        const dx = target.position.x - me.position.x;
-        const dz = target.position.z - me.position.z;
-        const desired = Math.atan2(dx, dz) + THREE.MathUtils.degToRad(this.data.offsetY);
+        // Use WORLD positions, not local. The camera-rig is at scene
+        // root so its local == world, but Laviche could be nested
+        // (root → cs-room-foyer → laviche), in which case `me.position`
+        // is local. getWorldPosition resolves through parents.
+        me.updateWorldMatrix(true, false);
+        const myWorldX = me.matrixWorld.elements[12];
+        const myWorldZ = me.matrixWorld.elements[14];
+        const tgt = this.data.target.object3D;
+        tgt.updateWorldMatrix(true, false);
+        const tWorldX = tgt.matrixWorld.elements[12];
+        const tWorldZ = tgt.matrixWorld.elements[14];
 
-        // Smooth interpolate (lerp on the unit circle, shortest path
-        // so we don't spin the long way around).
+        const dx = tWorldX - myWorldX;
+        const dz = tWorldZ - myWorldZ;
+
+        // Compute desired y-rotation. Two conventions:
+        //   flip = +1 → front faces -Z at rot 0 (three.js standard).
+        //               atan2(dx, -dz) gives the rotation needed.
+        //   flip = -1 → front faces +Z at rot 0.
+        //               atan2(dx, dz) gives the rotation needed.
+        let desired;
+        if (this.data.flip > 0) {
+          desired = Math.atan2(dx, -dz);
+        } else {
+          desired = Math.atan2(dx, dz);
+        }
+        desired += THREE.MathUtils.degToRad(this.data.offsetY);
+
+        // Smooth interpolate (lerp on the unit circle, shortest path).
         const cur = me.rotation.y;
         let diff = desired - cur;
         while (diff >  Math.PI) diff -= 2 * Math.PI;
         while (diff < -Math.PI) diff += 2 * Math.PI;
-        me.rotation.y = cur + diff * (1 - this.data.smooth);
+        const next = cur + diff * (1 - this.data.smooth);
+
+        // Apply via setAttribute so A-Frame's attribute system holds
+        // the new rotation and doesn't overwrite it from the original
+        // 'rotation: 0 0 0' attribute the next tick. setAttribute on
+        // rotation also keeps the inspector / dev tools in sync.
+        this.el.setAttribute('rotation', {
+          x: THREE.MathUtils.radToDeg(me.rotation.x),
+          y: THREE.MathUtils.radToDeg(next),
+          z: THREE.MathUtils.radToDeg(me.rotation.z),
+        });
+
+        // Debug: log first 30 ticks to confirm component is alive
+        // and see what direction we're computing.
+        if (this._logCount < 5) {
+          this._logCount++;
+          console.log(
+            `[face-target] me(${myWorldX.toFixed(2)},${myWorldZ.toFixed(2)}) ` +
+            `tgt(${tWorldX.toFixed(2)},${tWorldZ.toFixed(2)}) ` +
+            `dx=${dx.toFixed(2)} dz=${dz.toFixed(2)} ` +
+            `flip=${this.data.flip} ` +
+            `desired=${THREE.MathUtils.radToDeg(desired).toFixed(0)}° ` +
+            `cur=${THREE.MathUtils.radToDeg(cur).toFixed(0)}°`
+          );
+        }
       },
     });
     console.log('[CSConcierge] face-target component registered');
@@ -496,16 +540,190 @@
     console.log('[CSConcierge] Laviche now tracks the player');
   }
 
-  // ─── Auto-greet on foyer entry ───────────────────────────────
-  // Fires the directory modal automatically when the player has been
-  // in the foyer zone for ~1.2s (long enough that they didn't just
-  // pass through). One-shot per page load.
-  let _autoGreetFired = false;
-  function autoGreetOnFoyerEntry() {
-    if (_autoGreetFired) return;
+  // ─── Floating speech bubble above Laviche ────────────────────
+  // When player enters the foyer, show a CSS speech bubble anchored
+  // to Laviche's screen position with her greeting line. Bubble has
+  // a 'View directory' button (passive prompt — patron must opt in).
+  // Auto-dismisses after 8s OR if the patron interacts.
+  //
+  // We use a screen-space DOM bubble (not a 3D text panel) for the
+  // same reasons as the modal: readable, doesn't fight with scene
+  // lighting, easy to style. Position is updated each frame via
+  // project-from-3D-to-screen so it follows Laviche as the player
+  // walks around her.
+  let _bubbleEl = null;
+  let _bubbleAnchorEl = null;
+  let _bubbleTimer = null;
+
+  function getLavicheEl() {
+    const all = document.querySelectorAll('[gltf-model]');
+    for (const el of all) {
+      const src = el.getAttribute('gltf-model');
+      if (src && src.indexOf('concierge-laviche') !== -1) return el;
+    }
+    return null;
+  }
+
+  function showLavicheBubble(message) {
+    if (_bubbleEl) return;  // already showing
+    _bubbleAnchorEl = getLavicheEl();
+    if (!_bubbleAnchorEl) return;
+
+    _bubbleEl = document.createElement('div');
+    _bubbleEl.id = 'cs-laviche-bubble';
+    _bubbleEl.innerHTML = `
+      <div class="cs-bubble-name">Laviche · Concierge</div>
+      <div class="cs-bubble-text">${message}</div>
+      <div class="cs-bubble-actions">
+        <button class="cs-bubble-btn" data-action="directory">View directory →</button>
+        <button class="cs-bubble-dismiss" aria-label="Dismiss">×</button>
+      </div>
+      <div class="cs-bubble-tail"></div>
+    `;
+    document.body.appendChild(_bubbleEl);
+
+    _bubbleEl.querySelector('[data-action="directory"]').addEventListener('click', () => {
+      hideLavicheBubble();
+      openDirectory();
+    });
+    _bubbleEl.querySelector('.cs-bubble-dismiss').addEventListener('click', hideLavicheBubble);
+
+    // Auto-dismiss after 8s if untouched
+    _bubbleTimer = setTimeout(hideLavicheBubble, 8000);
+
+    // Position update loop — keep bubble anchored above Laviche
+    const camEl = document.querySelector('a-camera, [camera]');
+    if (!camEl) return;
+    const camera = camEl.getObject3D('camera');
+    if (!camera) return;
+
+    const tmpVec = new THREE.Vector3();
+    function updatePosition() {
+      if (!_bubbleEl || !_bubbleAnchorEl) return;
+      const obj = _bubbleAnchorEl.object3D;
+      // Anchor ~2m above Laviche's base (over her head)
+      tmpVec.setFromMatrixPosition(obj.matrixWorld);
+      tmpVec.y += 2.0;
+      tmpVec.project(camera);
+      // Convert NDC to screen pixels
+      const x = (tmpVec.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-tmpVec.y * 0.5 + 0.5) * window.innerHeight;
+      // Hide if behind camera or off-screen
+      const onScreen = tmpVec.z < 1 && x > 0 && x < window.innerWidth && y > 0 && y < window.innerHeight;
+      _bubbleEl.style.display = onScreen ? 'block' : 'none';
+      _bubbleEl.style.left = `${x}px`;
+      _bubbleEl.style.top = `${y}px`;
+      requestAnimationFrame(updatePosition);
+    }
+    updatePosition();
+  }
+
+  function hideLavicheBubble() {
+    if (_bubbleTimer) { clearTimeout(_bubbleTimer); _bubbleTimer = null; }
+    if (_bubbleEl) { _bubbleEl.remove(); _bubbleEl = null; }
+    _bubbleAnchorEl = null;
+  }
+
+  // Inject bubble styles once
+  function injectBubbleStyles() {
+    if (document.getElementById('cs-bubble-styles')) return;
+    const css = document.createElement('style');
+    css.id = 'cs-bubble-styles';
+    css.textContent = `
+      #cs-laviche-bubble {
+        position: fixed;
+        transform: translate(-50%, -100%);
+        background: linear-gradient(180deg, #1a1410 0%, #0c0805 100%);
+        color: #f4ead5;
+        border: 1px solid #c9a84c;
+        border-radius: 12px;
+        padding: 14px 18px 12px;
+        max-width: 340px;
+        min-width: 260px;
+        font-family: 'Cinzel', 'Georgia', serif;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 24px rgba(201,168,76,0.15);
+        z-index: 1000;
+        pointer-events: auto;
+        animation: csBubbleIn 0.4s ease-out;
+      }
+      @keyframes csBubbleIn {
+        from { opacity: 0; transform: translate(-50%, -85%); }
+        to   { opacity: 1; transform: translate(-50%, -100%); }
+      }
+      #cs-laviche-bubble .cs-bubble-name {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+        text-transform: uppercase; color: #c9a84c; margin-bottom: 6px;
+      }
+      #cs-laviche-bubble .cs-bubble-text {
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 14px; line-height: 1.5; color: #f4ead5;
+        margin-bottom: 12px;
+      }
+      #cs-laviche-bubble .cs-bubble-actions {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 8px;
+      }
+      #cs-laviche-bubble .cs-bubble-btn {
+        background: #c9a84c; color: #1a1410; border: none;
+        padding: 8px 14px; border-radius: 6px;
+        font-family: system-ui, sans-serif; font-size: 13px; font-weight: 600;
+        cursor: pointer; transition: background 0.2s;
+      }
+      #cs-laviche-bubble .cs-bubble-btn:hover { background: #d4b860; }
+      #cs-laviche-bubble .cs-bubble-dismiss {
+        background: transparent; color: #8a7a5a; border: none;
+        font-size: 22px; cursor: pointer; padding: 0 6px; line-height: 1;
+      }
+      #cs-laviche-bubble .cs-bubble-dismiss:hover { color: #c9a84c; }
+      #cs-laviche-bubble .cs-bubble-tail {
+        position: absolute; bottom: -8px; left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 16px; height: 16px;
+        background: #0c0805;
+        border-right: 1px solid #c9a84c;
+        border-bottom: 1px solid #c9a84c;
+      }
+      @media (max-width: 600px) {
+        #cs-laviche-bubble { max-width: 80vw; min-width: 200px; padding: 12px 14px 10px; }
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
+  // ─── Make Laviche herself clickable ──────────────────────────
+  // Player can tap her directly to open the directory — same as
+  // tapping the floor ring. We add the 'clickable' class + click
+  // handler after her GLB loads.
+  function makeLavicheClickable() {
+    const laviche = getLavicheEl();
+    if (!laviche) {
+      setTimeout(makeLavicheClickable, 500);
+      return;
+    }
+    if (laviche.dataset.clickableAttached === '1') return;
+    laviche.classList.add('clickable');
+    laviche.addEventListener('click', () => {
+      hideLavicheBubble();
+      openDirectory();
+    });
+    laviche.dataset.clickableAttached = '1';
+    console.log('[CSConcierge] Laviche is now tappable');
+  }
+
+  // ─── Greet on foyer entry (passive — bubble + chat, NOT modal) ─
+  // When player enters the foyer footprint and dwells 1.2s, show
+  // the speech bubble above Laviche with her greeting. Player must
+  // opt in to the directory via:
+  //   - tapping the bubble's 'View directory' button
+  //   - tapping Laviche herself
+  //   - tapping the floor ring
+  //   - opening chat (chat is also populated with the greeting)
+  let _greetFired = false;
+  function greetOnFoyerEntry() {
+    if (_greetFired) return;
     const rig = document.getElementById('camera-rig');
     if (!rig) {
-      setTimeout(autoGreetOnFoyerEntry, 500);
+      setTimeout(greetOnFoyerEntry, 500);
       return;
     }
 
@@ -515,7 +733,7 @@
     let dwellStart = null;
 
     const interval = setInterval(() => {
-      if (_autoGreetFired) {
+      if (_greetFired) {
         clearInterval(interval);
         return;
       }
@@ -526,10 +744,19 @@
         if (dwellStart === null) {
           dwellStart = Date.now();
         } else if (Date.now() - dwellStart >= DWELL_MS) {
-          _autoGreetFired = true;
+          _greetFired = true;
           clearInterval(interval);
-          console.log('[CSConcierge] foyer dwell met, opening directory');
-          openDirectory();
+          console.log('[CSConcierge] foyer dwell met, showing speech bubble');
+          // Pull the greeting line from the catalog so we stay in sync
+          // with whatever GuideSystem.greetings['cafe-sativa-foyer'] says.
+          let greeting = 'Welcome back, darling. How may I help you?';
+          if (window.GuideSystem &&
+              window.GuideSystem.greetings &&
+              window.GuideSystem.greetings['cafe-sativa-foyer'] &&
+              window.GuideSystem.greetings['cafe-sativa-foyer'].laviche) {
+            greeting = window.GuideSystem.greetings['cafe-sativa-foyer'].laviche;
+          }
+          showLavicheBubble(greeting);
         }
       } else {
         dwellStart = null;
@@ -545,9 +772,11 @@
       return;
     }
     const go = () => {
+      injectBubbleStyles();
       setTimeout(buildHotspot, 500);
-      setTimeout(attachLavicheFaceTarget, 1500);  // wait for GLB to load
-      setTimeout(autoGreetOnFoyerEntry, 2000);    // start watching after settle
+      setTimeout(attachLavicheFaceTarget, 1500);
+      setTimeout(makeLavicheClickable, 1500);
+      setTimeout(greetOnFoyerEntry, 2000);
     };
     if (scene.hasLoaded) go();
     else scene.addEventListener('loaded', go);
