@@ -322,35 +322,52 @@
     const rig = document.createElement('a-entity');
     rig.setAttribute('id', 'player-rig');
     rig.setAttribute('position', `${spawnX} ${spawnY} ${spawnZ}`);
-    // Rig rotation 180 makes movement-controls' "forward" point -Z.
-    // Without this, pressing W moves the player toward the door
-    // instead of into the room.
-    rig.setAttribute('rotation', '0 180 0');
-    rig.setAttribute('movement-controls', 'fly: false; constrainToNavMesh: false; speed: 0.18');
+
+    // ─── NAVIGATION ─────────────────────────────────────────────
+    // Use the SAME tank-controls component the foyer/main mall uses
+    // (registered globally in js/mall-nav.js). W/S walks forward in
+    // look-direction; A/D rotates the rig in place — NOT strafe.
+    // This is what makes the per-room nav feel identical to the rest
+    // of the mall.
+    //
+    // IMPORTANT: js/mall-nav.js MUST be loaded in every cs-*.html
+    // scene before this boot runs, or tank-controls won't exist as
+    // a component.
+    if (AFRAME.components['tank-controls']) {
+      rig.setAttribute('tank-controls', 'walkSpeed: 3.0; turnSpeed: 1.8');
+    } else {
+      console.warn('[CSRoom] tank-controls not registered — falling back to movement-controls. Did you load js/mall-nav.js?');
+      rig.setAttribute('movement-controls', 'fly: false; constrainToNavMesh: false; speed: 0.18');
+    }
 
     const cam = document.createElement('a-entity');
     cam.setAttribute('camera', '');
     cam.setAttribute('position', '0 0 0');
+    // look-controls handles mouse-drag for free-look (pitch + yaw of
+    // the camera itself). tank-controls drives the rig body. They
+    // compose: rig yaw + camera local yaw = world look direction.
     cam.setAttribute('look-controls', 'pointerLockEnabled: false; touchEnabled: true');
-    cam.setAttribute('wasd-controls', 'acceleration: 65');
     cam.setAttribute('cursor', 'rayOrigin: mouse; fuse: false');
     cam.setAttribute('raycaster', 'objects: .clickable; far: 20');
     rig.appendChild(cam);
 
     scene.appendChild(rig);
 
-    // Force initial yaw on the camera so player spawns FACING THE BAR.
-    // look-controls stores yaw in its `yawObject.rotation.y`. Setting
-    // it after attach overrides the default of 0.
-    // Math: rig is rotated 180 (so its -Z = world +Z). Camera's local
-    // -Z (default look direction) ends up facing world +Z (door behind
-    // player). To look at world -Z (bar), apply 180° camera yaw.
+    // ─── SPAWN FACING ───────────────────────────────────────────
+    // tank-controls' init resets rig.position and rig.rotation to
+    // (0,0,0). We need to:
+    //   1. Re-apply our spawn position (was set above, but tank-controls
+    //      ran AFTER setAttribute and zeroed it)
+    //   2. Rotate rig 180° on Y so its forward (-Z) points -Z = into
+    //      the room (toward the bar at z=-1.3), not toward the door
+    //      at z=+halfD.
+    //
+    // We do this in requestAnimationFrame so it runs AFTER tank-controls'
+    // init (which fires synchronously during setAttribute).
     requestAnimationFrame(() => {
-      const lc = cam.components['look-controls'];
-      if (lc && lc.yawObject) {
-        lc.yawObject.rotation.y = Math.PI; // 180°
-        console.log('[CSRoom] camera yaw set to 180° — facing bar');
-      }
+      rig.object3D.position.set(spawnX, spawnY, spawnZ);
+      rig.object3D.rotation.y = Math.PI; // face -Z (into the room)
+      console.log(`[CSRoom] respawned rig at (${spawnX}, ${spawnY}, ${spawnZ}) facing -Z`);
     });
 
     // Boundary clamp + door auto-transition.
@@ -361,14 +378,17 @@
     //     auto-redirect to the main mall instead of letting them
     //     walk into the void.
     //
-    // This means walking out the door = go back to mall. No
-    // dead-end "outside in nothing" state.
+    // Player radius 0.3m matches the foyer's PLAYER_RADIUS — wall
+    // surface stops feel solid right at the visual contact point,
+    // not 0.5m before like the previous overcautious buffer.
+    const PR = 0.3;
+    const exitUrl = cfg.backUrl || 'index.html';
     const boundStr =
-      `minX: ${-halfW + 0.5}; ` +
-      `maxX: ${ halfW - 0.5}; ` +
-      `minZ: ${-halfD + 0.5}; ` +
-      `exitZ: ${ halfD - 0.5}; ` +    // crossing this triggers exit
-      `exitUrl: ${cfg.backUrl}`;
+      `minX: ${-halfW + PR}; ` +
+      `maxX: ${ halfW - PR}; ` +
+      `minZ: ${-halfD + PR}; ` +
+      `exitZ: ${ halfD - PR}; ` +    // crossing this triggers exit
+      `exitUrl: ${exitUrl}`;
     rig.setAttribute('cs-boundary', boundStr);
     console.log(`[CSRoom] boundary set: ${boundStr}`);
 
