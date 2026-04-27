@@ -110,6 +110,22 @@
       "filename": "cold-stoned-menu-board.glb",
       "room": "cold-stoned",
       "prompt": "Vintage hanging menu board, dark walnut wood frame with brass corner trim, chalkboard surface with handwritten gelato flavor names in white chalk and price marks, single small flourish at the top, freestanding board on a pedestal base, stylized realism. Dimensions: 0.9m wide x 1.6m tall x 0.3m deep."
+    },
+
+    {
+      "filename": "cigar-banquette-emerald.glb",
+      "room": "cigar",
+      "prompt": "Long curved upholstered banquette bench, deep emerald green velvet with diamond button-tufted backrest and seat, polished brass nailhead trim along all edges, dark walnut wood base kickplate, gentle inward curve along its length to seat 6 patrons, modern luxury cigar lounge style, single freestanding piece, stylized realism. Dimensions: 4m wide x 1.6m tall x 0.7m deep."
+    },
+    {
+      "filename": "cigar-walk-in-humidor.glb",
+      "room": "cigar",
+      "prompt": "Walk-in glass-enclosed cigar humidor display room, brass-framed glass walls forming a small enclosed walk-in cabinet, three internal cedar wood shelves visible through the glass with neat rows of premium cigar boxes stacked floor to ceiling, single brass-handled glass door at the front, warm amber LED lighting glowing from within illuminating the cigars, dark walnut wood baseboard and crown molding around the frame, freestanding architectural piece set against a wall, modern luxury cigar lounge style, stylized realism. Dimensions: 2.5m wide x 2.6m tall x 1.2m deep."
+    },
+    {
+      "filename": "cigar-statement-chandelier.glb",
+      "room": "cigar",
+      "prompt": "Modern luxury cocktail lounge chandelier, horizontal linear fixture with 8 amber-glass cylindrical pendant lights hanging at slightly varied heights from a single brass crossbar, brass cap fittings, warm glowing bulbs visible through the smoked amber glass cylinders, ceiling mount plate at the top, freestanding centerpiece light fixture, modern luxury cigar lounge ceiling style, stylized realism. Dimensions: 2.5m wide x 0.8m tall x 0.3m deep."
     }
   ]
 }
