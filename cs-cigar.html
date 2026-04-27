@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cigar Lounge — Café Sativa</title>
-  <meta name="description" content="A walnut-and-leather hideaway. Tufted wingbacks, rare boxes, library shelves — Café Sativa's cigar lounge at the Tru Skool Mall.">
+  <meta name="description" content="Modern luxury — emerald banquettes, brass-framed humidor, marble tables. Café Sativa's cigar lounge at the Tru Skool Mall.">
 
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
@@ -42,14 +42,14 @@
 
   <div id="room-hud">
     <div class="room-title">Cigar Lounge</div>
-    <div class="room-tagline">A Walnut-and-Leather Hideaway</div>
+    <div class="room-tagline">Modern Luxury · Cigars · Conversation</div>
     <a href="index.html#cafe-sativa-foyer" class="back-link">← Back to Café Sativa</a>
   </div>
 
   <a-scene
     id="room-scene"
     renderer="antialias: true; colorManagement: true"
-    background="color: #0a0604"
+    background="color: #060403"
     cursor="rayOrigin: mouse"
     loading-screen="enabled: false"
     vr-mode-ui="enabled: false">
@@ -57,205 +57,163 @@
 
   <script>
     // ═══════════════════════════════════════════════════════════
-    // CIGAR LOUNGE v2 — Composition with multiple seating clusters
+    // CIGAR LOUNGE v3 — Eight Lounge inspired
     //
-    // ROOM: 11m × 8m × 3.4m (bigger than v1's 9×7×3.2 — needs the
-    //   extra width to host two seating clusters + circulation).
+    // Reference: Eight Cigar Lounge at Resorts World Las Vegas.
+    // Key aesthetic shifts from v1/v2 (Victorian library/wingbacks):
+    //   - Long banquettes along walls (not isolated chair clusters)
+    //   - Emerald velvet (not oxblood) — distinctive, modern
+    //   - Glass humidor with internal warm glow (not wood-shelf boxes)
+    //   - Wall sconces + ceiling cofferes (NOT standing lamps)
+    //   - Marble cocktail tables (not mahogany)
+    //   - Coffered ceiling with brass strips for architectural depth
     //
-    // LAYOUT (top-down view, north at top):
+    // ROOM: 12m × 8m × 3.6m (longer/taller for the ceiling effect).
     //
-    //          ┌───────────HUMIDOR (north wall)──────────┐
-    //          │                                          │
-    //          │   [chair][table][chair]                  │
-    //          │       (cluster A)                        │
-    //          │                          [chair]         │
-    //          │                          [table]         │
-    //          │                          [chair]         │
-    //          │                          (cluster B)     │
-    //          │ [LIBRARY (west)]                         │
-    //          │                          [art (east)]   │
-    //          └────────────[door (south)]────────────────┘
+    // LAYOUT (top-down, north at top):
     //
-    // CLUSTER A (north side): 2 chairs facing each other across a
-    //   small table, lampshade above. Closer to the humidor wall —
-    //   reading-and-pairing seats.
+    //       ┌──────GLASS HUMIDOR (north wall)──────────┐
+    //       │                                          │
+    //       │  ┌────────────────────────────┐          │
+    //       │  │    BANQUETTE (west wall)   │          │
+    //       │  │ table  table  table  table │          │
+    //       │  │                            │          │
+    //       │  │            (open floor)    │          │
+    //       │  │                            │          │
+    //       │  │ table  table  table  table │          │
+    //       │  │   BANQUETTE (east wall)    │          │
+    //       │  └────────────────────────────┘          │
+    //       │                                          │
+    //       └────────────[door (south)]────────────────┘
     //
-    // CLUSTER B (south-east): 2 more chairs facing each other with
-    //   their own table and lamp. More private — conversation seats.
+    // CAPACITY:
+    //   - West banquette: ~5m long, seats 8
+    //   - East banquette: ~5m long, seats 8
+    //   - Total: ~16 patrons + standing room in the open center
     //
-    // 4 chairs + 2 tables + 2 lamps = up to 4 patrons comfortably,
-    // 6+ if friends share a chair-arm or stand. Library wall on west
-    // is a third place to linger.
+    // LIGHTING (no standing lamps):
+    //   - 6 wall sconces (3 per long wall, between banquettes &
+    //     ceiling) — warm pools above each booth
+    //   - Backlit humidor glow on north wall (emissive cabinet back)
+    //   - Coffered ceiling with brass strips reads as moody upper
+    //     architectural detail
     //
-    // Humidor wall raised: startY 1.95 (was 1.55). Chair backs reach
-    // y=1.60. Humidor now sits clearly above them, visible from the
-    // entire room.
-    //
-    // EXIT: south wall, door-only (cs-boundary now clamps the rest
-    // of the south wall — no more accidental walk-throughs).
+    // EXIT: south wall, door-only (cs-boundary clamps everywhere
+    // else on south wall).
     // ═══════════════════════════════════════════════════════════
 
     CSRoom.boot({
       id: 'cigar',
       name: 'Cigar Lounge',
-      tagline: 'A Walnut-and-Leather Hideaway',
+      tagline: 'Modern Luxury · Cigars · Conversation',
 
-      width: 11,
+      width: 12,
       depth: 8,
-      height: 3.4,
+      height: 3.6,
 
+      // Eight Lounge palette: deep walnut + emerald accents + brass
       theme: {
-        wall:    '#1f1410',
-        floor:   '#0a0604',
-        ceiling: '#070504',
-        accent:  '#c9a84c',
-        ambient: '#3a1f12',
+        wall:    '#1a1208',   // deep dark walnut
+        floor:   '#0a0604',   // near-black hardwood
+        ceiling: '#070504',   // smoky black (mostly hidden by coffer)
+        accent:  '#c9a84c',   // brass
+        ambient: '#2a1810',   // very low warm ambient
       },
 
       composition: [
         // ─── ARCHITECTURAL DETAILS ──────────────────────────────
+        // Walnut wainscoting up to 1.0m on N/E/W walls. Lower than
+        // v2 (1.20m) so the banquette backs are the dominant lower-
+        // wall element, with wainscoting just framing them.
         {
           type: 'wainscoting',
-          height: 1.20,
+          height: 1.00,
           walls: ['north', 'east', 'west'],
-          color: '#2a1814',
+          color: '#241810',
           stripeColor: '#c9a84c',
         },
         { type: 'crownMolding', height: 0.18, color: '#c9a84c' },
-        { type: 'baseboard',    height: 0.12, color: '#c9a84c' },
+        { type: 'baseboard',    height: 0.10, color: '#c9a84c' },
 
-        // ─── ART ON EAST WALL ───────────────────────────────────
+        // ─── COFFERED CEILING ───────────────────────────────────
+        // 3 cols × 4 rows of recessed panels with brass strips
+        // between. Adds significant architectural depth — looks
+        // like a real luxury venue ceiling.
         {
-          type: 'pictureFrames',
-          wall: 'east',
-          count: 4,
-          y: 2.10,
-          frameWidth: 0.65,
-          frameHeight: 0.85,
-          length: 5.5,
-          colors: ['#3a2818', '#4a3020', '#3e2818', '#4a2818'],
+          type: 'cofferedCeiling',
+          cols: 3,
+          rows: 4,
+          stripWidth: 0.08,
+          recessDepth: 0.12,
+          stripColor: '#c9a84c',
+          panelColor: '#0a0604',
         },
 
-        // ─── HUMIDOR WALL (NORTH) ───────────────────────────────
-        // Raised to startY 1.95 so it clears the chair-back tops
-        // (chairs are 1.60m tall; humidor was previously hidden
-        // behind them). Now visible from anywhere in the room.
-        // 4 shelves × 8 boxes = 32 cigar boxes.
+        // ─── GLASS HUMIDOR (NORTH WALL) ─────────────────────────
+        // The visual centerpiece. Brass-framed cabinet, cigar boxes
+        // on 4 internal shelves, warm emissive interior glow.
+        // Player walking in from the south sees this lit cabinet
+        // glowing warmly across the room.
         {
-          type: 'humidorWall',
+          type: 'glassHumidor',
           wall: 'north',
-          shelves: 4,
-          perShelf: 8,
           length: 7.0,
-          startY: 1.95,
-          shelfGap: 0.32,
-          shelfColor: '#2a1a0e',
+          height: 2.4,
+          startY: 0.6,
+          shelves: 4,
+          perShelf: 9,         // 36 boxes total
+          frameColor: '#c9a84c',
+          interiorColor: '#1a0e08',
+          glowColor: '#3a2010',
         },
 
-        // ─── BOOKSHELF (WEST WALL) ──────────────────────────────
+        // ─── BANQUETTES ─────────────────────────────────────────
+        // Two long emerald velvet benches against east and west
+        // walls. Each runs ~5m, seats ~8 patrons.
         {
-          type: 'bookshelf',
+          type: 'banquette',
           wall: 'west',
-          shelves: 5,
-          perShelf: 16,
-          length: 6.0,
-          startY: 0.30,
-          shelfGap: 0.40,
-          shelfColor: '#1f1208',
+          length: 5.5,
+          offsetAlong: 0,        // centered along the wall
+          color: '#1a3a2a',      // emerald velvet (dark forest tone)
+          baseColor: '#1a0e08',
+          studColor: '#c9a84c',
+        },
+        {
+          type: 'banquette',
+          wall: 'east',
+          length: 5.5,
+          offsetAlong: 0,
+          color: '#1a3a2a',
+          baseColor: '#1a0e08',
+          studColor: '#c9a84c',
         },
 
-        // ═══ CLUSTER A — north reading nook ════════════════════
-        // 2 chairs facing each other (east-west axis) just south of
-        // humidor. Coffee table between, standing lamp behind west
-        // chair. Player walking from south sees this cluster first.
-        {
-          type: 'floorRug',
-          x: -1.5, z: -1.8,
-          width: 3.4, depth: 2.2,
-          color: '#3a1818',
-          trimColor: '#c9a84c',
-          trimWidth: 0.10,
-        },
-        // West chair faces east
-        {
-          type: 'wingbackChair',
-          x: -2.4, z: -1.8,
-          rotY: 90,
-          color: '#5a1a1a',
-          woodColor: '#1a0e08',
-        },
-        // East chair faces west
-        {
-          type: 'wingbackChair',
-          x: -0.6, z: -1.8,
-          rotY: -90,
-          color: '#5a1a1a',
-          woodColor: '#1a0e08',
-        },
-        // Coffee table centered between them
-        {
-          type: 'coffeeTable',
-          x: -1.5, z: -1.8,
-          shape: 'round',
-          radius: 0.40,
-          height: 0.45,
-          topColor: '#1a0e08',
-          baseColor: '#c9a84c',
-        },
-        // Standing lamp north of west chair
-        {
-          type: 'standingLamp',
-          x: -2.4, z: -2.7,
-          height: 1.6,
-          shadeColor: '#3a1f12',
-          lightIntensity: 4.5,
-        },
+        // ─── MARBLE COCKTAIL TABLES (in front of banquettes) ────
+        // 4 tables along each banquette, spaced evenly. Cream
+        // marble tops on slim brass posts.
+        // West side (x ≈ -4.0, in front of west banquette):
+        { type: 'marbleTable', x: -4.0, z: -2.0, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x: -4.0, z: -0.65, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x: -4.0, z:  0.65, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x: -4.0, z:  2.0, radius: 0.32, height: 0.52 },
+        // East side (x ≈ +4.0):
+        { type: 'marbleTable', x:  4.0, z: -2.0, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x:  4.0, z: -0.65, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x:  4.0, z:  0.65, radius: 0.32, height: 0.52 },
+        { type: 'marbleTable', x:  4.0, z:  2.0, radius: 0.32, height: 0.52 },
 
-        // ═══ CLUSTER B — south conversation nook ═══════════════
-        // 2 more chairs facing each other (north-south axis) on the
-        // east side of the room. Coffee table + lamp.
-        {
-          type: 'floorRug',
-          x: 2.5, z: 1.0,
-          width: 2.4, depth: 3.4,
-          color: '#3a1818',
-          trimColor: '#c9a84c',
-          trimWidth: 0.10,
-        },
-        // North chair faces south
-        {
-          type: 'wingbackChair',
-          x: 2.5, z: -0.1,
-          rotY: 180,
-          color: '#5a1a1a',
-          woodColor: '#1a0e08',
-        },
-        // South chair faces north
-        {
-          type: 'wingbackChair',
-          x: 2.5, z: 2.1,
-          rotY: 0,
-          color: '#5a1a1a',
-          woodColor: '#1a0e08',
-        },
-        // Coffee table centered between them
-        {
-          type: 'coffeeTable',
-          x: 2.5, z: 1.0,
-          shape: 'round',
-          radius: 0.40,
-          height: 0.45,
-          topColor: '#1a0e08',
-          baseColor: '#c9a84c',
-        },
-        // Standing lamp east of cluster
-        {
-          type: 'standingLamp',
-          x: 3.6, z: 1.0,
-          height: 1.6,
-          shadeColor: '#3a1f12',
-          lightIntensity: 4.5,
-        },
+        // ─── WALL SCONCES ───────────────────────────────────────
+        // 3 per long wall, ~2.2m up, between banquette top-rail and
+        // ceiling. Each casts a warm point light over the banquette
+        // patrons. NO standing lamps anywhere — architectural light
+        // only, like Eight.
+        { type: 'wallSconce', wall: 'west', z: -2.2, y: 2.3 },
+        { type: 'wallSconce', wall: 'west', z:  0,   y: 2.3 },
+        { type: 'wallSconce', wall: 'west', z:  2.2, y: 2.3 },
+        { type: 'wallSconce', wall: 'east', z: -2.2, y: 2.3 },
+        { type: 'wallSconce', wall: 'east', z:  0,   y: 2.3 },
+        { type: 'wallSconce', wall: 'east', z:  2.2, y: 2.3 },
       ],
     });
 

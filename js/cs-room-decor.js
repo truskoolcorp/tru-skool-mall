@@ -1004,6 +1004,442 @@
     console.log(`[CSDecor] floor rug ${width}m × ${depth}m at (${x}, ${z})`);
   };
 
+  // ─── BANQUETTE ────────────────────────────────────────────────
+  // Long upholstered bench along a wall (Eight Lounge aesthetic).
+  // Emerald velvet seat + tufted upright back + brass-studded edge.
+  // Wood/dark base. Seats many patrons in a fraction of the floor
+  // space wingback chairs need.
+  //
+  // The banquette runs along a wall (north/south/east/west). Its
+  // BACK presses against the wall; its SEAT faces away from the
+  // wall into the room. We compute the orientation automatically.
+  //
+  // Use cases beyond cigar lounge:
+  //   - Main lounge audience seating
+  //   - Smoke lounge perimeter seating
+  //   - Bar lounge area
+  HANDLERS.banquette = function (scene, comp, room) {
+    const wall = comp.wall || 'east';
+    const length = comp.length || 4;
+    const offsetAlong = comp.offsetAlong !== undefined ? comp.offsetAlong : 0;
+    const seatColor = comp.color || '#1a3a2a';      // emerald velvet
+    const baseColor = comp.baseColor || '#1a0e08';  // dark walnut base
+    const studColor = comp.studColor || room.theme.accent;
+    const studCount = comp.studCount || Math.floor(length / 0.25);
+
+    // Per-wall layout — work out base position and rotation around Y.
+    // Banquette is built along its local +X axis (length direction)
+    // with back facing -Z and seat facing +Z. We rotate the parent
+    // entity to match the wall orientation.
+    const halfD = room.depth / 2;
+    const halfW = room.width / 2;
+    let baseX, baseZ, rotY;
+    if (wall === 'north')      { baseX = offsetAlong; baseZ = -halfD + 0.4; rotY = 180; }
+    else if (wall === 'south') { baseX = offsetAlong; baseZ =  halfD - 0.4; rotY = 0;   }
+    else if (wall === 'east')  { baseX =  halfW - 0.4; baseZ = offsetAlong; rotY = -90;}
+    else if (wall === 'west')  { baseX = -halfW + 0.4; baseZ = offsetAlong; rotY = 90; }
+
+    // Group everything under a pivot so rotY rotates the whole thing
+    const banquette = document.createElement('a-entity');
+    banquette.setAttribute('position', `${baseX} 0 ${baseZ}`);
+    banquette.setAttribute('rotation', `0 ${rotY} 0`);
+    scene.appendChild(banquette);
+
+    // Wood base (kickplate under the seat)
+    const base = document.createElement('a-box');
+    base.setAttribute('position', '0 0.18 0');
+    base.setAttribute('width', length);
+    base.setAttribute('height', 0.36);
+    base.setAttribute('depth', 0.65);
+    base.setAttribute('color', baseColor);
+    base.setAttribute('material', 'shader: standard; metalness: 0.15; roughness: 0.7');
+    banquette.appendChild(base);
+
+    // Velvet seat cushion (top of base, slightly proud)
+    const seat = document.createElement('a-box');
+    seat.setAttribute('position', '0 0.42 0');
+    seat.setAttribute('width', length - 0.05);
+    seat.setAttribute('height', 0.10);
+    seat.setAttribute('depth', 0.60);
+    seat.setAttribute('color', seatColor);
+    seat.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+    banquette.appendChild(seat);
+
+    // Tufted upright back (taller than wingback for banquette feel)
+    const back = document.createElement('a-box');
+    back.setAttribute('position', '0 1.05 -0.30');
+    back.setAttribute('width', length);
+    back.setAttribute('height', 1.10);
+    back.setAttribute('depth', 0.18);
+    back.setAttribute('color', seatColor);
+    back.setAttribute('material', 'shader: standard; metalness: 0.05; roughness: 0.85');
+    banquette.appendChild(back);
+
+    // Brass top rail along the back top edge
+    const topRail = document.createElement('a-box');
+    topRail.setAttribute('position', '0 1.62 -0.30');
+    topRail.setAttribute('width', length);
+    topRail.setAttribute('height', 0.04);
+    topRail.setAttribute('depth', 0.20);
+    topRail.setAttribute('color', studColor);
+    topRail.setAttribute('material', 'shader: standard; metalness: 0.85; roughness: 0.3');
+    banquette.appendChild(topRail);
+
+    // Brass nailhead studs along the seat's front edge
+    const startCoord = -length / 2 + length / (studCount * 2);
+    const step = length / studCount;
+    for (let i = 0; i < studCount; i++) {
+      const sx = startCoord + step * i;
+      const stud = document.createElement('a-sphere');
+      stud.setAttribute('position', `${sx} 0.42 0.30`);
+      stud.setAttribute('radius', 0.013);
+      stud.setAttribute('color', studColor);
+      stud.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+      banquette.appendChild(stud);
+    }
+
+    console.log(`[CSDecor] banquette: ${length}m on ${wall} wall (${studCount} studs)`);
+  };
+
+  // ─── MARBLE TABLE ─────────────────────────────────────────────
+  // Small low cocktail table — round marble top on a brass tripod
+  // or X-base. Different from coffeeTable: this is taller (cocktail
+  // height ~50cm), smaller, designed to sit in front of a banquette
+  // patron. Marble top with subtle veining color.
+  HANDLERS.marbleTable = function (scene, comp, room) {
+    const x = comp.x !== undefined ? comp.x : 0;
+    const z = comp.z !== undefined ? comp.z : 0;
+    const radius = comp.radius || 0.32;
+    const height = comp.height || 0.52;
+    const topColor = comp.topColor || '#d8d2c4';     // cream marble
+    const baseColor = comp.baseColor || room.theme.accent;
+
+    // Marble top (slightly thicker than coffee table for "weight")
+    const top = document.createElement('a-cylinder');
+    top.setAttribute('position', `${x} ${height} ${z}`);
+    top.setAttribute('radius', radius);
+    top.setAttribute('height', 0.06);
+    top.setAttribute('color', topColor);
+    top.setAttribute('material', 'shader: standard; metalness: 0.2; roughness: 0.4');
+    scene.appendChild(top);
+
+    // Slim brass post
+    const post = document.createElement('a-cylinder');
+    post.setAttribute('position', `${x} ${height / 2} ${z}`);
+    post.setAttribute('radius', 0.025);
+    post.setAttribute('height', height);
+    post.setAttribute('color', baseColor);
+    post.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+    scene.appendChild(post);
+
+    // Small footed base (X feet using 2 crossed rectangles)
+    const baseR = radius * 0.65;
+    [0, 90].forEach((rot) => {
+      const foot = document.createElement('a-box');
+      foot.setAttribute('position', `${x} 0.025 ${z}`);
+      foot.setAttribute('rotation', `0 ${rot} 0`);
+      foot.setAttribute('width', baseR * 2);
+      foot.setAttribute('height', 0.04);
+      foot.setAttribute('depth', 0.04);
+      foot.setAttribute('color', baseColor);
+      foot.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+      scene.appendChild(foot);
+    });
+
+    console.log(`[CSDecor] marble table at (${x}, ${z})`);
+  };
+
+  // ─── WALL SCONCE ──────────────────────────────────────────────
+  // Compact wall-mounted brass fixture with a small glowing bulb
+  // and a small point light. Replaces the standing lamp pattern
+  // for a more architectural lighting approach (Eight Lounge).
+  //
+  // No big shade → no scale issues. Sconce is a small backplate
+  // disc + a forward-projecting arm + a small bulb at the tip.
+  HANDLERS.wallSconce = function (scene, comp, room) {
+    const wall = comp.wall || 'east';
+    const x = comp.x !== undefined ? comp.x : 0;
+    const z = comp.z !== undefined ? comp.z : 0;
+    const y = comp.y !== undefined ? comp.y : 2.0;
+    const color = comp.color || room.theme.accent;
+    const lightColor = comp.lightColor || '#ffaa55';
+    const intensity = comp.intensity || 2;
+
+    const halfD = room.depth / 2;
+    const halfW = room.width / 2;
+    let baseX, baseZ, faceY;
+    // Sconce is flush against the inside of the wall, projects
+    // outward into the room.
+    if (wall === 'north')      { baseX = x; baseZ = -halfD + 0.05; faceY = 0;   }
+    else if (wall === 'south') { baseX = x; baseZ =  halfD - 0.05; faceY = 180; }
+    else if (wall === 'east')  { baseX =  halfW - 0.05; baseZ = z; faceY = -90; }
+    else if (wall === 'west')  { baseX = -halfW + 0.05; baseZ = z; faceY = 90;  }
+
+    const sconce = document.createElement('a-entity');
+    sconce.setAttribute('position', `${baseX} ${y} ${baseZ}`);
+    sconce.setAttribute('rotation', `0 ${faceY} 0`);
+    scene.appendChild(sconce);
+
+    // Backplate (small brass disc against wall)
+    const plate = document.createElement('a-cylinder');
+    plate.setAttribute('rotation', '90 0 0');
+    plate.setAttribute('position', '0 0 0');
+    plate.setAttribute('radius', 0.06);
+    plate.setAttribute('height', 0.02);
+    plate.setAttribute('color', color);
+    plate.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+    sconce.appendChild(plate);
+
+    // Arm projecting forward from the wall (sconce body)
+    const arm = document.createElement('a-cylinder');
+    arm.setAttribute('rotation', '90 0 0');
+    arm.setAttribute('position', '0 0 0.10');
+    arm.setAttribute('radius', 0.02);
+    arm.setAttribute('height', 0.20);
+    arm.setAttribute('color', color);
+    arm.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+    sconce.appendChild(arm);
+
+    // Small candle-style bulb at the tip
+    const bulb = document.createElement('a-sphere');
+    bulb.setAttribute('position', '0 0 0.22');
+    bulb.setAttribute('radius', 0.04);
+    bulb.setAttribute('color', '#fff4d4');
+    bulb.setAttribute('material', 'shader: flat');
+    sconce.appendChild(bulb);
+
+    // Warm point light cast from the bulb
+    const light = document.createElement('a-light');
+    light.setAttribute('type', 'point');
+    light.setAttribute('position', '0 0 0.22');
+    light.setAttribute('color', lightColor);
+    light.setAttribute('intensity', intensity);
+    light.setAttribute('distance', 2.5);
+    light.setAttribute('decay', 1.8);
+    sconce.appendChild(light);
+
+    console.log(`[CSDecor] wall sconce on ${wall} at (${x}, ${y}, ${z})`);
+  };
+
+  // ─── GLASS HUMIDOR (illuminated cabinet) ──────────────────────
+  // A backlit glass-front display case — what a real high-end
+  // cigar lounge has. Multi-shelf, internal warm emissive glow,
+  // visible cigar boxes inside, brass-trimmed glass front.
+  // Replaces the older humidorWall (still available for other rooms).
+  HANDLERS.glassHumidor = function (scene, comp, room) {
+    const wall = comp.wall || 'north';
+    const length = comp.length || 5.0;
+    const cabinetH = comp.height || 2.4;
+    const startY = comp.startY !== undefined ? comp.startY : 0.6;
+    const shelves = comp.shelves || 4;
+    const perShelf = comp.perShelf || 8;
+    const frameColor = comp.frameColor || room.theme.accent;
+    const interiorColor = comp.interiorColor || '#1a0e08';
+    const glowColor = comp.glowColor || '#3a2010';
+    const boxColors = comp.boxColors || [
+      '#3a1f12', '#4a2a18', '#2e1808', '#5a341c',
+      '#3e2010', '#4e2a16', '#3a1f12', '#5a3416',
+    ];
+
+    const halfD = room.depth / 2;
+    const halfW = room.width / 2;
+    let baseX, baseZ, rotY, axis;
+    if (wall === 'north')      { baseX = 0; baseZ = -halfD + 0.20; rotY = 180; axis = 'x'; }
+    else if (wall === 'south') { baseX = 0; baseZ =  halfD - 0.20; rotY = 0;   axis = 'x'; }
+    else if (wall === 'east')  { baseX =  halfW - 0.20; baseZ = 0; rotY = -90; axis = 'z'; }
+    else if (wall === 'west')  { baseX = -halfW + 0.20; baseZ = 0; rotY = 90;  axis = 'z'; }
+
+    const cabinet = document.createElement('a-entity');
+    cabinet.setAttribute('position', `${baseX} 0 ${baseZ}`);
+    cabinet.setAttribute('rotation', `0 ${rotY} 0`);
+    scene.appendChild(cabinet);
+
+    // Backing panel (deep cabinet interior — warm emissive so the
+    // cigar boxes are silhouetted against a warm glow). This is
+    // the key visual: the case looks lit from within.
+    const back = document.createElement('a-box');
+    back.setAttribute('position', `0 ${startY + cabinetH / 2} -0.18`);
+    back.setAttribute('width', length);
+    back.setAttribute('height', cabinetH);
+    back.setAttribute('depth', 0.04);
+    back.setAttribute('color', glowColor);
+    back.setAttribute('material', `shader: flat; emissive: ${glowColor}; emissiveIntensity: 0.85`);
+    cabinet.appendChild(back);
+
+    // Brass frame around the entire cabinet face
+    const frameThick = 0.06;
+    const fY = startY + cabinetH / 2;
+    // Top frame
+    const ft = document.createElement('a-box');
+    ft.setAttribute('position', `0 ${startY + cabinetH + frameThick / 2} 0`);
+    ft.setAttribute('width', length + frameThick * 2);
+    ft.setAttribute('height', frameThick);
+    ft.setAttribute('depth', 0.30);
+    ft.setAttribute('color', frameColor);
+    ft.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+    cabinet.appendChild(ft);
+    // Bottom frame
+    const fb = document.createElement('a-box');
+    fb.setAttribute('position', `0 ${startY - frameThick / 2} 0`);
+    fb.setAttribute('width', length + frameThick * 2);
+    fb.setAttribute('height', frameThick);
+    fb.setAttribute('depth', 0.30);
+    fb.setAttribute('color', frameColor);
+    fb.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+    cabinet.appendChild(fb);
+    // Left frame
+    const fl = document.createElement('a-box');
+    fl.setAttribute('position', `${-length / 2 - frameThick / 2} ${fY} 0`);
+    fl.setAttribute('width', frameThick);
+    fl.setAttribute('height', cabinetH);
+    fl.setAttribute('depth', 0.30);
+    fl.setAttribute('color', frameColor);
+    fl.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+    cabinet.appendChild(fl);
+    // Right frame
+    const fr = document.createElement('a-box');
+    fr.setAttribute('position', `${length / 2 + frameThick / 2} ${fY} 0`);
+    fr.setAttribute('width', frameThick);
+    fr.setAttribute('height', cabinetH);
+    fr.setAttribute('depth', 0.30);
+    fr.setAttribute('color', frameColor);
+    fr.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
+    cabinet.appendChild(fr);
+
+    // Shelves with cigar boxes (inside the cabinet, visible through
+    // the implied glass front). We don't render glass — just the
+    // contents — and the brass frame implies the glass.
+    const shelfGap = cabinetH / shelves;
+    for (let s = 0; s < shelves; s++) {
+      const shelfY = startY + 0.10 + s * shelfGap;
+
+      // Cedar shelf plank
+      const shelf = document.createElement('a-box');
+      shelf.setAttribute('position', `0 ${shelfY} -0.08`);
+      shelf.setAttribute('width', length - 0.05);
+      shelf.setAttribute('height', 0.025);
+      shelf.setAttribute('depth', 0.18);
+      shelf.setAttribute('color', interiorColor);
+      shelf.setAttribute('material', 'shader: standard; metalness: 0.15; roughness: 0.7');
+      cabinet.appendChild(shelf);
+
+      // Cigar boxes on the shelf
+      const startCoord = -length / 2 + length / (perShelf * 2);
+      const step = length / perShelf;
+      for (let b = 0; b < perShelf; b++) {
+        const c = startCoord + step * b;
+        const bColor = boxColors[(s * perShelf + b) % boxColors.length];
+
+        const box = document.createElement('a-box');
+        box.setAttribute('position', `${c} ${shelfY + 0.08} -0.08`);
+        box.setAttribute('width', step * 0.78);
+        box.setAttribute('height', 0.13);
+        box.setAttribute('depth', 0.16);
+        box.setAttribute('color', bColor);
+        box.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.8');
+        cabinet.appendChild(box);
+
+        // Brass clasp center-front of box
+        const clasp = document.createElement('a-box');
+        clasp.setAttribute('position', `${c} ${shelfY + 0.08} 0.005`);
+        clasp.setAttribute('width', 0.03);
+        clasp.setAttribute('height', 0.03);
+        clasp.setAttribute('depth', 0.005);
+        clasp.setAttribute('color', frameColor);
+        clasp.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.3');
+        cabinet.appendChild(clasp);
+      }
+    }
+
+    // Add a few warm point lights inside the cabinet for the
+    // backlit-display effect (subtle — the emissive back already
+    // does the heavy work, these add highlights).
+    const numLights = Math.max(2, Math.floor(length / 2));
+    for (let i = 0; i < numLights; i++) {
+      const lx = -length / 2 + length / (numLights + 1) * (i + 1);
+      const light = document.createElement('a-light');
+      light.setAttribute('type', 'point');
+      light.setAttribute('position', `${lx} ${startY + cabinetH / 2} -0.05`);
+      light.setAttribute('color', '#ffaa55');
+      light.setAttribute('intensity', 1.2);
+      light.setAttribute('distance', 1.8);
+      light.setAttribute('decay', 1.5);
+      cabinet.appendChild(light);
+    }
+
+    console.log(`[CSDecor] glass humidor: ${shelves}x${perShelf} = ${shelves * perShelf} boxes on ${wall} wall`);
+  };
+
+  // ─── COFFERED CEILING ─────────────────────────────────────────
+  // Recessed rectangular panels in a grid pattern across the
+  // ceiling, with brass strips between them. Adds architectural
+  // depth and ties to the brass theme. Each panel is a slightly
+  // recessed dark plane bordered by thin brass strips.
+  //
+  // Use cases beyond cigar lounge:
+  //   - Main lounge ceiling
+  //   - Foyer (if we redo it)
+  HANDLERS.cofferedCeiling = function (scene, comp, room) {
+    const cols = comp.cols || 3;          // panels along width (X axis)
+    const rows = comp.rows || 4;          // panels along depth (Z axis)
+    const stripWidth = comp.stripWidth || 0.08;
+    const recessDepth = comp.recessDepth || 0.10;
+    const stripColor = comp.stripColor || room.theme.accent;
+    const panelColor = comp.panelColor || '#0a0604';
+
+    const W = room.width;
+    const D = room.depth;
+    const ceilingY = room.height - 0.05;
+    const recessY = ceilingY - recessDepth;
+    const panelW = (W - stripWidth * (cols + 1)) / cols;
+    const panelD = (D - stripWidth * (rows + 1)) / rows;
+
+    // Recessed panels
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const px = -W / 2 + stripWidth + panelW / 2 + c * (panelW + stripWidth);
+        const pz = -D / 2 + stripWidth + panelD / 2 + r * (panelD + stripWidth);
+        const panel = document.createElement('a-plane');
+        panel.setAttribute('rotation', '90 0 0');
+        panel.setAttribute('position', `${px} ${recessY} ${pz}`);
+        panel.setAttribute('width', panelW);
+        panel.setAttribute('height', panelD);
+        panel.setAttribute('color', panelColor);
+        panel.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.8');
+        scene.appendChild(panel);
+      }
+    }
+
+    // Brass strips between panels — vertical (along X spacing) and
+    // horizontal (along Z spacing). We do this as a grid of thin
+    // boxes at ceilingY, with strips spanning the full room.
+    // Vertical strips (spaced along X)
+    for (let c = 0; c <= cols; c++) {
+      const sx = -W / 2 + stripWidth / 2 + c * (panelW + stripWidth);
+      const strip = document.createElement('a-box');
+      strip.setAttribute('position', `${sx} ${ceilingY - 0.005} 0`);
+      strip.setAttribute('width', stripWidth);
+      strip.setAttribute('height', 0.01);
+      strip.setAttribute('depth', D);
+      strip.setAttribute('color', stripColor);
+      strip.setAttribute('material', 'shader: standard; metalness: 0.85; roughness: 0.3');
+      scene.appendChild(strip);
+    }
+    // Horizontal strips (spaced along Z)
+    for (let r = 0; r <= rows; r++) {
+      const sz = -D / 2 + stripWidth / 2 + r * (panelD + stripWidth);
+      const strip = document.createElement('a-box');
+      strip.setAttribute('position', `0 ${ceilingY - 0.005} ${sz}`);
+      strip.setAttribute('width', W);
+      strip.setAttribute('height', 0.01);
+      strip.setAttribute('depth', stripWidth);
+      strip.setAttribute('color', stripColor);
+      strip.setAttribute('material', 'shader: standard; metalness: 0.85; roughness: 0.3');
+      scene.appendChild(strip);
+    }
+    console.log(`[CSDecor] coffered ceiling ${rows}×${cols}`);
+  };
+
   // ─── HERO GLB ─────────────────────────────────────────────────
   // Drop in a Meshy GLB at a specific location, scale, rotation.
   // Same auto-snap behavior as cs-room-boot's loadProps. Use this
