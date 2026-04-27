@@ -430,16 +430,26 @@
         const target = this.data.target.object3D;
         if (!target) return;
 
-        // Compute angle from me → target in XZ plane
+        // Compute angle from me → target in XZ plane.
+        //
+        // GLB CONVENTION NOTE
+        // Laviche's GLB is authored with her visible front facing +Z
+        // (verified empirically — at rot y=0 she stands looking toward
+        // higher z, which is where the player is in the foyer). For a
+        // GLB with this convention, atan2(dx, dz) directly gives the
+        // y-rotation that points her front at the target.
+        //
+        // (For a standard three.js Object3D where forward = -Z, the
+        // formula would be atan2(dx, -dz) instead. If we ever swap
+        // Laviche's GLB for one authored to the standard convention,
+        // flip the sign on dz here.)
         const dx = target.position.x - me.position.x;
         const dz = target.position.z - me.position.z;
-        // Math.atan2 gives angle in standard math convention.
-        // A-Frame rotation y=0 means forward is -Z, so we offset by π.
-        const desired = Math.atan2(dx, dz) + Math.PI + THREE.MathUtils.degToRad(this.data.offsetY);
+        const desired = Math.atan2(dx, dz) + THREE.MathUtils.degToRad(this.data.offsetY);
 
-        // Smooth interpolate (lerp on the unit circle)
+        // Smooth interpolate (lerp on the unit circle, shortest path
+        // so we don't spin the long way around).
         const cur = me.rotation.y;
-        // Shortest-path interpolation
         let diff = desired - cur;
         while (diff >  Math.PI) diff -= 2 * Math.PI;
         while (diff < -Math.PI) diff += 2 * Math.PI;
