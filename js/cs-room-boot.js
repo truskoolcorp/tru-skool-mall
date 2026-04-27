@@ -80,7 +80,12 @@
         accent: '#c9a84c',
         ambient: '#3a2e1a',
       },
-      backUrl: 'index.html',
+      // Exit from any CS room returns to the CS Concierge foyer
+      // (Laviche's area), NOT the main mall landing page. The hash
+      // is read by mall-core's HashRoute handler, which auto-skips
+      // the mode selector and teleports the player into the foyer
+      // once the mall scene is ready.
+      backUrl: 'index.html#cafe-sativa-foyer',
     }, config);
 
     // Wait for scene + dependencies
@@ -149,32 +154,28 @@
     addWall(scene, 'wall-south-r', `${ halfW - sideW / 2}   ${h / 2} ${halfD}`, sideW, h,        '0 180 0', t.wall);
     addWall(scene, 'wall-south-t', `0 ${h - (h - doorH) / 2} ${halfD}`,         doorW, h - doorH,'0 180 0', t.wall);
 
-    // ─── DOORWAY ────────────────────────────────────────────────
-    // Build a real architectural door: deep recessed jamb showing
-    // wall thickness, a paneled wooden door (rails + stiles + 4
-    // recessed panels), brass doorknob + kickplate, warm corridor
-    // light visible beyond through the doorway.
+    // ─── DOORWAY (open opening, no door) ────────────────────────
+    // Open architectural doorway: brass-trimmed jamb defining the
+    // opening, with warm corridor light visible beyond. No door
+    // slab — you walk straight through. Reads as a corridor
+    // continuation, not a sealed exit.
     //
     // Layout (cross-section, looking down):
     //
-    //     INSIDE ROOM   ←→   DOORWAY   ←→   OUTSIDE
+    //     INSIDE ROOM   ←→   OPENING   ←→   OUTSIDE
     //     z=halfD-0.5       z=halfD          z=halfD+0.6
     //     |                                  |
-    //     | jamb-inside     wood door        backdrop (warm corridor)
-    //     | (brass casing)  (paneled)
+    //     | jamb (brass casing)              corridor backdrop
+    //     | shows wall thickness             (warm amber glow)
     //
-    // The door is slightly inset from the south wall so you can see
-    // the jamb depth as you approach. Walking south through the
-    // gap triggers cs-boundary's exitZ → redirect to mall foyer.
-    const t_door = t.accent;        // brass for hardware/casing
-    const woodDark = '#2a1810';     // door body (deep walnut)
-    const woodMid  = '#3a2614';     // panel insets (slightly lighter)
+    // Walking south through the opening triggers cs-boundary's
+    // exitZ → redirect to the landing page (mode selector).
+    const t_door = t.accent;        // brass for jamb casing
 
-    // 1. CORRIDOR BACKDROP — warm-lit space VISIBLE beyond the door.
-    //    Sits 0.6m outside the south wall. With wood door geometry
-    //    in front, what you see through the doorway is the soft
-    //    glow of the corridor — sells the illusion of "real exit
-    //    leading somewhere".
+    // 1. CORRIDOR BACKDROP — warm-lit space VISIBLE beyond the
+    //    opening. Sits 0.6m outside the south wall. With the brass
+    //    jamb framing it, this reads as 'lit corridor leading
+    //    somewhere', not just a glowing rectangle.
     const corridorGlow = document.createElement('a-plane');
     corridorGlow.setAttribute('id', 'corridor-glow');
     corridorGlow.setAttribute('position', `0 ${doorH / 2} ${halfD + 0.6}`);
@@ -186,8 +187,21 @@
     corridorGlow.setAttribute('material', 'shader: flat; emissive: #5a3818; emissiveIntensity: 0.6');
     scene.appendChild(corridorGlow);
 
-    // Add a single warm point light just outside the doorway so
-    // light spills into the room from the corridor — adds depth.
+    // Corridor floor extension — short floor strip visible through
+    // the opening so you don't see the abrupt edge of the room floor.
+    const corridorFloor = document.createElement('a-plane');
+    corridorFloor.setAttribute('id', 'corridor-floor');
+    corridorFloor.setAttribute('position', `0 0.005 ${halfD + 0.4}`);
+    corridorFloor.setAttribute('rotation', '-90 0 0');
+    corridorFloor.setAttribute('width', doorW + 0.2);
+    corridorFloor.setAttribute('height', 0.9);  // 90cm of visible floor beyond door
+    corridorFloor.setAttribute('color', t.floor);
+    corridorFloor.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.85');
+    scene.appendChild(corridorFloor);
+
+    // Warm point light just outside the opening so light spills
+    // INTO the bar from the corridor — adds depth, makes the
+    // doorway read as a real lit threshold.
     const corridorLight = document.createElement('a-light');
     corridorLight.setAttribute('type', 'point');
     corridorLight.setAttribute('position', `0 ${doorH / 2} ${halfD + 0.4}`);
@@ -197,15 +211,15 @@
     corridorLight.setAttribute('decay', 1.5);
     scene.appendChild(corridorLight);
 
-    // 2. JAMB (door casing) — recessed brass-trimmed frame around
-    //    the opening, INSIDE the room. Three pieces: head jamb (top)
-    //    + 2 side jambs. ~10cm deep so you see the wall thickness
-    //    when approaching the door.
+    // 2. JAMB (brass door casing) — recessed frame around the
+    //    opening, ~10cm band × 20cm deep so you can see the wall
+    //    thickness as you approach. Three pieces: head jamb (top)
+    //    + 2 side jambs.
     const jambDepth = 0.20;        // depth of jamb (wall thickness)
     const jambThick = 0.10;        // 10cm casing band
     const jambZ = halfD - jambDepth / 2;
 
-    // Head jamb (top of doorway)
+    // Head jamb (top of opening)
     const jambTop = document.createElement('a-box');
     jambTop.setAttribute('id', 'jamb-top');
     jambTop.setAttribute('position', `0 ${doorH + jambThick / 2} ${jambZ}`);
@@ -238,86 +252,7 @@
     jambRight.setAttribute('material', 'shader: standard; metalness: 0.7; roughness: 0.3');
     scene.appendChild(jambRight);
 
-    // 3. WOODEN DOOR — actual paneled door, hung in the jamb but
-    //    set slightly ajar (rotated 25° on its left hinge) so the
-    //    corridor glow spills through the gap. Sells "this opens".
-    //
-    //    Door body is a thin slab; on top of it we mount 4 panel
-    //    insets (slightly proud) using woodMid to suggest classic
-    //    raised-panel construction. Brass doorknob on the right.
-    const doorPivot = document.createElement('a-entity');
-    doorPivot.setAttribute('id', 'door-pivot');
-    // Hinge along left edge: pivot at x = -doorW/2, z = halfD - 0.05
-    // Door swings open INWARD (-Z direction = into the room)
-    doorPivot.setAttribute('position', `${-doorW / 2} 0 ${halfD - 0.05}`);
-    doorPivot.setAttribute('rotation', '0 25 0');  // 25° ajar
-    scene.appendChild(doorPivot);
-
-    // Door slab — child of pivot, offset so its left edge is at pivot
-    const doorSlab = document.createElement('a-box');
-    doorSlab.setAttribute('position', `${doorW / 2} ${doorH / 2} 0`);
-    doorSlab.setAttribute('width', doorW - 0.04);
-    doorSlab.setAttribute('height', doorH - 0.04);
-    doorSlab.setAttribute('depth', 0.05);
-    doorSlab.setAttribute('color', woodDark);
-    doorSlab.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.7');
-    doorPivot.appendChild(doorSlab);
-
-    // 4 paneled insets (2x2 grid on the door face). Each panel is
-    // a thin box mounted slightly proud of the door slab.
-    const panelMargin = 0.10;       // gap from door edges
-    const railHeight  = 0.08;       // horizontal rail dividing top/bottom panels
-    const stileWidth  = 0.06;       // vertical stile dividing L/R panels
-    const panelW = (doorW - 0.04 - panelMargin * 2 - stileWidth) / 2;
-    const panelH = (doorH - 0.04 - panelMargin * 2 - railHeight) / 2;
-    const panelZ = 0.028;           // proud of slab face (front side)
-
-    [
-      { x: -(panelW + stileWidth) / 2, y: doorH / 2 + (panelH + railHeight) / 2 },  // top-left
-      { x:  (panelW + stileWidth) / 2, y: doorH / 2 + (panelH + railHeight) / 2 },  // top-right
-      { x: -(panelW + stileWidth) / 2, y: doorH / 2 - (panelH + railHeight) / 2 },  // bottom-left
-      { x:  (panelW + stileWidth) / 2, y: doorH / 2 - (panelH + railHeight) / 2 },  // bottom-right
-    ].forEach((p, i) => {
-      const panel = document.createElement('a-box');
-      panel.setAttribute('position', `${doorW / 2 + p.x} ${p.y} ${panelZ}`);
-      panel.setAttribute('width', panelW);
-      panel.setAttribute('height', panelH);
-      panel.setAttribute('depth', 0.012);
-      panel.setAttribute('color', woodMid);
-      panel.setAttribute('material', 'shader: standard; metalness: 0.1; roughness: 0.65');
-      doorPivot.appendChild(panel);
-    });
-
-    // Brass doorknob — sphere on the right side of the door,
-    // about waist-height (1.0m).
-    const knob = document.createElement('a-sphere');
-    knob.setAttribute('position', `${doorW - 0.15} 1.0 0.04`);
-    knob.setAttribute('radius', 0.04);
-    knob.setAttribute('color', t_door);
-    knob.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.2');
-    doorPivot.appendChild(knob);
-
-    // Knob backplate (small disc behind the knob)
-    const knobPlate = document.createElement('a-cylinder');
-    knobPlate.setAttribute('position', `${doorW - 0.15} 1.0 0.025`);
-    knobPlate.setAttribute('rotation', '90 0 0');
-    knobPlate.setAttribute('radius', 0.06);
-    knobPlate.setAttribute('height', 0.005);
-    knobPlate.setAttribute('color', t_door);
-    knobPlate.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.2');
-    doorPivot.appendChild(knobPlate);
-
-    // Brass kickplate at bottom of door
-    const kickplate = document.createElement('a-box');
-    kickplate.setAttribute('position', `${doorW / 2} 0.18 0.027`);
-    kickplate.setAttribute('width', doorW - 0.10);
-    kickplate.setAttribute('height', 0.20);
-    kickplate.setAttribute('depth', 0.008);
-    kickplate.setAttribute('color', t_door);
-    kickplate.setAttribute('material', 'shader: standard; metalness: 0.9; roughness: 0.25');
-    doorPivot.appendChild(kickplate);
-
-    // 4. EXIT label above the doorway, faces room interior
+    // 3. EXIT label above the opening, faces room interior
     const exitLabel = document.createElement('a-text');
     exitLabel.setAttribute('value', 'EXIT');
     exitLabel.setAttribute('align', 'center');

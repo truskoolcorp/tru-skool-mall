@@ -22,6 +22,11 @@ const TELEPORT_POSITIONS = {
   'hoe':              { x: 7,    y: 0,   z: -22, label: 'H.O.E.' },
   'wanderlust':       { x: -7,   y: 0,   z: -38, label: 'Wanderlust' },
   'cafe-sativa':      { x: 13,   y: 0,   z: -18, label: 'Cafe Sativa' },
+  // Inside the CS foyer near Laviche (foyer footprint x:22-28, z:-24..-17).
+  // Used by per-room scenes (cs-bar.html, cs-cigar.html, etc.) to land the
+  // player back at the concierge after they exit a room. Spawn just past
+  // the west arcade door at z=-18, facing east into the room interior.
+  'cafe-sativa-foyer':{ x: 23,   y: 0,   z: -20, label: 'Café Sativa — Concierge' },
   'verse-alkemist':   { x: 0,    y: 0,   z: -55, label: 'The Verse Alkemist' },
 };
 
@@ -517,6 +522,71 @@ window.enterMall = function(mode) {
   _origEnterMall(mode);
   setTimeout(showWelcome, 2000);
 };
+
+// ═══════════════════════════════════════════════════
+// HASH ROUTING — auto-teleport on page load
+// ═══════════════════════════════════════════════════
+// When index.html is loaded with a hash like #cafe-sativa-foyer
+// (typically from a sub-scene like cs-bar.html exiting back),
+// auto-skip the mode selector and teleport the player to that
+// location once the mall scene is ready.
+//
+// Usage from a sub-scene:
+//   window.location.href = 'index.html#cafe-sativa-foyer';
+//
+// The hash MUST match a key in TELEPORT_POSITIONS. Unknown hashes
+// fall through to the normal landing-page flow (mode selector
+// shown, player spawns at default entrance).
+//
+// Why hash and not query param: the browser doesn't reload when
+// only a hash changes — keeps the option open later for SPA-style
+// navigation between same-mall locations without page refresh.
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var hash = window.location.hash.replace(/^#/, '');
+    if (!hash) return;
+    if (!TELEPORT_POSITIONS[hash]) {
+      console.log('[HashRoute] hash present but unknown:', hash);
+      return;
+    }
+    console.log('[HashRoute] entering mall and teleporting to:', hash);
+
+    // Auto-dismiss the mode selector — user is returning from a
+    // sub-scene, not visiting fresh, so they shouldn't have to
+    // re-pick their mode. Default to 'virtual' (browser).
+    if (typeof window.enterMall === 'function') {
+      window.enterMall('virtual');
+    } else {
+      // Fallback: just hide the overlay manually
+      var sel = document.getElementById('mode-selector');
+      if (sel) sel.classList.add('hidden');
+      var hud = document.getElementById('hud');
+      if (hud) hud.classList.remove('hidden');
+    }
+
+    // Teleport AFTER the scene is fully loaded — the rig's position
+    // setter only takes effect once the camera-rig entity is in
+    // the DOM with its position attribute initialized.
+    var scene = document.querySelector('a-scene');
+    if (!scene) return;
+
+    function doTeleport() {
+      // Slight delay so any spawn-time logic (zone detection,
+      // ambient audio, greetings) settles before we override.
+      setTimeout(function () {
+        if (typeof window.teleportTo === 'function') {
+          window.teleportTo(hash);
+        }
+      }, 200);
+    }
+
+    if (scene.hasLoaded) {
+      doTeleport();
+    } else {
+      scene.addEventListener('loaded', doTeleport);
+    }
+  });
+})();
 
 // ═══════════════════════════════════════════════════
 // TEXTURE QUALITY — patch anisotropy on existing textures
