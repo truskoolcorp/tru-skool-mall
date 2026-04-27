@@ -536,7 +536,13 @@
 
     // Attach. Smooth 0.92 means each frame moves 8% toward target
     // yaw — slow, dignified turn (matches Laviche's vibe).
-    laviche.setAttribute('face-target', 'target: #camera-rig; smooth: 0.92');
+    //
+    // flip: -1 — empirically determined for THIS GLB. With the
+    // standard three.js convention (flip:1, atan2(dx,-dz)) she
+    // turned her BACK to the camera, meaning her authored forward
+    // is +Z, not -Z. flip:-1 uses atan2(dx,dz) so her front
+    // (the +Z side of the GLB) rotates toward the target.
+    laviche.setAttribute('face-target', 'target: #camera-rig; smooth: 0.92; flip: -1');
     console.log('[CSConcierge] Laviche now tracks the player');
   }
 
