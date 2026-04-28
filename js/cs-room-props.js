@@ -73,6 +73,38 @@
     // Empty array = no Meshy props loaded for this room.
     'bar': [],
 
+    // ═══ BAR — BLENDER VERSION (parallel A/B test) ════════════
+    // cs-bar-blender.html uses this entry. Loads the cinematic
+    // hero scene built in Blender via MCP (Apr 27 2026) — Eight
+    // Lounge inspiration with brass-rod chandelier, Chesterfield
+    // seating cluster, oxblood velvet chairs, mirrored back-bar.
+    //
+    // The GLB has NO walls/floor/ceiling — those come from
+    // CSRoom.boot()'s room shell. The GLB drops in as a single
+    // furniture entity centered in the room.
+    //
+    // GLB origin & coordinates:
+    //   - Bar at z=-2.86 in GLB local space → place GLB at room
+    //     center; bar will sit toward the back (north) wall
+    //   - Sofas/chairs at +z in GLB → toward south (player)
+    //   - Chandelier at y=+2.21 in GLB → hangs above bar
+    //   - Side cluster at +x=4 in GLB → reaches toward east wall
+    //
+    // Room dimensions in cs-bar-blender.html: 11w × 8d × 3.6h
+    // (slightly deeper than primitive bar's 11×6 to fit the
+    // Chesterfield seating cluster comfortably)
+    //
+    // snap: false because the GLB was built with origin at floor
+    // already — auto-snap would push it up unnecessarily.
+    'bar-blender': [
+      {
+        src: 'assets/models/props-optimized/cs-bar.glb',
+        instances: [
+          { pos: '0 0 0', rot: '0 0 0', scale: '1 1 1', snap: false },
+        ],
+      },
+    ],
+
     // ═══ CIGAR LOUNGE (VIP) ══════════════════════════════════
     // Room: 5m × 4m × 3.0m centered at origin.
     //   x: -2.5 to +2.5    z: -2 to +2
