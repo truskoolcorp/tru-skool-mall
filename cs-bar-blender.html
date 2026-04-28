@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cocktail Bar — Café Sativa</title>
-  <meta name="description" content="A walnut-and-brass cocktail temple. Rare bottles, marble counters, warm pendants — Café Sativa's bar at the Tru Skool Mall.">
+  <title>Cocktail Bar (Blender) — Café Sativa</title>
+  <meta name="description" content="The cinematic Eight-Lounge-inspired bar — brass chandelier, Chesterfield seating, mirrored back-bar. Café Sativa at the Tru Skool Mall.">
 
   <!-- Script load order matters:
        1. A-Frame core (defines AFRAME, THREE)
@@ -12,7 +12,7 @@
        3. gltf-extensions.js (Meshopt decoder for optimized GLBs)
        4. mall-nav.js (registers tank-controls — MUST load before boot)
        5. cs-room-decor.js (composition primitives library)
-       6. cs-room-props.js (Meshy prop catalog — empty for bar now)
+       6. cs-room-props.js (Meshy/Blender prop catalog — 'bar-blender' entry)
        7. cs-room-boot.js (room builder + composition runner)
        8. cafe-sativa-props.js (interactive tuner support)
        9. Inline boot config -->
@@ -41,7 +41,7 @@
     #room-hud .back-link:hover { background: rgba(201,168,76,0.2); }
 
     /* A/B toggle pill — top-right corner. Lets you flip between
-       this primitive composition (cs-bar.html) and the Blender GLB
+       the primitive composition (cs-bar.html) and this Blender GLB
        version (cs-bar-blender.html) without going back to the mall. */
     #ab-toggle {
       position: fixed; top: 16px; right: 16px; z-index: 100;
@@ -67,19 +67,19 @@
 </head>
 <body>
 
-  <div id="loading-veil">Entering the bar…</div>
+  <div id="loading-veil">Entering the bar (Blender)…</div>
 
   <div id="room-hud">
     <div class="room-title">Cocktail Bar</div>
-    <div class="room-tagline">Liquid Artistry, Reimagined</div>
+    <div class="room-tagline">Liquid Artistry, Reimagined · Blender Hero Scene</div>
     <a href="index.html" class="back-link">← Back to Mall</a>
   </div>
 
   <!-- A/B toggle: switch between primitive composition and Blender GLB -->
   <div id="ab-toggle">
     <span class="label">Version</span>
-    <a href="cs-bar.html" class="active">Primitive</a>
-    <a href="cs-bar-blender.html">Blender</a>
+    <a href="cs-bar.html">Primitive</a>
+    <a href="cs-bar-blender.html" class="active">Blender</a>
   </div>
 
   <a-scene
@@ -93,59 +93,65 @@
 
   <script>
     // ═══════════════════════════════════════════════════════════
-    // COCKTAIL BAR — Base44-style cinematic composition
+    // COCKTAIL BAR — BLENDER HERO SCENE VARIANT
     //
-    // Built from primitives via cs-room-decor.js. We deliberately
-    // skip the Meshy bar GLB this time — primitives let us control
-    // every proportion and avoid the 'small counter floating in
-    // a small room' problem we hit earlier.
+    // Companion to cs-bar.html. Loads cs-bar.glb (542 KB Meshopt-
+    // compressed) as a single hero entity centered in the room.
+    // The GLB was built in Blender via MCP and contains:
+    //   - Bar counter + 8 stools + back-bar with bottles + TVs
+    //   - Suspended brass-rod chandelier (the hero piece)
+    //   - Chesterfield seating cluster (2 sofas, 2 red velvet chairs)
+    //   - Coffee table + rug + side seating cluster
     //
-    // ROOM: 11m wide × 6m deep × 3.6m tall
-    //   Long horizontal proportion lets the 7m bar stretch across
-    //   nearly the full width and read as substantial. 3.6m ceiling
-    //   accommodates 5 pendants without crowding.
+    // The GLB has NO walls/floor/ceiling — CSRoom.boot() supplies
+    // those procedurally so the room shell stays consistent with
+    // every other CS room.
     //
-    // COMPOSITION ORDER (matters!)
-    //   1. Architectural trim    (wainscoting, baseboard, crown)
-    //   2. Picture frames        (atmospheric wall art)
-    //   3. Bar counter           (primitive — the hero)
-    //   4. Bottle wall           (36 bottles on 3 shelves)
-    //   5. Stool row             (7 stools, brass + oxblood)
-    //   6. Pendant array         (5 lights with own point lights)
+    // ROOM: 11m wide × 8m deep × 3.6m tall
+    //   Slightly deeper than cs-bar.html's 11×6 to give the
+    //   Chesterfield seating cluster (which extends from the bar
+    //   out to ~3m forward) breathing room before the south wall.
+    //
+    // COMPOSITION ORDER
+    //   1. Architectural trim (wainscoting, baseboard, crown) —
+    //      kept from cs-bar.html for consistent room frame
+    //   2. Picture frames on side walls — atmospheric continuity
+    //   (No bar / bottles / stools / pendants — those come from GLB)
     // ═══════════════════════════════════════════════════════════
 
     CSRoom.boot({
-      id: 'bar',
+      id: 'bar-blender',
       name: 'Cocktail Bar',
       tagline: 'Liquid Artistry, Reimagined',
 
       width: 11,
-      depth: 6,
+      depth: 8,
       height: 3.6,
 
-      // Walnut + brass + warm amber palette
+      // Walnut + brass + warm amber palette — same as cs-bar.html
+      // so the architectural frame reads identically and the only
+      // visual difference is the furniture/lighting in the middle.
       theme: {
-        wall:    '#1a1410',   // dark walnut
-        floor:   '#0c0805',   // near-black floor
-        ceiling: '#070504',   // smoky black
-        accent:  '#c9a84c',   // brass gold
-        ambient: '#3a2614',   // warm low ambient
+        wall:    '#1a1410',
+        floor:   '#0c0805',
+        ceiling: '#070504',
+        accent:  '#c9a84c',
+        ambient: '#3a2614',
       },
 
       composition: [
         // ─── ARCHITECTURAL DETAILS ──────────────────────────────
         // Walnut wainscoting with brass chair-rail on 3 walls
-        // (not south where the door is).
+        // (skip south where the doorway is).
         {
           type: 'wainscoting',
           height: 1.05,
           walls: ['north', 'east', 'west'],
-          color: '#241810',           // walnut panel face
-          stripeColor: '#c9a84c',     // brass chair-rail
+          color: '#241810',
+          stripeColor: '#c9a84c',
         },
-        // Crown molding at ceiling line
+        // Crown + baseboard for full architectural framing
         { type: 'crownMolding', height: 0.18, color: '#c9a84c' },
-        // Baseboard at floor line
         { type: 'baseboard',    height: 0.12, color: '#c9a84c' },
 
         // ─── ART ON SIDE WALLS ──────────────────────────────────
@@ -154,58 +160,9 @@
         { type: 'pictureFrames', wall: 'west', count: 3, y: 1.95,
           frameWidth: 0.7, frameHeight: 0.95, length: 4.5 },
 
-        // ─── BAR COUNTER ────────────────────────────────────────
-        // 7m long, centered, sitting back from center so stools
-        // have south-side approach room.
-        {
-          type: 'barCounter',
-          length: 7,
-          depth: 0.7,
-          height: 1.10,
-          x: 0,
-          z: -1.3,
-          color: '#3a2618',   // walnut body
-          topColor: '#0c0604',// dark marble top
-        },
-
-        // ─── BOTTLE WALL ────────────────────────────────────────
-        // 36 bottles on 3 shelves, mounted on north wall behind the
-        // bar. This is the visual showstopper.
-        {
-          type: 'bottleWall',
-          wall: 'north',
-          shelves: 3,
-          perShelf: 12,
-          length: 7,
-          startY: 1.5,
-          shelfGap: 0.45,
-          shelfColor: '#0c0604',
-        },
-
-        // ─── BAR STOOLS ─────────────────────────────────────────
-        // 7 stools along south face of bar, brass posts + oxblood seats.
-        {
-          type: 'stoolRow',
-          count: 7,
-          z: -0.4,
-          axis: 'x',
-          length: 6.5,
-          seatHeight: 0.75,
-          seatColor: '#7a3a2a',  // oxblood leather
-          postColor: '#c9a84c',  // brass
-        },
-
-        // ─── PENDANT LIGHTS ─────────────────────────────────────
-        // 5 pendants over the counter. Each has its own point light
-        // — discrete warm pools instead of one washing dome.
-        {
-          type: 'pendantArray',
-          count: 5,
-          axis: 'x',
-          z: -1.0,
-          color: '#c9a84c',
-          cordLength: 1.1,
-        },
+        // ─── HERO GLB LOADS VIA window.CS_ROOM_PROPS['bar-blender'] ─
+        // See js/cs-room-props.js for the prop entry. The boot
+        // loader picks it up automatically based on cfg.id.
       ],
     });
 
