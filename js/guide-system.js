@@ -109,8 +109,10 @@ Keep responses concise (2-3 sentences max for in-mall chat). Guide visitors, rec
   switchGuide(guideId, zoneId) {
     if (this._currentGuide === guideId && this._visitedZones.has(zoneId)) return;
 
+    const guideChanged = this._currentGuide !== guideId;
     this._currentGuide = guideId;
     this.updateChatPersona(guideId);
+    if (guideChanged) window.dispatchEvent(new CustomEvent('mall-guide-change', { detail: { host: guideId } }));
 
     // Only greet when chat is already open. If the user hasn't opened chat,
     // respect that and stay silent — they can open chat any time and get

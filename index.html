@@ -240,9 +240,17 @@
         <div class="msg-body">Welcome to the Tru Skool Mall, darling. I'm Laviche — your guide through culture, commerce, and code. Where shall we start? 💎</div>
       </div>
     </div>
+    <p id="chat-session-note" style="padding: 0 16px; font-size: 12px;">Mall text chat uses this browser’s guest session. Signing in does not share Café chat history here.</p>
+    <p id="chat-status" role="status" aria-live="polite" hidden style="padding: 0 16px;"></p>
+    <div id="chat-pending" hidden style="padding: 12px 16px;">
+      <strong>Original message retained</strong>
+      <p id="chat-original" style="white-space: pre-wrap;"></p>
+      <p id="chat-pending-detail"></p>
+      <button id="chat-recover" type="button" onclick="ChatEngine.recover()">Check original message</button>
+    </div>
     <div id="chat-input-area">
-      <input type="text" id="chat-input" placeholder="Ask Laviche anything..." onkeydown="if(event.key==='Enter')sendChat()">
-      <button id="chat-send" onclick="sendChat()">→</button>
+      <input type="text" id="chat-input" maxlength="2000" disabled placeholder="Ask Laviche anything..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button id="chat-send" aria-label="Send message" disabled onclick="sendChat()">→</button>
     </div>
   </div>
 

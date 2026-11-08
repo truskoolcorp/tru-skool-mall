@@ -38,26 +38,23 @@ npm run serve
 open http://localhost:8080
 ```
 
-## API Keys Setup
+## Text chat safety and release preparation
 
-### For Development (browser console)
+Mall chat uses the Café concierge endpoint as an anonymous browser session. It does not send authentication cookies or promise shared signed-in Café history. Never put provider keys in browser storage.
 
-```javascript
-// Enable Claude chat (direct API — dev only, exposes key)
-ChatEngine.useDirectAPI = true;
-localStorage.setItem('ANTHROPIC_API_KEY', 'sk-ant-...');
+The local compatibility candidate requires Café's uncached capability endpoint before sending. Durable requests use retained UUIDv7 identities and explicit same-ID status recovery. Legacy mode remains wire-compatible when Café reports it, but an uncertain legacy send is retained and blocked rather than sent again. Browser storage and Web Locks are required for safe cross-tab coordination.
 
-// Enable MiniMAX voice narration
-VoiceNarration.configure({ minimaxKey: 'your-minimax-api-key' });
-```
+The old `/api/chat` direct-provider path is replaced in this candidate by a provider-free HTTP 410 response. It does not redirect, proxy, or invoke Anthropic. Old deployments remain a separate rollout concern.
 
-### For Production (Vercel)
+See [the compatibility and rollout checklist](docs/concierge-compatibility.md) before any publication. This is local preparation, not a production enablement instruction. Durable mode must stay off until the separate approved database and rollout gates are complete.
 
-1. Deploy to Vercel
-2. Set environment variables:
-   - `ANTHROPIC_API_KEY` — your Claude API key
-   - `MINIMAX_API_KEY` — your MiniMAX API key
-3. The `/api/chat.js` serverless function proxies requests securely
+### Local synthetic checks
+
+Run `npm test`. Tests inject network and browser storage; they do not invoke any live chat endpoint, model, or payment service. The source review covered all nonbinary files in the baseline, but full 3D browser QA still requires the complete checkout and media. The dependency-free GitHub workflow runs these mocked regressions and syntax checks; it does not deploy anything.
+
+### Voice configuration
+
+Independent voice narration retains its existing configuration. This text-chat change does not deploy or certify voice services.
 
 ## Enable AR Mode (8th Wall)
 
@@ -84,14 +81,15 @@ tru-skool-mall/
 │   ├── loading-screen.js   # Branded loading experience
 │   ├── mall-core.js        # Mode switching, teleport, zones, minimap
 │   ├── guide-system.js     # AI persona management & greetings
-│   ├── chat-engine.js      # Claude API chat integration
+│   ├── chat-engine.js      # Café concierge client and recovery UI
+│   ├── concierge-transport.mjs # Retained request/status transport
 │   ├── voice-narration.js  # MiniMAX TTS voice guide
 │   ├── product-catalog.js  # Product database & detail panels
 │   ├── ambient-audio.js    # Zone-based background music
 │   ├── wayfinding.js       # Directory signs & floor markers
 │   └── store-interiors.js  # Enhanced store interior geometry
 ├── api/
-│   ├── chat.js             # Vercel serverless — Claude proxy
+│   ├── chat.js             # Retired legacy endpoint (provider-free 410)
 │   └── tts.js              # Vercel serverless — MiniMAX TTS proxy
 ├── scripts/
 │   └── generate-ambient-tracks.sh  # Batch MiniMAX music generator
@@ -154,24 +152,18 @@ Attach click handlers to store elements:
 
 ## Deployment to Vercel
 
-```bash
-# Install Vercel CLI
-npm i -g vercel
+Publication and production deployment require a separate reviewed release. Follow the [capability-first rollout checklist](docs/concierge-compatibility.md) and verify the exact commit's CI before deploying. Do not enable durable mode or apply a database migration as a side effect of this Mall client change.
 
-# Deploy
-vercel --prod
-```
+Mall text chat now calls the Café concierge service and does not need an Anthropic provider credential in the Mall project. Do not add a browser key or restore the retired proxy. Removing existing deployment secrets or restricting historical deployment URLs requires its own approved rollout action.
 
-Set environment variables in Vercel dashboard:
-- `ANTHROPIC_API_KEY`
-- `MINIMAX_API_KEY`
+Keep independent voice configuration separate; the existing MiniMAX voice setup is not changed or certified by this text-chat candidate.
 
 ## Tech Stack
 
 - **3D Engine**: A-Frame 1.6 (Three.js) + A-Frame Extras
 - **AR Engine**: 8th Wall (self-hosted binary, MIT license)
 - **VR**: WebXR API (built into A-Frame)
-- **AI Chat**: Claude API (Anthropic)
+- **AI Chat**: Shared Café concierge API
 - **Voice**: MiniMAX Speech 2.8
 - **Hosting**: Vercel (recommended) or any static host
 
