@@ -1,11 +1,12 @@
 {
   "name": "tru-skool-mall",
   "version": "1.0.0",
-  "description": "Tru Skool Entertainment 3D Virtual Mall — AR/VR/Virtual experience with AI persona guides",
+  "description": "Tru Skool Entertainment 3D Virtual Mall \u2014 AR/VR/Virtual experience with AI persona guides",
   "scripts": {
     "serve": "npx http-server . -p 8080 -c-1",
     "serve:ssl": "npx http-server . -S -C cert.pem -p 8443 -c-1",
-    "dev": "npx http-server . -p 8080 -c-1 --cors"
+    "dev": "npx http-server . -p 8080 -c-1 --cors",
+    "test": "node --test tests/*.test.cjs tests/*.test.mjs"
   },
   "keywords": [
     "3d",

@@ -1,0 +1,32 @@
+name: Chat safety checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chat-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      # These tests use only Node built-ins and mocked I/O. No npm install,
+      # provider credentials, external chat requests, or deployment steps.
+      - name: Run synthetic chat regressions
+        run: npm test
+      - name: Check changed runtime syntax
+        run: |
+          node --check js/chat-engine.js
+          node --check js/concierge-transport.mjs
+          node --check js/guide-system.js
+          node --check api/chat.js
